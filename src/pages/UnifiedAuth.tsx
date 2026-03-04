@@ -1,0 +1,574 @@
+﻿import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card } from "@/components/ui/card";
+import { toastWithSound } from '@/lib/toast-with-sound';
+import { Loader2, Stethoscope, Users, ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
+import { z } from "zod";
+import axios from 'axios';
+import { motion, AnimatePresence } from "framer-motion";
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+// ─── Validation Schemas ─────────────────────────────────────────────────────
+const loginSchema = z.object({
+    email: z.string().email('البريد الإلكتروني غير صحيح'),
+    password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+});
+
+const doctorRegisterSchema = z.object({
+    email: z.string().email('البريد الإلكتروني غير صحيح'),
+    password: z.string()
+        .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
+        .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/, 'كلمة المرور يجب أن تحتوي على حرف كبير وحرف صغير ورقم'),
+    confirmPassword: z.string().min(1, 'تأكيد كلمة المرور مطلوب'),
+    phone: z.string().regex(/^(\+962|00962|962|0)?7[789]\d{7}$/, 'رقم الهاتف يجب أن يكون رقم أردني صحيح (مثال: 0791234567)'),
+    name: z.string().min(2, 'الاسم يجب أن يكون حرفين على الأقل').optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'كلمة المرور وتأكيد كلمة المرور غير متطابقين',
+    path: ['confirmPassword'],
+});
+
+const patientRegisterSchema = z.object({
+    email: z.string().email('البريد الإلكتروني غير صحيح'),
+    password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+    confirmPassword: z.string().min(1, 'تأكيد كلمة المرور مطلوب'),
+    fullName: z.string().min(2, 'الاسم يجب أن يكون حرفين على الأقل'),
+    phone: z.string().regex(/^(\+962|00962|962|0)?7[789]\d{7}$/, 'رقم الهاتف يجب أن يكون رقم أردني صحيح'),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'كلمة المرور وتأكيد كلمة المرور غير متطابقين',
+    path: ['confirmPassword'],
+});
+
+// ─── Types ───────────────────────────────────────────────────────────────────
+type UserRole = 'doctor' | 'patient' | null;
+
+// ─── Component ───────────────────────────────────────────────────────────────
+const UnifiedAuth = () => {
+    const [selectedRole, setSelectedRole] = useState<UserRole>(null);
+    const [isLogin, setIsLogin] = useState(true);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    const [fullName, setFullName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const { signIn, signUp, user, loading } = useAuth();
+    const navigate = useNavigate();
+
+    // إعادة التوجيه إذا كان مسجلاً دخوله
+    useEffect(() => {
+        if (!loading && user) {
+            navigate("/");
+        }
+    }, [user, loading, navigate]);
+
+    // التحقق من جلسة المريض
+    useEffect(() => {
+        const patientToken = localStorage.getItem('patient_token');
+        if (patientToken && !loading) {
+            navigate('/patient/dashboard');
+        }
+    }, [navigate, loading]);
+
+    // ─── Doctor Auth ─────────────────────────────────────────────────────────
+    const handleDoctorAuth = async () => {
+        try {
+            if (isLogin) {
+                const validation = loginSchema.safeParse({ email, password });
+                if (!validation.success) {
+                    toastWithSound.error(validation.error.errors[0].message);
+                    return false;
+                }
+
+                const { error } = await signIn(email, password);
+                if (error) {
+                    if (error.includes("Invalid credentials") || error.includes("401")) {
+                        toastWithSound.error("البريد الإلكتروني أو كلمة المرور غير صحيحة");
+                    } else {
+                        toastWithSound.error(error);
+                    }
+                    return false;
+                }
+
+                toastWithSound.success("مرحباً دكتور! تم تسجيل الدخول بنجاح");
+                navigate("/");
+                return true;
+            } else {
+                const validation = doctorRegisterSchema.safeParse({
+                    email, password, confirmPassword, phone, name: fullName
+                });
+
+                if (!validation.success) {
+                    toastWithSound.error(validation.error.errors[0].message);
+                    return false;
+                }
+
+                const { error } = await signUp(email, password, confirmPassword, fullName, phone);
+                if (error) {
+                    if (error.includes("already exists") || error.includes("409") || error.includes("مستخدم")) {
+                        toastWithSound.error("هذا البريد الإلكتروني أو رقم الهاتف مسجل مسبقاً");
+                    } else {
+                        toastWithSound.error(error);
+                    }
+                    return false;
+                }
+
+                localStorage.setItem('isNewUser', 'true');
+                toastWithSound.success("مرحباً دكتور! تم إنشاء الحساب بنجاح");
+                navigate("/");
+                return true;
+            }
+        } catch (error) {
+            toastWithSound.error("حدث خطأ غير متوقع");
+            return false;
+        }
+    };
+
+    // ─── Patient Auth ─────────────────────────────────────────────────────────
+    const handlePatientAuth = async () => {
+        try {
+            if (isLogin) {
+                const validation = loginSchema.safeParse({ email, password });
+                if (!validation.success) {
+                    toastWithSound.error(validation.error.errors[0].message);
+                    return false;
+                }
+
+                const response = await axios.post(`${API_URL}/patient/auth/login`, {
+                    email,
+                    password,
+                });
+
+                localStorage.setItem('patient_token', response.data.token);
+                localStorage.setItem('patient_user', JSON.stringify(response.data.patient));
+
+                toastWithSound.success("مرحباً بعودتك! تم تسجيل الدخول بنجاح");
+                navigate('/patient/dashboard');
+                return true;
+            } else {
+                const validation = patientRegisterSchema.safeParse({
+                    email, password, confirmPassword, fullName, phone
+                });
+
+                if (!validation.success) {
+                    toastWithSound.error(validation.error.errors[0].message);
+                    return false;
+                }
+
+                const response = await axios.post(`${API_URL}/patient/auth/register`, {
+                    email,
+                    password,
+                    fullName,
+                    phone,
+                });
+
+                localStorage.setItem('patient_token', response.data.token);
+                localStorage.setItem('patient_user', JSON.stringify(response.data.patient));
+
+                toastWithSound.success("مرحباً بك! تم إنشاء الحساب بنجاح");
+                navigate('/patient/dashboard');
+                return true;
+            }
+        } catch (error: any) {
+            if (error.response?.data?.message) {
+                toastWithSound.error(error.response.data.message);
+            } else {
+                toastWithSound.error("حدث خطأ في تسجيل الدخول");
+            }
+            return false;
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        try {
+            if (selectedRole === 'doctor') {
+                await handleDoctorAuth();
+            } else if (selectedRole === 'patient') {
+                await handlePatientAuth();
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRoleSelect = (role: UserRole) => {
+        setSelectedRole(role);
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setFullName("");
+        setPhone("");
+        setShowPassword(false);
+        setShowConfirmPassword(false);
+        setIsLogin(true);
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
+
+    // ─── Colors by role ──────────────────────────────────────────────────────
+    const isDoctor = selectedRole === 'doctor';
+    const borderColor = isDoctor ? 'border-blue-500/50' : 'border-orange-500/50';
+    const focusBorder = isDoctor ? 'focus:border-blue-400' : 'focus:border-orange-400';
+    const labelColor = isDoctor ? 'text-blue-200/80' : 'text-orange-200/80';
+    const btnBorder = isDoctor
+        ? 'border-blue-500 hover:bg-blue-500/10 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
+        : 'border-orange-500 hover:bg-orange-500/10 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)]';
+    const toggleColor = isDoctor
+        ? 'text-blue-300 border-blue-500/30 hover:border-blue-400'
+        : 'text-orange-300 border-orange-500/30 hover:border-orange-400';
+
+    const inputClass = `!bg-transparent border ${borderColor} ${focusBorder} focus:ring-0 text-white placeholder:text-white/20 h-11 text-sm transition-all font-mono text-left`;
+
+    return (
+        <div className="min-h-screen bg-background flex flex-col relative" dir="rtl">
+            <style>{`
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active {
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: #ffffff !important;
+            transition: background-color 5000s ease-in-out 0s;
+            box-shadow: inset 0 0 20px 20px transparent !important;
+        }
+        ::selection {
+          background-color: rgba(249, 115, 22, 0.3);
+          color: white;
+        }
+      `}</style>
+
+            {/* Animated Background */}
+            <div
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 transform scale-105"
+                style={{ backgroundImage: 'url(/auth-bg-pro.png?v=6)' }}
+            >
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] mix-blend-overlay"></div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 flex flex-col items-center justify-center w-full px-4 relative z-10 overflow-y-auto py-6">
+                <AnimatePresence mode="wait">
+                    {!selectedRole ? (
+                        /* ── شاشة اختيار الدور ── */
+                        <motion.div
+                            key="role-selection"
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-full max-w-4xl"
+                        >
+                            <div className="flex flex-col items-center gap-4 mb-12">
+                                <motion.div
+                                    initial={{ y: -50, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="relative group/logo cursor-pointer"
+                                >
+                                    <div className="absolute -inset-4 bg-gradient-to-r from-blue-600 to-orange-500 rounded-full blur-2xl opacity-50 animate-pulse"></div>
+                                    <img
+                                        src="/hakeem-logo.png"
+                                        onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+                                        alt="Doctor Jo Logo"
+                                        className="h-24 w-24 object-cover rounded-full drop-shadow-2xl relative z-10 transition-transform hover:scale-110 duration-500 border-4 border-white/20 bg-blue-950/30"
+                                    />
+                                </motion.div>
+
+                                <motion.div
+                                    initial={{ y: 50, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="text-center space-y-2"
+                                >
+                                    <h1 className="text-4xl lg:text-6xl font-black tracking-tight bg-gradient-to-r from-blue-400 via-blue-600 to-orange-500 bg-clip-text text-transparent drop-shadow-md">
+                                        Doctor Jo
+                                    </h1>
+                                    <p className="text-sm font-bold uppercase tracking-[0.3em] text-blue-300/80 flex items-center justify-center gap-2">
+                                        <Sparkles className="w-4 h-4" />
+                                        نظام إدارة العيادات الذكي
+                                        <Sparkles className="w-4 h-4" />
+                                    </p>
+                                </motion.div>
+                            </div>
+
+                            <motion.div
+                                initial={{ y: 100, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ delay: 0.4 }}
+                                className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto"
+                            >
+                                {/* Doctor Card */}
+                                <motion.div
+                                    whileHover={{ scale: 1.05, y: -10 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleRoleSelect('doctor')}
+                                    className="cursor-pointer group"
+                                >
+                                    <Card className="relative overflow-hidden border-2 border-blue-500/30 bg-blue-950/20 backdrop-blur-xl p-8 hover:bg-blue-900/30 hover:border-blue-400/50 transition-all duration-500 h-full">
+                                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl group-hover:bg-blue-500/40 transition-all duration-500"></div>
+                                        <div className="relative z-10 flex flex-col items-center text-center gap-6">
+                                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center shadow-2xl group-hover:shadow-blue-500/50 transition-all duration-500">
+                                                <Stethoscope className="w-10 h-10 text-white" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <h3 className="text-2xl font-black text-white">الأطباء</h3>
+                                                <p className="text-sm text-blue-200/70">إدارة العيادة والمرضى والمواعيد</p>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-blue-400 font-bold group-hover:gap-4 transition-all duration-300">
+                                                <span>دخول للنظام</span>
+                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </motion.div>
+
+                                {/* Patient Card */}
+                                <motion.div
+                                    whileHover={{ scale: 1.05, y: -10 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleRoleSelect('patient')}
+                                    className="cursor-pointer group"
+                                >
+                                    <Card className="relative overflow-hidden border-2 border-orange-500/30 bg-orange-950/20 backdrop-blur-xl p-8 hover:bg-orange-900/30 hover:border-orange-400/50 transition-all duration-500 h-full">
+                                        <div className="absolute -top-20 -right-20 w-40 h-40 bg-orange-500/20 rounded-full blur-3xl group-hover:bg-orange-500/40 transition-all duration-500"></div>
+                                        <div className="relative z-10 flex flex-col items-center text-center gap-6">
+                                            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-500 to-orange-700 flex items-center justify-center shadow-2xl group-hover:shadow-orange-500/50 transition-all duration-500">
+                                                <Users className="w-10 h-10 text-white" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <h3 className="text-2xl font-black text-white">المرضى</h3>
+                                                <p className="text-sm text-orange-200/70">حجز المواعيد وإدارة السجلات الطبية</p>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-orange-400 font-bold group-hover:gap-4 transition-all duration-300">
+                                                <span>دخول للبوابة</span>
+                                                <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform" />
+                                            </div>
+                                        </div>
+                                    </Card>
+                                </motion.div>
+                            </motion.div>
+
+                            <motion.div
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.6 }}
+                                className="mt-12 text-center space-y-2"
+                            >
+                                <p className="text-xs text-blue-300/60 font-medium">تم برمجة الموقع بواسطة الخطيب للبرمجيات</p>
+                                <p className="text-xs text-orange-500/80 font-mono font-bold uppercase tracking-widest">Doctor Jo • Version 2.1</p>
+                            </motion.div>
+                        </motion.div>
+                    ) : (
+                        /* ── نموذج الدخول / التسجيل ── */
+                        <motion.div
+                            key="auth-form"
+                            initial={{ opacity: 0, x: 100 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -100 }}
+                            transition={{ duration: 0.5 }}
+                            className="w-full max-w-md"
+                        >
+                            <Card className={`w-full p-6 border ${isDoctor ? 'border-blue-500/30 bg-blue-950/20' : 'border-orange-500/30 bg-orange-950/20'} backdrop-blur-xl shadow-2xl relative overflow-hidden`}>
+
+                                {/* Glow */}
+                                <div className={`absolute -top-20 -right-20 w-40 h-40 ${isDoctor ? 'bg-blue-500/20' : 'bg-orange-500/20'} rounded-full blur-3xl`}></div>
+                                <div className={`absolute -bottom-20 -left-20 w-40 h-40 ${isDoctor ? 'bg-orange-500/10' : 'bg-blue-500/10'} rounded-full blur-3xl`}></div>
+
+                                {/* Back Button */}
+                                <button
+                                    onClick={() => setSelectedRole(null)}
+                                    className="absolute top-4 left-4 text-white/60 hover:text-white transition-colors z-20"
+                                >
+                                    <ArrowRight className="w-6 h-6 rotate-180" />
+                                </button>
+
+                                {/* Icon & Title */}
+                                <div className="flex flex-col items-center gap-3 mb-5 relative z-10">
+                                    <div className={`w-14 h-14 rounded-full ${isDoctor ? 'bg-gradient-to-br from-blue-500 to-blue-700' : 'bg-gradient-to-br from-orange-500 to-orange-700'} flex items-center justify-center shadow-2xl`}>
+                                        {isDoctor ? <Stethoscope className="w-7 h-7 text-white" /> : <Users className="w-7 h-7 text-white" />}
+                                    </div>
+                                    <div className="text-center space-y-1">
+                                        <h2 className="text-xl font-black text-white">
+                                            {isDoctor ? 'بوابة الأطباء' : 'بوابة المرضى'}
+                                        </h2>
+                                        <p className={`text-xs font-bold uppercase tracking-wider ${isDoctor ? 'text-blue-300/80' : 'text-orange-300/80'}`}>
+                                            {isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Form */}
+                                <form onSubmit={handleSubmit} className="space-y-3 relative z-10">
+
+                                    {/* حقول التسجيل فقط */}
+                                    {!isLogin && (
+                                        <>
+                                            {/* الاسم */}
+                                            <div className="space-y-1">
+                                                <Label className={`${labelColor} text-xs font-bold uppercase tracking-wide`}>
+                                                    {isDoctor ? 'اسم الطبيب' : 'الاسم الكامل'}
+                                                </Label>
+                                                <Input
+                                                    type="text"
+                                                    value={fullName}
+                                                    onChange={(e) => setFullName(e.target.value)}
+                                                    placeholder={isDoctor ? 'د. أحمد محمد' : 'أدخل اسمك الكامل'}
+                                                    className={`${inputClass} text-right`}
+                                                    required={!isLogin}
+                                                />
+                                            </div>
+
+                                            {/* رقم الهاتف */}
+                                            <div className="space-y-1">
+                                                <Label className={`${labelColor} text-xs font-bold uppercase tracking-wide`}>
+                                                    رقم الهاتف الأردني
+                                                </Label>
+                                                <Input
+                                                    type="tel"
+                                                    value={phone}
+                                                    onChange={(e) => setPhone(e.target.value)}
+                                                    placeholder="0791234567"
+                                                    className={inputClass}
+                                                    required={!isLogin}
+                                                    dir="ltr"
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+
+                                    {/* البريد الإلكتروني */}
+                                    <div className="space-y-1">
+                                        <Label className={`${labelColor} text-xs font-bold uppercase tracking-wide`}>
+                                            البريد الإلكتروني
+                                        </Label>
+                                        <Input
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            placeholder="name@example.com"
+                                            className={inputClass}
+                                            required
+                                            dir="ltr"
+                                        />
+                                    </div>
+
+                                    {/* كلمة المرور */}
+                                    <div className="space-y-1">
+                                        <Label className={`${labelColor} text-xs font-bold uppercase tracking-wide`}>
+                                            كلمة المرور
+                                        </Label>
+                                        <div className="relative">
+                                            <Input
+                                                type={showPassword ? "text" : "password"}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="••••••••"
+                                                className={`${inputClass} pr-10`}
+                                                required
+                                                dir="ltr"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
+                                            >
+                                                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                            </button>
+                                        </div>
+                                        {!isLogin && (
+                                            <p className="text-xs text-white/30 mt-1">
+                                                {isDoctor ? 'يجب أن تحتوي على حرف كبير وحرف صغير ورقم (8 أحرف كحد أدنى)' : '6 أحرف كحد أدنى'}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    {/* تأكيد كلمة المرور – عند التسجيل فقط */}
+                                    {!isLogin && (
+                                        <div className="space-y-1">
+                                            <Label className={`${labelColor} text-xs font-bold uppercase tracking-wide`}>
+                                                تأكيد كلمة المرور
+                                            </Label>
+                                            <div className="relative">
+                                                <Input
+                                                    type={showConfirmPassword ? "text" : "password"}
+                                                    value={confirmPassword}
+                                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                                    placeholder="••••••••"
+                                                    className={`${inputClass} pr-10 ${confirmPassword && confirmPassword !== password ? 'border-red-500/70' : confirmPassword && confirmPassword === password ? 'border-green-500/70' : ''}`}
+                                                    required={!isLogin}
+                                                    dir="ltr"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                    className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/80 transition-colors"
+                                                >
+                                                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                                </button>
+                                            </div>
+                                            {confirmPassword && confirmPassword !== password && (
+                                                <p className="text-xs text-red-400 mt-1">كلمتا المرور غير متطابقتين</p>
+                                            )}
+                                            {confirmPassword && confirmPassword === password && (
+                                                <p className="text-xs text-green-400 mt-1">✓ كلمتا المرور متطابقتان</p>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* زر الإرسال */}
+                                    <Button
+                                        type="submit"
+                                        className={`w-full mt-2 bg-transparent border-2 ${btnBorder} font-bold h-12 transition-all duration-300 text-sm uppercase tracking-wider relative overflow-hidden group/btn`}
+                                        disabled={isLoading}
+                                    >
+                                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700"></span>
+                                        {isLoading ? (
+                                            <div className="flex items-center gap-2">
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                <span className="animate-pulse">جاري المعالجة...</span>
+                                            </div>
+                                        ) : (
+                                            isLogin ? "دخول للنظام" : "إنشاء حساب"
+                                        )}
+                                    </Button>
+                                </form>
+
+                                {/* Toggle Login/Register */}
+                                <div className="text-center mt-6 relative z-10">
+                                    <button
+                                        onClick={() => {
+                                            setIsLogin(!isLogin);
+                                            setPassword("");
+                                            setConfirmPassword("");
+                                        }}
+                                        className={`text-xs ${toggleColor} hover:text-white transition-colors font-medium border-b border-dashed pb-0.5`}
+                                    >
+                                        {isLogin
+                                            ? "مستخدم جديد؟ إنشاء حساب"
+                                            : "لديك حساب؟ تسجيل الدخول"}
+                                    </button>
+                                </div>
+                            </Card>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+};
+
+export default UnifiedAuth;

@@ -1,0 +1,56 @@
+node_modules/
+dist/
+.env
+.env.local
+.env.*
+server-nestjs/.env
+server-nestjs/.env.local
+server-nestjs/.env.*
+*.log
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cache/
+coverage/
+build/
+.vercel
+.turbo
+*.tsbuildinfo
+vite.config.ts.timestamp-*.mjs
+# WhatsApp session files - لا ترفعها أبداً
+auth_info_baileys/
+server-nestjs/sessions/
+server-nestjs/uploads/
+server-nestjs/prisma/*.db
+# Uploads - ملفات المستخدمين
+uploads/
+
+# ─── ملفات تحتوي على مفاتيح حقيقية ───────────────────
+# سكريبتات الإعداد - تحتوي على API keys
+server-nestjs/sync-key.ts
+server-nestjs/update-key.js
+server-nestjs/update-new-key.js
+server-nestjs/update_key.sql
+server-nestjs/add-ai-user2.sql
+server-nestjs/verify-ai.js
+server-nestjs/verify-ai.ts
+server-nestjs/prisma/setup-ai.ts
+server-nestjs/prisma/setup-ai-user2.ts
+server-nestjs/prisma/set-gemini-key.ts
+server-nestjs/prisma/enable-ai-user1.ts
+server-nestjs/prisma/configure-ai.ts
+server-nestjs/prisma/update-ai-key.ts
+test-gemini-key.js
+
+# وثائق تحتوي على بيانات حساسة
+COMMANDS.md
+VERCEL_SETUP.md
+VERCEL_UPDATE_STEPS.md
+
+# ملفات تشخيص وفحص
+server-nestjs/check-*.js
+server-nestjs/check-*.ts
+push_error.txt

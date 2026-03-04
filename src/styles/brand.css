@@ -1,0 +1,58 @@
+/* ============================================
+   DOCTOR JO GLOBAL BRAND STYLES
+   REFINED VISUAL IDENTITY
+   ============================================ */
+
+/* 1. Typography */
+.brand-heading-black {
+    @apply font-black tracking-tight text-foreground transition-colors duration-300;
+}
+
+.brand-text-gray {
+    @apply text-muted-foreground font-medium selection:bg-primary/20;
+}
+
+/* 2. Unified Cards & Containers */
+.brand-card-thin {
+    @apply bg-card/40 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm transition-all duration-300;
+}
+
+.brand-card-hover {
+    @apply hover:shadow-md hover:border-primary/20 hover:-translate-y-0.5;
+}
+
+/* 3. Refined Buttons (Sidebar-Inspired) */
+.brand-button-sidebar {
+    @apply border-2 border-primary/20 bg-transparent text-primary/80 font-bold rounded-xl px-6 py-2.5 transition-all duration-300 hover:bg-white/50 hover:text-primary hover:border-primary hover:translate-x-1 active:scale-95;
+}
+
+.brand-button-active {
+    @apply bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-xl rounded-r-none translate-x-1;
+}
+
+/* 4. Numbers & Icons (Blue Outline Style) */
+.brand-stat-outline {
+    @apply inline-flex items-center justify-center font-black text-primary border-2 border-primary/20 bg-primary/5 rounded-xl px-3 py-1 shadow-inner;
+}
+
+.brand-icon-outline {
+    @apply p-2.5 rounded-xl border-2 border-primary/10 text-primary/70 bg-primary/5 transition-all duration-300 group-hover:scale-110 group-hover:border-primary/30 group-hover:text-primary;
+}
+
+/* 5. Utility Shadows */
+.brand-shadow-soft {
+    box-shadow: 0 4px 20px -5px rgba(29, 78, 216, 0.05);
+}
+
+.brand-shadow-glow-blue {
+    box-shadow: 0 0 15px -3px rgba(29, 78, 216, 0.15);
+}
+
+/* 6. Selection Color */
+::selection {
+    @apply bg-primary/10 text-primary;
+}
+
+/* ============================================
+   END REFINED VISUAL IDENTITY
+   ============================================ */
