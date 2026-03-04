@@ -30,8 +30,12 @@ export const apiFetch = async (endpoint: string, options: any = {}) => {
             console.warn('[API] Unauthorized - Clearing session');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            if (window.location.hash !== '#/auth') {
-                window.location.hash = '#/auth';
+
+            // Only redirect to unified-auth if not already there, and importantly: 
+            // DO NOT redirect if the user is currently browsing the patient portal.
+            const hash = window.location.hash;
+            if (!hash.startsWith('#/unified-auth') && !hash.startsWith('#/patient')) {
+                window.location.hash = '#/unified-auth';
             }
             throw new Error('Unauthorized');
         }

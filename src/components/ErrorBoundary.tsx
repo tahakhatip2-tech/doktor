@@ -32,19 +32,19 @@ export class ErrorBoundary extends Component<Props, State> {
                     <div className="p-4 rounded-full bg-destructive/10 mb-4">
                         <AlertTriangle className="h-10 w-10 text-destructive" />
                     </div>
-                    <h1 className="text-2xl font-bold mb-2">عذراًطŒ حدث خطأ ط؛ظٹر مطھظˆقع</h1>
+                    <h1 className="text-2xl font-bold mb-2">عذراً، حدث خطأ غير متوقع</h1>
                     <p className="text-muted-foreground text-center max-w-md mb-6">
-                        {this.state.error?.message || "حدث خطأ أثناط، طھشط؛ظٹل الطھطبظٹق"}
+                        {this.state.error?.message || "حدث خطأ أثناء تشغيل التطبيق"}
                     </p>
                     <div className="flex gap-4">
                         <Button onClick={() => window.location.reload()} variant="default">
-                            إعادة طھحمظٹل الطھطبظٹق
+                            إعادة تحميل التطبيق
                         </Button>
                         <Button onClick={() => {
                             localStorage.clear();
                             window.location.reload();
                         }} variant="outline">
-                            مسح البظٹاناطھ ظˆإعادة الطھحمظٹل
+                            مسح البيانات وإعادة التحميل
                         </Button>
                     </div>
                     <div className="mt-8 p-4 bg-secondary/50 rounded-lg text-left text-xs font-mono overflow-auto max-w-2xl max-h-64 border border-border">

@@ -35,8 +35,13 @@ export default function PatientDashboard() {
                 axios.get(`${API_URL}/patient/notifications`, { headers }),
             ]);
 
-            setUpcomingAppointments(appointmentsRes.data.slice(0, 3));
-            setNotifications(notificationsRes.data.slice(0, 5));
+            const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data :
+                (appointmentsRes.data?.data && Array.isArray(appointmentsRes.data.data) ? appointmentsRes.data.data : []);
+            const notifications = Array.isArray(notificationsRes.data) ? notificationsRes.data :
+                (notificationsRes.data?.data && Array.isArray(notificationsRes.data.data) ? notificationsRes.data.data : []);
+
+            setUpcomingAppointments(appointments.slice(0, 3));
+            setNotifications(notifications.slice(0, 5));
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
         } finally {
