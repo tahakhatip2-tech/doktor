@@ -63,7 +63,10 @@ export default function PatientMedicalRecords() {
             const res = await axios.get(`${API_URL}/patient/appointments/medical-records/all`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setRecords(res.data || []);
+            const fetchedRecords = Array.isArray(res.data)
+                ? res.data
+                : (res.data?.data && Array.isArray(res.data.data) ? res.data.data : []);
+            setRecords(fetchedRecords);
         } catch (err: any) {
             setError(err.response?.data?.message || 'حدث خطأ في جلب السجلات الطبية');
         } finally {
