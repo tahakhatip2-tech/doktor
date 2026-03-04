@@ -20,10 +20,7 @@
     "skipLibCheck": true,
     "allowJs": true,
     "noUnusedLocals": false,
-    "strictNullChecks": false,
-    "types": [],
-    "typeRoots": [
-      "./node_modules/@types/null"
-    ]
+    "strict": false,
+    "types": []
   }
 }
