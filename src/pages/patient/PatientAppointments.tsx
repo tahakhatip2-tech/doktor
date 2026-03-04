@@ -41,7 +41,10 @@ export default function PatientAppointments() {
             const response = await axios.get(`${API_URL}/patient/appointments`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setAppointments(response.data);
+            const fetchedAppointments = Array.isArray(response.data)
+                ? response.data
+                : (response.data?.data && Array.isArray(response.data.data) ? response.data.data : []);
+            setAppointments(fetchedAppointments);
         } catch (error) {
             toast({
                 variant: 'destructive',
