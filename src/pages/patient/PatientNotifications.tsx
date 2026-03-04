@@ -26,7 +26,10 @@ export default function PatientNotifications() {
             const response = await axios.get(`${API_URL}/patient/notifications`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setNotifications(response.data);
+            const fetchedNotifications = Array.isArray(response.data)
+                ? response.data
+                : (response.data?.data && Array.isArray(response.data.data) ? response.data.data : []);
+            setNotifications(fetchedNotifications);
         } catch (error) {
             toast({ variant: 'destructive', title: 'خطأ', description: 'حدث خطأ أثناء تحميل الإشعارات' });
         } finally {
