@@ -94,8 +94,26 @@ export default function PatientLayout() {
                         >
                             {mobileMenuOpen ? <X /> : <Menu />}
                         </Button>
-                        <Link to="/patient/dashboard" className="flex items-center gap-2">
-                            <h1 className="text-xl font-bold text-gradient-primary">حكيم الأردن</h1>
+                        <Link to="/patient/dashboard" className="flex items-center gap-3">
+                            <div className="relative group cursor-pointer">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-orange-500 rounded-full blur opacity-30 animate-pulse group-hover:animate-[pulse_0.5s_ease-in-out_infinite]"></div>
+                                <img
+                                    src="/hakeem-logo.png"
+                                    alt="Doctor Jo Logo"
+                                    className="relative h-10 w-10 sm:h-12 sm:w-12 rounded-full p-0.5 border-2 border-orange-500 bg-white shadow-xl object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-3"
+                                    onError={(e) => {
+                                        (e.target as HTMLImageElement).src = '/logo.png';
+                                    }}
+                                />
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-base sm:text-xl font-black tracking-tight bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500 bg-clip-text text-transparent">
+                                    DOCTOR JO
+                                </h1>
+                                <p className="text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.1em] bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
+                                    Clinic Management System
+                                </p>
+                            </div>
                         </Link>
                     </div>
 
