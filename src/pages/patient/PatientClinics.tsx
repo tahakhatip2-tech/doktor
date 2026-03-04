@@ -40,8 +40,11 @@ export default function PatientClinics() {
             const response = await axios.get(`${API_URL}/patient/clinics`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setClinics(response.data);
-            setFilteredClinics(response.data);
+            const fetchedClinics = Array.isArray(response.data)
+                ? response.data
+                : (response.data?.data && Array.isArray(response.data.data) ? response.data.data : []);
+            setClinics(fetchedClinics);
+            setFilteredClinics(fetchedClinics);
         } catch {
             toast({ variant: 'destructive', title: 'خطأ', description: 'حدث خطأ أثناء تحميل العيادات' });
         } finally {
