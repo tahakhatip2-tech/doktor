@@ -48,7 +48,7 @@ export const PostCard = ({ groupName, content, timeAgo, comments, extractedConta
       </div>
 
       <Button className="w-full" size="sm">
-        عرض الطھظپاصظٹل ظˆاسطھخراج البظٹاناطھ
+        عرض التفاصيل ظˆاسطھخراج البيانات
       </Button>
     </Card>
   );

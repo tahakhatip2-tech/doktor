@@ -23,7 +23,7 @@ export const useTemplates = () => {
         } catch (error) {
             console.error('Error fetching templates:', error);
             // setTemplates([]); // Safe fallback
-            toastWithSound.error('ظپشل ظپظٹ طھحمظٹل القظˆالب');
+            toastWithSound.error('ظپشل في تحميل القظˆالب');
         } finally {
             setIsLoading(false);
         }
@@ -36,30 +36,30 @@ export const useTemplates = () => {
     const addTemplate = async (trigger: string, response: string) => {
         try {
             await whatsappApi.createTemplate({ trigger, response, priority: 0 });
-            toastWithSound.success('طھم حظپظ القالب بنجاح');
+            toastWithSound.success('تم حظپظ القالب بنجاح');
             fetchTemplates();
         } catch (error) {
-            toastWithSound.error('ظپشل ظپظٹ إضاظپة القالب');
+            toastWithSound.error('ظپشل في إضاظپة القالب');
         }
     };
 
     const deleteTemplate = async (id: number) => {
         try {
             await whatsappApi.deleteTemplate(id);
-            toastWithSound.success('طھم حذظپ القالب');
+            toastWithSound.success('تم حذظپ القالب');
             fetchTemplates();
         } catch (error) {
-            toastWithSound.error('ظپشل ظپظٹ حذظپ القالب');
+            toastWithSound.error('ظپشل في حذظپ القالب');
         }
     };
 
     const updateTemplate = async (id: number, trigger: string, response: string) => {
         try {
             await whatsappApi.updateTemplate(id, { trigger, response, is_active: 1, priority: 0 });
-            toastWithSound.success('طھم طھحدظٹث القالب');
+            toastWithSound.success('تم طھحدظٹث القالب');
             fetchTemplates();
         } catch (error) {
-            toastWithSound.error('ظپشل ظپظٹ طھحدظٹث القالب');
+            toastWithSound.error('ظپشل في طھحدظٹث القالب');
         }
     };
 

@@ -64,7 +64,7 @@ export function CRMColumn({ id, title, contacts, color, onDeleteContact, onUpdat
                         <div className="p-2 rounded-full bg-muted/10 mb-2">
                             {getIcon()}
                         </div>
-                        <span>لا طھظˆجد بظٹاناطھ حالظٹاً</span>
+                        <span>لا توجد بظٹاناطھ حالظٹاً</span>
                     </div>
                 )}
             </div>

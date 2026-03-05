@@ -9,6 +9,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Building2, MapPin, Phone, Clock, Search, Calendar, MessageCircle, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
 
+import { BASE_URL } from '@/lib/api';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export default function PatientClinics() {
@@ -103,8 +105,16 @@ export default function PatientClinics() {
                             <CardHeader>
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-sm">
-                                            <Building2 className="h-5 w-5 text-white" />
+                                        <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-sm overflow-hidden bg-muted">
+                                            {clinic.avatar ? (
+                                                <img
+                                                    src={clinic.avatar.startsWith('http') ? clinic.avatar : `${BASE_URL}${clinic.avatar.startsWith('/') ? '' : '/'}${clinic.avatar}`}
+                                                    alt={clinic.clinic_name || clinic.name}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            ) : (
+                                                <Building2 className="h-5 w-5 text-white" />
+                                            )}
                                         </div>
                                         <div className="min-w-0">
                                             <CardTitle className="text-lg truncate">
@@ -165,3 +175,4 @@ export default function PatientClinics() {
         </div>
     );
 }
+

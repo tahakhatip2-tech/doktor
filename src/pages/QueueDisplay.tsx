@@ -62,7 +62,7 @@ const QueueDisplay = () => {
 
             // Play chime (optional, simplified to just speech for now)
             setTimeout(() => {
-                const text = `الرجاط، من المرظٹضطŒ ${currentPatient.customerName || currentPatient.contact?.name || 'المرظٹض'}طŒ الطھظˆجه إلى ط؛رظپة الطبظٹب`;
+                const text = `الرجاط، من المرظٹضطŒ ${currentPatient.customerName || currentPatient.contact?.name || 'المرظٹض'}طŒ الطھظˆجه إلى ط؛رظپة الطبيب`;
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'ar-SA';
                 utterance.rate = 0.9;
@@ -124,7 +124,7 @@ const QueueDisplay = () => {
                             <div className="flex items-center justify-center gap-2 mt-4">
                                 <Badge className="px-6 py-2 text-xl bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/20">
                                     <Volume2 className="w-5 h-5 mr-2 animate-bounce" />
-                                    ظٹرجى الدخظˆل للعظٹادة
+                                    يرجى الدخظˆل للعظٹادة
                                 </Badge>
                             </div>
                         </div>
@@ -135,7 +135,7 @@ const QueueDisplay = () => {
                 <div className="bg-white/5 rounded-3xl border border-white/10 p-6 flex flex-col">
                     <h3 className="text-2xl font-bold text-white mb-6 flex items-center gap-3 border-b border-white/10 pb-4">
                         <Clock className="w-8 h-8 text-orange-500" />
-                        قائمة الانطھظار
+                        قائمة الانتظار
                         <span className="text-sm bg-white/10 px-3 py-1 rounded-full text-gray-300 mr-auto">
                             {waitingPatients.length} مرظٹض
                         </span>
@@ -166,7 +166,7 @@ const QueueDisplay = () => {
                         )) : (
                             <div className="h-full flex flex-col items-center justify-center text-gray-500 opacity-50">
                                 <Clock className="w-20 h-20 mb-4" />
-                                <p className="text-xl">لا ظٹظˆجد مرضى ظپظٹ الانطھظار</p>
+                                <p className="text-xl">لا ظٹظˆجد مرضى في الانتظار</p>
                             </div>
                         )}
                     </div>

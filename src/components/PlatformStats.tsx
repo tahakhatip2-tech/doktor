@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 const platformConfig: Record<string, { icon: any; name: string; color: string; bg: string }> = {
-  facebook: { icon: Facebook, name: 'ظپظٹسبظˆظƒ', color: 'text-blue-600', bg: 'bg-blue-600/10' },
+  facebook: { icon: Facebook, name: 'فيسبظˆظƒ', color: 'text-blue-600', bg: 'bg-blue-600/10' },
   instagram: { icon: Instagram, name: 'انسطھط؛رام', color: 'text-pink-600', bg: 'bg-pink-600/10' },
   twitter: { icon: Twitter, name: 'طھظˆظٹطھر', color: 'text-sky-500', bg: 'bg-sky-500/10' },
   linkedin: { icon: Linkedin, name: 'لظٹنظƒد إن', color: 'text-blue-700', bg: 'bg-blue-700/10' },

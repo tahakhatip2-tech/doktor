@@ -32,7 +32,7 @@ export default function PatientRegister() {
         e.preventDefault();
 
         if (formData.password !== formData.confirmPassword) {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'ظƒلمة المرظˆر ط؛ظٹر مطھطابقة' });
+            toast({ variant: 'destructive', title: 'خطأ', description: 'كلمة المرور غير متطابقة' });
             return;
         }
 
@@ -42,13 +42,13 @@ export default function PatientRegister() {
             const response = await axios.post(`${API_URL}/patient/auth/register`, payload);
             localStorage.setItem('patient_token', response.data.token);
             localStorage.setItem('patient_user', JSON.stringify(response.data.patient));
-            toast({ title: 'طھم الطھسجظٹل بنجاح!', description: 'مرحباً بظƒ ظپظٹ بظˆابة المرضى' });
+            toast({ title: 'تم التسجيل بنجاح!', description: 'مرحباً بك في بوابة المرضى' });
             navigate('/patient/dashboard');
         } catch (error: any) {
             toast({
                 variant: 'destructive',
-                title: 'خطأ ظپظٹ الطھسجظٹل',
-                description: error.response?.data?.message || 'حدث خطأ أثناط، الطھسجظٹل',
+                title: 'خطأ في التسجيل',
+                description: error.response?.data?.message || 'حدث خطأ أثناء التسجيل',
             });
         } finally {
             setLoading(false);
@@ -60,15 +60,15 @@ export default function PatientRegister() {
             <div className="w-full max-w-2xl">
                 {/* Logo/Header */}
                 <div className="text-center mb-8 animate-fade-in">
-                    <h1 className="text-4xl font-bold text-gradient-primary mb-2">حظƒظٹم الأردن</h1>
-                    <p className="text-muted-foreground">إنشاط، حساب جدظٹد ظپظٹ بظˆابة المرضى</p>
+                    <h1 className="text-4xl font-bold text-gradient-primary mb-2">حكيم الأردن</h1>
+                    <p className="text-muted-foreground">إنشاء حساب جديد في بوابة المرضى</p>
                 </div>
 
                 <Card className="shadow-elevated animate-slide-up">
                     <CardHeader>
-                        <CardTitle className="text-2xl">إنشاط، حساب</CardTitle>
+                        <CardTitle className="text-2xl">إنشاء حساب</CardTitle>
                         <CardDescription>
-                            سجّل برقم هاطھظپظƒ â€” لا حاجة لبرظٹد إلظƒطھرظˆنظٹ
+                            سجّل برقم هاتفك â€” لا حاجة لبريد إلكتروني
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -77,7 +77,7 @@ export default function PatientRegister() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Full Name */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="fullName">الاسم الظƒامل *</Label>
+                                    <Label htmlFor="fullName">الاسم الكامل *</Label>
                                     <div className="relative">
                                         <User className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -88,14 +88,14 @@ export default function PatientRegister() {
                                             value={formData.fullName}
                                             onChange={handleChange}
                                             className="pr-10"
-                                            placeholder="أدخل اسمظƒ الظƒامل"
+                                            placeholder="أدخل اسمك الكامل"
                                         />
                                     </div>
                                 </div>
 
                                 {/* Phone */}
                                 <div className="space-y-2">
-                                    <Label htmlFor="phone">رقم الهاطھظپ *</Label>
+                                    <Label htmlFor="phone">رقم الهاتف *</Label>
                                     <div className="relative">
                                         <Phone className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -116,7 +116,7 @@ export default function PatientRegister() {
                             {/* Password row */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="password">ظƒلمة المرظˆر *</Label>
+                                    <Label htmlFor="password">كلمة المرور *</Label>
                                     <div className="relative">
                                         <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -134,7 +134,7 @@ export default function PatientRegister() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="confirmPassword">طھأظƒظٹد ظƒلمة المرظˆر *</Label>
+                                    <Label htmlFor="confirmPassword">تأكيد كلمة المرور *</Label>
                                     <div className="relative">
                                         <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -154,11 +154,11 @@ export default function PatientRegister() {
 
                             {/* Optional fields */}
                             <div className="border-t pt-4">
-                                <p className="text-xs text-muted-foreground mb-3 font-medium">معلظˆماطھ إضاظپظٹة (اخطھظٹارظٹ)</p>
+                                <p className="text-xs text-muted-foreground mb-3 font-medium">معلومات إضافية (اختياري)</p>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* Date of Birth */}
                                     <div className="space-y-2">
-                                        <Label htmlFor="dateOfBirth">طھارظٹخ المظٹلاد</Label>
+                                        <Label htmlFor="dateOfBirth">تاريخ الميلاد</Label>
                                         <div className="relative">
                                             <Calendar className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                             <Input
@@ -182,8 +182,8 @@ export default function PatientRegister() {
                                             onChange={handleChange}
                                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                                         >
-                                            <option value="">اخطھر...</option>
-                                            <option value="male">ذظƒر</option>
+                                            <option value="">اختر...</option>
+                                            <option value="male">ذكر</option>
                                             <option value="female">أنثى</option>
                                         </select>
                                     </div>
@@ -191,7 +191,7 @@ export default function PatientRegister() {
 
                                 {/* Address */}
                                 <div className="space-y-2 mt-4">
-                                    <Label htmlFor="address">العنظˆان</Label>
+                                    <Label htmlFor="address">العنوان</Label>
                                     <div className="relative">
                                         <MapPin className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
                                         <Input
@@ -201,7 +201,7 @@ export default function PatientRegister() {
                                             value={formData.address}
                                             onChange={handleChange}
                                             className="pr-10"
-                                            placeholder="المدظٹنةطŒ الحظٹ"
+                                            placeholder="المدينة، الحي"
                                         />
                                     </div>
                                 </div>
@@ -213,16 +213,16 @@ export default function PatientRegister() {
                                 disabled={loading}
                             >
                                 {loading ? (
-                                    <><Loader2 className="ml-2 h-4 w-4 animate-spin" />جارظٹ الطھسجظٹل...</>
+                                    <><Loader2 className="ml-2 h-4 w-4 animate-spin" />جاري التسجيل...</>
                                 ) : (
-                                    'إنشاط، الحساب'
+                                    'إنشاء الحساب'
                                 )}
                             </Button>
 
                             <div className="text-center text-sm text-muted-foreground">
-                                لدظٹظƒ حساب بالظپعلطں{' '}
+                                لديك حساب بالفعل؟{' '}
                                 <Link to="/patient/login" className="text-primary hover:underline font-medium">
-                                    طھسجظٹل الدخظˆل
+                                    تسجيل الدخول
                                 </Link>
                             </div>
                         </form>
@@ -232,3 +232,5 @@ export default function PatientRegister() {
         </div>
     );
 }
+
+

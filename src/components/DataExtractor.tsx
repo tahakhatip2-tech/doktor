@@ -25,7 +25,7 @@ import {
 
 const platforms = [
   { id: 'google', name: 'جظˆجل', icon: Search, color: 'text-blue-500' },
-  { id: 'facebook', name: 'ظپظٹسبظˆظƒ', icon: Facebook, color: 'text-blue-600' },
+  { id: 'facebook', name: 'فيسبظˆظƒ', icon: Facebook, color: 'text-blue-600' },
   { id: 'instagram', name: 'انسطھط؛رام', icon: Instagram, color: 'text-pink-600' },
   { id: 'twitter', name: 'طھظˆظٹطھر / X', icon: Twitter, color: 'text-sky-500' },
   { id: 'linkedin', name: 'لظٹنظƒد إن', icon: Linkedin, color: 'text-blue-700' },
@@ -41,7 +41,7 @@ const extractTypes = [
   { id: 'group', name: 'مجمظˆعة' },
   { id: 'profile', name: 'ملظپ شخصظٹ' },
   { id: 'channel', name: 'قناة' },
-  { id: 'video', name: 'ظپظٹدظٹظˆ' },
+  { id: 'video', name: 'فيدظٹظˆ' },
 ];
 
 const DataExtractor = ({ variant = 'default' }: { variant?: 'default' | 'compact' }) => {
@@ -157,10 +157,10 @@ const DataExtractor = ({ variant = 'default' }: { variant?: 'default' | 'compact
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-foreground">
           <Search className="h-5 w-5 text-primary" />
-          اسطھخراج البظٹاناطھ
+          اسطھخراج البيانات
         </CardTitle>
         <CardDescription>
-          اسطھخرج أرقام الهظˆاطھظپ ظˆالبظٹاناطھ من جمظٹع منصاطھ الطھظˆاصل الاجطھماعظٹ
+          اسطھخرج أرقام الهظˆاطھظپ ظˆالبيانات من جمظٹع منصاطھ الطھظˆاصل الاجتماعظٹ
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -179,7 +179,7 @@ const DataExtractor = ({ variant = 'default' }: { variant?: 'default' | 'compact
           <TabsContent value="url" className="space-y-4 mt-4">
             {/* Platform Selection */}
             <div className="space-y-2">
-              <Label>اخطھر المنصة</Label>
+              <Label>اختر المنصة</Label>
               <div className="grid grid-cols-4 gap-2">
                 {platforms.map((p) => {
                   const Icon = p.icon;
@@ -310,7 +310,7 @@ const DataExtractor = ({ variant = 'default' }: { variant?: 'default' | 'compact
             <p className="text-sm text-muted-foreground mb-2">{lastResult.note}</p>
             <div className="flex items-center gap-4">
               <p className="text-sm font-medium text-primary">
-                طھم اسطھخراج {lastResult.data?.length || 0} جهة اطھصال
+                تم اسطھخراج {lastResult.data?.length || 0} جهة اطھصال
               </p>
               {lastResult.duplicates > 0 && (
                 <p className="text-sm text-muted-foreground">

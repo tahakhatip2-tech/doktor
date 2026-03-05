@@ -28,7 +28,7 @@ export const useGroups = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
-      toastWithSound.success("طھمطھ إضاظپة المجمظˆعة");
+      toastWithSound.success("تمطھ إضاظپة المجمظˆعة");
     },
   });
 
@@ -47,7 +47,7 @@ export const useGroups = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups"] });
-      toastWithSound.success("طھم حذظپ المجمظˆعة");
+      toastWithSound.success("تم حذظپ المجمظˆعة");
     },
   });
 

@@ -103,15 +103,7 @@ function fixMojibake(filePath) {
 }
 
 const glob = require('glob');
-// We need to run it on PatientClinicDetail.tsx and PatientDashboard.tsx and Header.tsx and Sidebar.tsx
-// Let's do it manually for these specific files that had issues.
-const files = [
-    'src/pages/patient/PatientClinicDetail.tsx',
-    'src/pages/patient/PatientDashboard.tsx',
-    'src/components/Header.tsx',
-    'src/components/Sidebar.tsx',
-    'src/components/ErrorBoundary.tsx'
-];
+const files = glob.sync('src/**/*.tsx');
 
 files.forEach(file => {
     if (fs.existsSync(file)) {

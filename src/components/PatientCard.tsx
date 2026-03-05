@@ -106,7 +106,7 @@ export const PatientCard = ({
                             onClick={onViewDetails}
                         >
                             <Eye className="h-3 w-3" />
-                            طھظپاصظٹل
+                            تفاصيل
                         </Button>
                     </div>
                 </div>

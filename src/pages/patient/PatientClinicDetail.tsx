@@ -34,11 +34,12 @@ import axios from 'axios';
 import { cn } from '@/lib/utils';
 import { format, startOfDay, isSameDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { BASE_URL } from '@/lib/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-// â”€â”€â”€ الأظٹام باللط؛ة العربظٹة â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const DAY_NAMES_AR = ['أحد', 'اثنظٹن', 'ثلاثاط،', 'أربعاط،', 'خمظٹس', 'جمعة', 'سبطھ'];
+// â”€â”€â”€ الأيام باللغة العربية â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const DAY_NAMES_AR = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
 
 export default function PatientClinicDetail() {
     const { id } = useParams<{ id: string }>();
@@ -48,7 +49,7 @@ export default function PatientClinicDetail() {
     const [clinic, setClinic] = useState<any>(null);
     const [loadingClinic, setLoadingClinic] = useState(true);
 
-    // â”€â”€ الطھقظˆظٹم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ التقويم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -63,7 +64,7 @@ export default function PatientClinicDetail() {
     const [customerName, setCustomerName] = useState('');
     const [bookingLoading, setBookingLoading] = useState(false);
 
-    // â”€â”€ جلب بظٹاناطھ العظٹادة â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ جلب بيانات العيادة â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     useEffect(() => {
         const fetchClinic = async () => {
             try {
@@ -73,7 +74,7 @@ export default function PatientClinicDetail() {
                 });
                 setClinic(response.data);
             } catch {
-                toast({ variant: 'destructive', title: 'خطأ', description: 'لم ظٹطھم العثظˆر على العظٹادة' });
+                toast({ variant: 'destructive', title: 'خطأ', description: 'لم يتم العثور على العيادة' });
                 navigate('/patient/clinics');
             } finally {
                 setLoadingClinic(false);
@@ -82,7 +83,7 @@ export default function PatientClinicDetail() {
         if (id) fetchClinic();
     }, [id]);
 
-    // â”€â”€ جلب الـ Slots عند اخطھظٹار ظٹظˆم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ جلب الـ Slots عند اختيار يوم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const fetchSlots = useCallback(async (date: Date) => {
         if (!id) return;
         setLoadingSlots(true);
@@ -97,7 +98,7 @@ export default function PatientClinicDetail() {
             );
             setSlots(response.data.slots || []);
         } catch {
-            toast({ variant: 'destructive', title: 'خطأ', description: 'طھعذر طھحمظٹل المظˆاعظٹد المطھاحة' });
+            toast({ variant: 'destructive', title: 'خطأ', description: 'تعذر تحميل المواعيد المتاحة' });
         } finally {
             setLoadingSlots(false);
         }
@@ -116,7 +117,7 @@ export default function PatientClinicDetail() {
         try {
             const token = localStorage.getItem('patient_token');
 
-            // بناط، الطھارظٹخ ظˆالظˆقطھ الظƒامل
+            // بناء التاريخ والوقت الكامل
             const [time, period] = selectedSlot.split(' ');
             const [hoursRaw, minutes] = time.split(':').map(Number);
             let hours = hoursRaw;
@@ -139,27 +140,27 @@ export default function PatientClinicDetail() {
             );
 
             toast({
-                title: 'âœ… طھم إرسال طلب الحجز!',
-                description: `مظˆعدظƒ ظٹظˆم ${format(selectedDate, 'EEEE dd MMMM', { locale: ar })} الساعة ${selectedSlot} â€” ظپظٹ انطھظار طھأظƒظٹد الطبظٹب`,
+                title: 'âœ… تم إرسال طلب الحجز!',
+                description: `موعدك يوم ${format(selectedDate, 'EEEE dd MMMM', { locale: ar })} الساعة ${selectedSlot} â€” في انتظار تأكيد الطبيب`,
             });
 
             setBookingOpen(false);
             setSelectedSlot(null);
             setNotes('');
-            // إعادة جلب الـ slots لطھحدظٹث المطھاح
+            // إعادة جلب الـ slots لتحديث المتاح
             fetchSlots(selectedDate);
         } catch (err: any) {
             toast({
                 variant: 'destructive',
-                title: 'خطأ ظپظٹ الحجز',
-                description: err.response?.data?.message || 'حدث خطأ أثناط، إرسال الطلب',
+                title: 'خطأ في الحجز',
+                description: err.response?.data?.message || 'حدث خطأ أثناء إرسال الطلب',
             });
         } finally {
             setBookingLoading(false);
         }
     };
 
-    // â”€â”€ بناط، أظٹام الطھقظˆظٹم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // â”€â”€ بناء أيام التقويم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const calendarDays = () => {
         const start = startOfMonth(currentMonth);
         const end = endOfMonth(currentMonth);
@@ -187,24 +188,32 @@ export default function PatientClinicDetail() {
     return (
         <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
 
-            {/* â”€â”€ زر الرجظˆع â”€â”€ */}
+            {/* â”€â”€ زر الرجوع â”€â”€ */}
             <Button
                 variant="ghost"
                 onClick={() => navigate('/patient/clinics')}
                 className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
             >
                 <ArrowRight className="h-4 w-4" />
-                العظˆدة إلى العظٹاداطھ
+                العودة إلى العيادات
             </Button>
 
-            {/* â”€â”€ بطاقة معلظˆماطھ العظٹادة â”€â”€ */}
+            {/* â”€â”€ بطاقة معلومات العيادة â”€â”€ */}
             <Card className="shadow-card overflow-hidden">
                 <div className="h-3 gradient-primary" />
                 <CardHeader className="pb-4">
                     <div className="flex items-start justify-between flex-wrap gap-3">
                         <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
-                                <Building2 className="h-7 w-7 text-white" />
+                            <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0 overflow-hidden bg-muted">
+                                {clinic.avatar ? (
+                                    <img
+                                        src={clinic.avatar.startsWith('http') ? clinic.avatar : `${BASE_URL}${clinic.avatar.startsWith('/') ? '' : '/'}${clinic.avatar}`}
+                                        alt={clinic.clinic_name || clinic.name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <Building2 className="h-7 w-7 text-white" />
+                                )}
                             </div>
                             <div>
                                 <CardTitle className="text-2xl">{clinic.clinic_name || clinic.name}</CardTitle>
@@ -247,7 +256,7 @@ export default function PatientClinicDetail() {
                             <div className="flex items-start gap-3 p-3 bg-muted/40 rounded-lg">
                                 <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                                 <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">العنظˆان</p>
+                                    <p className="text-xs text-muted-foreground mb-0.5">العنوان</p>
                                     <p className="text-sm font-medium">{clinic.clinic_address}</p>
                                 </div>
                             </div>
@@ -256,7 +265,7 @@ export default function PatientClinicDetail() {
                             <div className="flex items-start gap-3 p-3 bg-muted/40 rounded-lg">
                                 <Phone className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                                 <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">الهاطھظپ</p>
+                                    <p className="text-xs text-muted-foreground mb-0.5">الهاتف</p>
                                     <p className="text-sm font-medium" dir="ltr">{clinic.clinic_phone || clinic.phone}</p>
                                 </div>
                             </div>
@@ -265,7 +274,7 @@ export default function PatientClinicDetail() {
                             <div className="flex items-start gap-3 p-3 bg-muted/40 rounded-lg">
                                 <Clock className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
                                 <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">ساعاطھ العمل</p>
+                                    <p className="text-xs text-muted-foreground mb-0.5">ساعات العمل</p>
                                     <p className="text-sm font-medium">{clinic.working_hours}</p>
                                 </div>
                             </div>
@@ -277,13 +286,13 @@ export default function PatientClinicDetail() {
             {/* â”€â”€ قسم الحجز â”€â”€ */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                {/* الطھقظˆظٹم */}
+                {/* التقويم */}
                 <Card className="shadow-card">
                     <CardHeader>
                         <div className="flex items-center justify-between">
                             <CardTitle className="text-lg flex items-center gap-2">
                                 <Calendar className="h-5 w-5 text-primary" />
-                                اخطھر الظٹظˆم
+                                اختر اليوم
                             </CardTitle>
                             <div className="flex items-center gap-1">
                                 <Button
@@ -309,7 +318,7 @@ export default function PatientClinicDetail() {
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {/* رؤظˆس الأظٹام */}
+                        {/* رؤوس الأيام */}
                         <div className="grid grid-cols-7 mb-2">
                             {DAY_NAMES_AR.map(d => (
                                 <div key={d} className="text-center text-xs text-muted-foreground py-1 font-medium">
@@ -317,7 +326,7 @@ export default function PatientClinicDetail() {
                                 </div>
                             ))}
                         </div>
-                        {/* أظٹام الشهر */}
+                        {/* أيام الشهر */}
                         <div className="grid grid-cols-7 gap-1">
                             {calendarDays().map((day, idx) => {
                                 if (!day) return <div key={`empty-${idx}`} />;
@@ -350,7 +359,7 @@ export default function PatientClinicDetail() {
                     <CardHeader>
                         <CardTitle className="text-lg flex items-center gap-2">
                             <Clock className="h-5 w-5 text-primary" />
-                            المظˆاعظٹد المطھاحة
+                            المواعيد المتاحة
                             {selectedDate && (
                                 <span className="text-sm font-normal text-muted-foreground mr-auto">
                                     {format(selectedDate, 'EEEE dd MMM', { locale: ar })}
@@ -362,7 +371,7 @@ export default function PatientClinicDetail() {
                         {!selectedDate ? (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <Calendar className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                                <p className="text-muted-foreground">اخطھر ظٹظˆماً من الطھقظˆظٹم لعرض المظˆاعظٹد المطھاحة</p>
+                                <p className="text-muted-foreground">اختر يوماً من التقويم لعرض المواعيد المتاحة</p>
                             </div>
                         ) : loadingSlots ? (
                             <div className="grid grid-cols-3 gap-2">
@@ -373,8 +382,8 @@ export default function PatientClinicDetail() {
                         ) : slots.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <AlertCircle className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                                <p className="text-muted-foreground font-medium">لا طھظˆجد مظˆاعظٹد مطھاحة</p>
-                                <p className="text-muted-foreground text-sm mt-1">ظٹرجى اخطھظٹار ظٹظˆم آخر</p>
+                                <p className="text-muted-foreground font-medium">لا توجد مواعيد متاحة</p>
+                                <p className="text-muted-foreground text-sm mt-1">يرجى اختيار يوم آخر</p>
                             </div>
                         ) : (
                             <>
@@ -395,7 +404,7 @@ export default function PatientClinicDetail() {
                                     ))}
                                 </div>
 
-                                {/* زر طھأظƒظٹد الحجز */}
+                                {/* زر تأكيد الحجز */}
                                 <Button
                                     className="w-full gradient-primary text-white shadow-glow gap-2"
                                     disabled={!selectedSlot}
@@ -404,7 +413,7 @@ export default function PatientClinicDetail() {
                                     <Calendar className="h-4 w-4" />
                                     {selectedSlot
                                         ? `احجز الساعة ${selectedSlot}`
-                                        : 'اخطھر مظˆعداً للمطھابعة'
+                                        : 'اختر موعداً للمتابعة'
                                     }
                                 </Button>
                             </>
@@ -413,32 +422,32 @@ export default function PatientClinicDetail() {
                 </Card>
             </div>
 
-            {/* â”€â”€ Dialog طھأظƒظٹد الحجز â”€â”€ */}
+            {/* â”€â”€ Dialog تأكيد الحجز â”€â”€ */}
             <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <CheckCircle2 className="h-5 w-5 text-primary" />
-                            طھأظƒظٹد الحجز
+                            تأكيد الحجز
                         </DialogTitle>
                         <DialogDescription>
-                            راجع طھظپاصظٹل مظˆعدظƒ قبل الطھأظƒظٹد
+                            راجع تفاصيل موعدك قبل التأكيد
                         </DialogDescription>
                     </DialogHeader>
 
-                    {/* ملخص المظˆعد */}
+                    {/* ملخص الموعد */}
                     <div className="bg-muted/50 rounded-xl p-4 space-y-3 border">
                         <div className="flex items-center gap-3">
                             <Building2 className="h-4 w-4 text-primary flex-shrink-0" />
                             <div>
-                                <p className="text-xs text-muted-foreground">العظٹادة</p>
+                                <p className="text-xs text-muted-foreground">العيادة</p>
                                 <p className="font-semibold">{clinic.clinic_name || clinic.name}</p>
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
                             <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
                             <div>
-                                <p className="text-xs text-muted-foreground">الطھارظٹخ</p>
+                                <p className="text-xs text-muted-foreground">التاريخ</p>
                                 <p className="font-semibold">
                                     {selectedDate && format(selectedDate, 'EEEEطŒ dd MMMM yyyy', { locale: ar })}
                                 </p>
@@ -447,30 +456,30 @@ export default function PatientClinicDetail() {
                         <div className="flex items-center gap-3">
                             <Clock className="h-4 w-4 text-primary flex-shrink-0" />
                             <div>
-                                <p className="text-xs text-muted-foreground">الظˆقطھ</p>
+                                <p className="text-xs text-muted-foreground">الوقت</p>
                                 <p className="font-semibold">{selectedSlot}</p>
                             </div>
                         </div>
                     </div>
 
-                    {/* ملاحظاطھ */}
+                    {/* ملاحظات */}
                     <div className="space-y-2">
-                        <Label htmlFor="notes">ملاحظاطھ للطبظٹب (اخطھظٹارظٹ)</Label>
+                        <Label htmlFor="notes">ملاحظات للطبيب (اختياري)</Label>
                         <Textarea
                             id="notes"
-                            placeholder="أضظپ أظٹ طھظپاصظٹل طھساعد الطبظٹب ظپظٹ الاسطھعداد لزظٹارطھظƒ..."
+                            placeholder="أضف أي تفاصيل تساعد الطبيب في الاستعداد لزيارتك..."
                             value={notes}
                             onChange={e => setNotes(e.target.value)}
                             rows={3}
                         />
                     </div>
 
-                    {/* حجز لشخص آخر (جدظٹد) */}
+                    {/* حجز لشخص آخر (جديد) */}
                     <div className="space-y-2">
-                        <Label htmlFor="customerName">اسم المرظٹض (إذا ظƒنطھ طھحجز لشخص آخر)</Label>
+                        <Label htmlFor="customerName">اسم المريض (إذا كنت تحجز لشخص آخر)</Label>
                         <Input
                             id="customerName"
-                            placeholder="اخطھظٹارظٹ - اطھرظƒ الحقل ظپارط؛اً إذا ظƒان الحجز لظƒ"
+                            placeholder="اختياري - اترك الحقل فارغاً إذا كان الحجز لك"
                             value={customerName}
                             onChange={e => setCustomerName(e.target.value)}
                         />
@@ -478,7 +487,7 @@ export default function PatientClinicDetail() {
 
                     <p className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex gap-2">
                         <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                        سظٹطھم إرسال طلب المظˆعد إلى الطبظٹب ظˆسطھظڈشعظژر عند الطھأظƒظٹد.
+                        سيتم إرسال طلب الموعد إلى الطبيب وستشعر عند التأكيد.
                     </p>
 
                     <DialogFooter className="gap-2">
@@ -488,7 +497,7 @@ export default function PatientClinicDetail() {
                             disabled={bookingLoading}
                             className="flex-1"
                         >
-                            إلط؛اط،
+                            إلغاء
                         </Button>
                         <Button
                             className="flex-1 gradient-primary text-white"
@@ -496,9 +505,9 @@ export default function PatientClinicDetail() {
                             disabled={bookingLoading}
                         >
                             {bookingLoading ? (
-                                <><Loader2 className="h-4 w-4 ml-2 animate-spin" />جارظٹ الحجز...</>
+                                <><Loader2 className="h-4 w-4 ml-2 animate-spin" />جاري الحجز...</>
                             ) : (
-                                'طھأظƒظٹد الحجز'
+                                'تأكيد الحجز'
                             )}
                         </Button>
                     </DialogFooter>
@@ -507,3 +516,6 @@ export default function PatientClinicDetail() {
         </div>
     );
 }
+
+
+

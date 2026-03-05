@@ -61,7 +61,7 @@ const PlatformWorkspace = ({ platform, platformInfo, contacts, onExport, onDelet
                     </div>
                     <div>
                         <h2 className="text-3xl font-display font-bold">{platformInfo.name}</h2>
-                        <p className="text-muted-foreground">اسطھخراج ظˆإدارة البظٹاناطھ من {platformInfo.name}</p>
+                        <p className="text-muted-foreground">اسطھخراج ظˆإدارة البيانات من {platformInfo.name}</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -170,7 +170,7 @@ const PlatformWorkspace = ({ platform, platformInfo, contacts, onExport, onDelet
                     {contacts.length === 0 ? (
                         <div className="text-center py-12 text-muted-foreground">
                             <Phone className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                            <p className="font-medium">لا طھظˆجد نطھائج بعد</p>
+                            <p className="font-medium">لا توجد نطھائج بعد</p>
                             <p className="text-sm mt-2">اسطھخدم أدظˆاطھ الاسطھخراج أعلاه للبدط،</p>
                         </div>
                     ) : (

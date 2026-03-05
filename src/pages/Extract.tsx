@@ -45,14 +45,14 @@ const Extract = () => {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">اسطھخراج البظٹاناطھ</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-2">اسطھخراج البيانات</h1>
             <p className="text-muted-foreground">
-              اسطھخرج أرقام الهظˆاطھظپ ظˆالبظٹاناطھ من جمظٹع منصاطھ الطھظˆاصل الاجطھماعظٹ
+              اسطھخرج أرقام الهظˆاطھظپ ظˆالبيانات من جمظٹع منصاطھ الطھظˆاصل الاجتماعظٹ
             </p>
           </div>
           <Button variant="outline" onClick={() => navigate("/")}>
             <ArrowRight className="ml-2 h-4 w-4" />
-            العظˆدة للرئظٹسظٹة
+            العودة للرئظٹسظٹة
           </Button>
         </div>
 
@@ -88,7 +88,7 @@ const Extract = () => {
                 ) : contacts.length === 0 ? (
                   <div className="text-center py-12 text-muted-foreground">
                     <Phone className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p className="font-medium">لا طھظˆجد جهاطھ اطھصال مسطھخرجة بعد</p>
+                    <p className="font-medium">لا توجد جهاطھ اطھصال مسطھخرجة بعد</p>
                     <p className="text-sm mt-2">أدخل رابط أظˆ نص لبدط، الاسطھخراج</p>
                   </div>
                 ) : (
@@ -103,7 +103,7 @@ const Extract = () => {
                           <div>
                             <div className="flex items-center gap-2">
                               <p className="font-medium text-foreground">
-                                {contact.name || 'ط؛ظٹر معرظˆظپ'}
+                                {contact.name || 'غير معرظˆظپ'}
                               </p>
                               <Badge variant="secondary" className="text-xs">
                                 {contact.platform}

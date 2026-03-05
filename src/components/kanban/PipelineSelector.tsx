@@ -57,7 +57,7 @@ export function PipelineSelector({ currentPipeline, onChange }: PipelineSelector
                 body: JSON.stringify({ name: newPipelineName })
             });
             if (res.ok) {
-                toastWithSound.success('طھم إنشاط، المسار بنجاح');
+                toastWithSound.success('تم إنشاط، المسار بنجاح');
                 setNewPipelineName("");
                 setIsDialogOpen(false);
                 fetchPipelines();
@@ -71,7 +71,7 @@ export function PipelineSelector({ currentPipeline, onChange }: PipelineSelector
         <div className="flex items-center gap-2">
             <Select value={currentPipeline?.toString()} onValueChange={(val) => onChange(Number(val))}>
                 <SelectTrigger className="w-[180px] bg-card/60 backdrop-blur-sm">
-                    <SelectValue placeholder="اخطھر المسار" />
+                    <SelectValue placeholder="اختر المسار" />
                 </SelectTrigger>
                 <SelectContent>
                     {pipelines.map(p => (

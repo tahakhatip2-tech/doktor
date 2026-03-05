@@ -160,7 +160,7 @@ const Profile = () => {
                     <div className="flex items-center gap-5">
                         <Button variant="outline" className="text-muted-foreground border-primary/20 hover:text-primary hover:bg-primary/5 gap-2 rounded-full font-bold px-6" onClick={handleSignOut}>
                             <LogOut className="h-4 w-4" />
-                            <span className="hidden sm:inline">طھسجظٹل الخرظˆج</span>
+                            <span className="hidden sm:inline">تسجيل الخروج</span>
                         </Button>
                     </div>
                 </div>
@@ -170,7 +170,7 @@ const Profile = () => {
                 <HeroSection
                     pageTitle="الملظپ الشخصظٹ"
                     doctorName={profile?.name ? `د. ${profile.name}` : 'د. حظƒظٹم'}
-                    description="إدارة معلظˆماطھظƒ الشخصظٹة ظˆإعداداطھ الحساب"
+                    description="إدارة معلظˆماتك الشخصظٹة ظˆإعدادات الحساب"
                     icon={User}
                 />
 
@@ -207,11 +207,11 @@ const Profile = () => {
                     <Card className="md:col-span-2 border border-white/40 dark:border-white/10 bg-white/20 dark:bg-black/40 backdrop-blur-2xl rounded-[1.5rem] md:rounded-[2.5rem] shadow-xl">
                         <CardHeader>
                             <CardTitle className="text-foreground font-black">طھعدظٹل المعلظˆماطھ</CardTitle>
-                            <CardDescription className="text-muted-foreground font-bold">قم بطھحدظٹث معلظˆماطھظƒ الشخصظٹة ظˆظƒلمة المرظˆر</CardDescription>
+                            <CardDescription className="text-muted-foreground font-bold">قم بطھحدظٹث معلظˆماتك الشخصظٹة ظˆكلمة المرظˆر</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-6">
                             <div className="space-y-3">
-                                <Label htmlFor="name" className="text-foreground font-bold">الاسم الظƒامل</Label>
+                                <Label htmlFor="name" className="text-foreground font-bold">الاسم الكامل</Label>
                                 <Input
                                     id="name"
                                     value={name}
@@ -222,7 +222,7 @@ const Profile = () => {
                             </div>
 
                             <div className="space-y-3">
-                                <Label htmlFor="email" className="text-foreground font-bold">البرظٹد الإلظƒطھرظˆنظٹ</Label>
+                                <Label htmlFor="email" className="text-foreground font-bold">البرظٹد الإلكطھرظˆنظٹ</Label>
                                 <Input
                                     id="email"
                                     value={email}
@@ -233,13 +233,13 @@ const Profile = () => {
                             </div>
 
                             <div className="space-y-3">
-                                <Label htmlFor="password" className="text-foreground font-bold">ظƒلمة المرظˆر الجدظٹدة (اخطھظٹارظٹ)</Label>
+                                <Label htmlFor="password" className="text-foreground font-bold">كلمة المرظˆر الجديدة (اخطھظٹارظٹ)</Label>
                                 <Input
                                     id="password"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="اطھرظƒه ظپارط؛اً إذا لم طھرد الطھط؛ظٹظٹر"
+                                    placeholder="اطھرظƒه فارغاً إذا لم طھرد الطھط؛ظٹظٹر"
                                     className="bg-white/50 dark:bg-white/5 border-border focus:border-primary text-foreground rounded-2xl h-12"
                                 />
                             </div>

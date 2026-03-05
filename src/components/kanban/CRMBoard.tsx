@@ -8,9 +8,9 @@ import { Card } from '@/components/ui/card';
 
 const COLUMNS = [
     { id: 'new', title: 'عملاط، جدد', color: '#3b82f6', icon: Users },
-    { id: 'interested', title: 'مهطھمظˆن', color: '#eab308', icon: Target },
-    { id: 'customer', title: 'طھم البظٹع', color: '#22c55e', icon: CheckCircle },
-    { id: 'junk', title: 'ط؛ظٹر مهطھم', color: '#ef4444', icon: TrendingUp },
+    { id: 'interested', title: 'مهتمظˆن', color: '#eab308', icon: Target },
+    { id: 'customer', title: 'تم البظٹع', color: '#22c55e', icon: CheckCircle },
+    { id: 'junk', title: 'غير مهتم', color: '#ef4444', icon: TrendingUp },
 ];
 
 export default function CRMBoard({ onOpenChat }: { onOpenChat?: (phone: string, name?: string) => void }) {
@@ -32,14 +32,14 @@ export default function CRMBoard({ onOpenChat }: { onOpenChat?: (phone: string, 
             setContacts(data);
         } catch (error) {
             console.error('Error fetching contacts:', error);
-            toastWithSound.error('ظپشل طھحمظٹل البظٹاناطھ');
+            toastWithSound.error('ظپشل تحميل البيانات');
         } finally {
             setLoading(false);
         }
     };
 
     const handleDeleteContact = async (id: string) => {
-        if (!confirm('هل أنطھ مطھأظƒد من حذظپ هذا العمظٹلطں')) return;
+        if (!confirm('هل أنطھ متأكد من حذظپ هذا العمظٹلطں')) return;
 
         try {
             const token = localStorage.getItem('token');
@@ -48,7 +48,7 @@ export default function CRMBoard({ onOpenChat }: { onOpenChat?: (phone: string, 
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             setContacts(contacts.filter(c => c.id.toString() !== id));
-            toastWithSound.success('طھم حذظپ العمظٹل بنجاح');
+            toastWithSound.success('تم حذظپ العمظٹل بنجاح');
         } catch (error) {
             toastWithSound.error('ظپشل حذظپ العمظٹل');
         }
@@ -71,7 +71,7 @@ export default function CRMBoard({ onOpenChat }: { onOpenChat?: (phone: string, 
                 },
                 body: JSON.stringify({ status: newStatus })
             });
-            toastWithSound.success('طھم طھحدظٹث حالة العمظٹل');
+            toastWithSound.success('تم طھحدظٹث حالة العمظٹل');
         } catch (error) {
             setContacts(previousContacts); // Rollback
             toastWithSound.error('ظپشل طھحدظٹث الحالة');
@@ -86,7 +86,7 @@ export default function CRMBoard({ onOpenChat }: { onOpenChat?: (phone: string, 
     if (loading) return (
         <div className="flex flex-col h-64 items-center justify-center gap-4">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-            <p className="text-sm text-muted-foreground animate-pulse">جارظٹ طھحمظٹل لظˆحة الطھحظƒم...</p>
+            <p className="text-sm text-muted-foreground animate-pulse">جارظٹ تحميل لظˆحة الطھحظƒم...</p>
         </div>
     );
 
@@ -97,7 +97,7 @@ export default function CRMBoard({ onOpenChat }: { onOpenChat?: (phone: string, 
                 <TrendingUp className="h-24 w-24 text-primary relative z-10 opacity-80" />
             </div>
             <div className="text-center space-y-2">
-                <h3 className="text-2xl font-black text-foreground">لا طھظˆجد مساراطھ بظٹع حالظٹاً</h3>
+                <h3 className="text-2xl font-black text-foreground">لا توجد مساراطھ بظٹع حالظٹاً</h3>
                 <p className="text-muted-foreground max-w-md mx-auto">ابدأ بإنشاط، مسار جدظٹد لطھطھبع حالة المرضى ظˆالصظپقاطھ من خلال القائمة أعلاه.</p>
             </div>
             <div className="flex gap-4">

@@ -18,7 +18,7 @@ export const useDataExtraction = () => {
 
   const extractFromUrl = async (url: string, platform: string = 'unknown', type: string = 'post'): Promise<ExtractionResult | null> => {
     if (!user) {
-      toastWithSound.error("ظٹجب طھسجظٹل الدخظˆل أظˆلاً");
+      toastWithSound.error("ظٹجب تسجيل الدخظˆل أظˆلاً");
       return null;
     }
 
@@ -26,17 +26,17 @@ export const useDataExtraction = () => {
     try {
       const response = await dataApi.scrape({ url, platform, type });
 
-      toastWithSound.success(`طھم اسطھخراج ${response.count} رقم بنجاح`);
+      toastWithSound.success(`تم اسطھخراج ${response.count} رقم بنجاح`);
       queryClient.invalidateQueries({ queryKey: ['contacts'] });
 
       return {
         success: true,
-        message: "طھم الاسطھخراج ظˆالحظپظ بنجاح",
+        message: "تم الاسطھخراج ظˆالحظپظ بنجاح",
         data: response.phones,
         count: response.count
       };
     } catch (error: any) {
-      toastWithSound.error(error.message || "ظپشل الاسطھخراج (طھأظƒد من ظپعالظٹة الاشطھراظƒ)");
+      toastWithSound.error(error.message || "ظپشل الاسطھخراج (تأكد من ظپعالظٹة الاشطھراظƒ)");
       return null;
     } finally {
       setIsExtracting(false);
@@ -45,7 +45,7 @@ export const useDataExtraction = () => {
 
   const extractFromText = async (text: string, platform: string = 'unknown'): Promise<ExtractionResult | null> => {
     if (!user) {
-      toastWithSound.error("ظٹرجى إدخال أرقام صحظٹحة");
+      toastWithSound.error("يرجى إدخال أرقام صحظٹحة");
       return null;
     }
 
@@ -62,13 +62,13 @@ export const useDataExtraction = () => {
             body: JSON.stringify({ phone, platform, source: 'Text Paste' })
           });
         }
-        toastWithSound.success(`طھم حظپظ ${phones.length} رقم بنجاح`);
+        toastWithSound.success(`تم حظپظ ${phones.length} رقم بنجاح`);
         queryClient.invalidateQueries({ queryKey: ['contacts'] });
       }
 
-      return { success: true, message: "طھم الحظپظ", data: phones, count: phones.length };
+      return { success: true, message: "تم الحظپظ", data: phones, count: phones.length };
     } catch (error: any) {
-      toastWithSound.error("حدث خطأ أثناط، الحظپظ");
+      toastWithSound.error("حدث خطأ أثناء الحظپظ");
       return null;
     } finally {
       setIsExtracting(false);

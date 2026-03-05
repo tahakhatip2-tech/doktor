@@ -80,16 +80,16 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
         ? (settings.clinic_logo.startsWith('http') ? settings.clinic_logo : `${BASE_URL}${settings.clinic_logo}`)
         : '/logo.png';
 
-    const clinicName = settings?.clinic_name || "نظام العظٹادة";
+    const clinicName = settings?.clinic_name || "نظام العيادة";
     const clinicDesc = settings?.clinic_description || "إدارة ذظƒظٹة";
 
     const [navItems] = useState([
-        { id: 'dashboard', label: 'الرئظٹسظٹة', icon: LayoutDashboard },
-        { id: 'whatsapp-bot', label: 'المحادثاطھ', icon: MessageCircle },
+        { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
+        { id: 'whatsapp-bot', label: 'المحادثات', icon: MessageCircle },
         { id: 'contacts', label: 'المرضى', icon: Users },
-        { id: 'appointments', label: 'المظˆاعظٹد', icon: Calendar },
-        { id: 'patient-inquiry', label: 'بظˆابة المرضى', icon: FileText },
-        { id: 'bot-stats', label: 'الإحصائظٹاطھ', icon: LineChart },
+        { id: 'appointments', label: 'المواعيد', icon: Calendar },
+        { id: 'patient-inquiry', label: 'بوابة المرضى', icon: FileText },
+        { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
     ]);
 
@@ -163,17 +163,17 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     <div className="bg-blue-600 dark:bg-blue-600 rounded-2xl p-2.5 shadow-lg shadow-blue-600/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
                                         <Users className="h-4 w-4 text-white" />
                                         <p className="text-[14px] font-black text-white">{stats?.today_total || 0}</p>
-                                        <p className="text-[8px] font-bold text-white/70">مظˆاعظٹد الظٹظˆم</p>
+                                        <p className="text-[8px] font-bold text-white/70">مظˆاعظٹد اليوم</p>
                                     </div>
                                     <div className="bg-orange-500 dark:bg-orange-600 rounded-2xl p-2.5 shadow-lg shadow-orange-500/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
                                         <Clock className="h-4 w-4 text-white" />
                                         <p className="text-[14px] font-black text-white">{stats?.today_waiting || 0}</p>
-                                        <p className="text-[8px] font-bold text-white/70">ظپظٹ الانطھظار</p>
+                                        <p className="text-[8px] font-bold text-white/70">في الانتظار</p>
                                     </div>
                                     <div className="bg-green-600 dark:bg-green-600 rounded-2xl p-2.5 shadow-lg shadow-green-600/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
                                         <CheckCircle2 className="h-4 w-4 text-white" />
                                         <p className="text-[14px] font-black text-white">{stats?.today_completed || 0}</p>
-                                        <p className="text-[8px] font-bold text-white/70">طھم الظپحص</p>
+                                        <p className="text-[8px] font-bold text-white/70">تم الظپحص</p>
                                     </div>
                                 </div>
 
@@ -219,7 +219,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                         className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
                                     >
                                         <Settings className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        <span className="text-[8px] font-black">الإعداداطھ</span>
+                                        <span className="text-[8px] font-black">الإعدادات</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onSelect={() => signOut()}
@@ -239,7 +239,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
                                         {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                                     </div>
-                                    {theme === 'dark' ? 'الظˆضع النهارظٹ' : 'الظˆضع اللظٹلظٹ'}
+                                    {theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}
                                 </Button>
 
                                 {/* Signature */}
@@ -269,7 +269,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-80 mt-2 p-0 rounded-xl border-border bg-card/95 backdrop-blur-3xl shadow-xl" sideOffset={8}>
                                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/20">
-                                    <h4 className="font-bold text-sm text-foreground">الإشعاراطھ</h4>
+                                    <h4 className="font-bold text-sm text-foreground">الإشعارات</h4>
                                     {unreadCount > 0 && (
                                         <Button
                                             variant="ghost"
@@ -277,7 +277,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                             className="h-6 text-[10px] text-primary hover:bg-primary/10"
                                             onClick={() => markAllAsRead.mutate()}
                                         >
-                                            طھحدظٹد الظƒل ظƒمقرظˆط،
+                                            تحديد الكل كمقروء
                                         </Button>
                                     )}
                                 </div>
@@ -285,7 +285,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     {notifications?.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
                                             <Bell className="h-8 w-8 mb-2 opacity-20" />
-                                            <p className="text-xs">لا طھظˆجد إشعاراطھ جدظٹدة</p>
+                                            <p className="text-xs">لا توجد إشعاراطھ جديدة</p>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col p-1">
@@ -448,10 +448,10 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
 
                                     <div className="flex flex-col items-start mr-1 text-right">
                                         <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-bold uppercase tracking-tighter mb-0.5">
-                                            مرحباً بظƒ
+                                            مرحباً بك
                                         </span>
                                         <span className="text-[13px] font-black text-blue-900 dark:text-blue-100 leading-tight">
-                                            {user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : "دظƒطھظˆر"}
+                                            {user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : "دكتور"}
                                         </span>
                                     </div>
                                 </button>
@@ -467,7 +467,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     </div>
                                     <div>
                                         <p className="font-bold text-sm text-blue-900 dark:text-blue-100">{user?.name || 'Doctor Store'}</p>
-                                        <p className="text-xs text-blue-600 dark:text-blue-400">{user?.role === 'admin' ? 'مدظٹر النظام' : 'طبظٹب'}</p>
+                                        <p className="text-xs text-blue-600 dark:text-blue-400">{user?.role === 'admin' ? 'مدير النظام' : 'طبيب'}</p>
                                     </div>
                                 </div>
 
@@ -490,7 +490,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
                                         <Settings className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                     </div>
-                                    إعداداطھ النظام
+                                    إعدادات النظام
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem
@@ -500,7 +500,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
                                         <LayoutDashboard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                     </div>
-                                    الظˆاجهاطھ
+                                    الواجهات
                                 </DropdownMenuItem>
 
                                 <DropdownMenuSeparator className="bg-blue-100 dark:bg-blue-900 my-2" />
@@ -513,7 +513,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                         onClick={toggleTheme}
                                     >
                                         {theme === 'dark' ? <Sun className="h-4 w-4 text-blue-600" /> : <Moon className="h-4 w-4 text-blue-600" />}
-                                        <span>{theme === 'dark' ? 'الظˆضع النهارظٹ' : 'الظˆضع اللظٹلظٹ'}</span>
+                                        <span>{theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}</span>
                                     </Button>
 
                                     <Button
@@ -523,7 +523,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                         onClick={() => signOut()}
                                     >
                                         <LogOut className="h-4 w-4" />
-                                        <span>طھسجظٹل الخرظˆج</span>
+                                        <span>تسجيل الخروج</span>
                                     </Button>
                                 </div>
                             </DropdownMenuContent>
@@ -559,7 +559,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-80 p-0 rounded-xl border-border bg-card/95 backdrop-blur-3xl shadow-xl" sideOffset={8}>
                                 <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/20">
-                                    <h4 className="font-bold text-sm text-foreground">الإشعاراطھ</h4>
+                                    <h4 className="font-bold text-sm text-foreground">الإشعارات</h4>
                                     {unreadCount > 0 && (
                                         <Button
                                             variant="ghost"
@@ -567,7 +567,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                             className="h-6 text-[10px] text-primary hover:bg-primary/10"
                                             onClick={() => markAllAsRead.mutate()}
                                         >
-                                            طھحدظٹد الظƒل ظƒمقرظˆط،
+                                            تحديد الكل كمقروء
                                         </Button>
                                     )}
                                 </div>
@@ -575,7 +575,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     {notifications?.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-[200px] text-muted-foreground">
                                             <Bell className="h-8 w-8 mb-2 opacity-20" />
-                                            <p className="text-xs">لا طھظˆجد إشعاراطھ جدظٹدة</p>
+                                            <p className="text-xs">لا توجد إشعاراطھ جديدة</p>
                                         </div>
                                     ) : (
                                         <div className="flex flex-col p-1">

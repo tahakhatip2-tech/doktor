@@ -104,7 +104,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
             </head>
             <body>
                 <div class="header">
-                    <h1>السجل الطبظٹ الظƒامل</h1>
+                    <h1>السجل الطبظٹ الكامل</h1>
                     <p>طھارظٹخ الطباعة: ${format(new Date(), 'dd MMMM yyyy - hh:mm a', { locale: ar })}</p>
                 </div>
 
@@ -120,7 +120,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                     </div>
                     <div class="info-row">
                         <span class="info-label">ظپصظٹلة الدم:</span>
-                        <span>${patient.blood_type || 'ط؛ظٹر محدد'}</span>
+                        <span>${patient.blood_type || 'غير محدد'}</span>
                     </div>
                     <div class="info-row">
                         <span class="info-label">إجمالظٹ الزظٹاراطھ:</span>
@@ -132,11 +132,11 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                     <h3>الملظپ الطبظٹ</h3>
                     <div class="medical-item">
                         <h4>ًں”¸ الحساسظٹة</h4>
-                        <p>${patient.allergies || 'لا طھظˆجد حساسظٹة مسجلة'}</p>
+                        <p>${patient.allergies || 'لا توجد حساسظٹة مسجلة'}</p>
                     </div>
                     <div class="medical-item">
-                        <h4>ًں”¸ الطھارظٹخ المرضظٹ</h4>
-                        <p>${patient.chronic_diseases || 'لا طھظˆجد أمراض مزمنة مسجلة'}</p>
+                        <h4>ًں”¸ التاريخ المرضظٹ</h4>
+                        <p>${patient.chronic_diseases || 'لا توجد أمراض مزمنة مسجلة'}</p>
                     </div>
                 </div>
 
@@ -152,13 +152,13 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                     </div>
                                 </div>
                                 <span class="visit-status status-${apt.status === 'completed' ? 'completed' : apt.status === 'cancelled' ? 'cancelled' : 'scheduled'}">
-                                    ${apt.status === 'completed' ? 'مظƒطھمل' : apt.status === 'cancelled' ? 'ملط؛ظٹ' : 'مجدظˆل'}
+                                    ${apt.status === 'completed' ? 'مظƒتمل' : apt.status === 'cancelled' ? 'ملط؛ظٹ' : 'مجدظˆل'}
                                 </span>
                             </div>
                             
                             ${apt.notes ? `
                                 <div class="visit-section">
-                                    <h5>ًں“‌ ملاحظاطھ الحجز</h5>
+                                    <h5>ًں“‌ ملاحظات الحجز</h5>
                                     <p>${apt.notes}</p>
                                 </div>
                             ` : ''}
@@ -166,7 +166,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                             ${apt.medicalRecords?.[0] ? `
                                 <div class="visit-section">
                                     <h5>ًں©؛ الطھشخظٹص</h5>
-                                    <p>${apt.medicalRecords[0].diagnosis || 'ط؛ظٹر محدد'}</p>
+                                    <p>${apt.medicalRecords[0].diagnosis || 'غير محدد'}</p>
                                 </div>
                                 
                                 ${apt.medicalRecords[0].treatment ? `
@@ -175,13 +175,13 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                         <p>${apt.medicalRecords[0].treatment}</p>
                                     </div>
                                 ` : ''}
-                            ` : '<p style="color: #999; font-style: italic;">لم ظٹطھم طھسجظٹل ملاحظاطھ طبظٹة لهذه الزظٹارة.</p>'}
+                            ` : '<p style="color: #999; font-style: italic;">لم ظٹتم تسجيل ملاحظات طبظٹة لهذه الزظٹارة.</p>'}
                         </div>
                     `).join('')}
                 </div>
 
                 <div class="footer">
-                    <p>هذا المسطھند طھم إنشاؤه طھلقائظٹاً من نظام إدارة العظٹادة</p>
+                    <p>هذا المسطھند تم إنشاؤه طھلقائظٹاً من نظام إدارة العيادة</p>
                 </div>
 
                 <script>
@@ -207,7 +207,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
     const stats = [
         { label: 'إجمالظٹ الزظٹاراطھ', value: patient.appointment?.length || 0, icon: Calendar },
         { label: 'آخر زظٹارة', value: lastVisitDate ? format(new Date(lastVisitDate), 'dd MMM yyyy', { locale: ar }) : '-', icon: Clock },
-        { label: 'ظپصظٹلة الدم', value: patient.blood_type || 'ط؛ظٹر مطھظˆظپر', icon: Droplet },
+        { label: 'ظپصظٹلة الدم', value: patient.blood_type || 'غير مطھظˆظپر', icon: Droplet },
     ];
 
     const filteredAppointments = patient.appointment?.filter((apt: any) => {
@@ -334,7 +334,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                     <span className="text-xs font-bold text-red-400">الحساسظٹة</span>
                                 </div>
                                 <p className="text-sm md:text-base font-medium text-foreground leading-relaxed">
-                                    {patient.allergies || 'لا طھظˆجد حساسظٹة مسجلة'}
+                                    {patient.allergies || 'لا توجد حساسظٹة مسجلة'}
                                 </p>
                             </div>
 
@@ -350,7 +350,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                     <span className="text-xs font-bold text-blue-400">الأمراض المزمنة</span>
                                 </div>
                                 <p className="text-sm md:text-base font-medium text-foreground leading-relaxed">
-                                    {patient.chronic_diseases || 'لا طھظˆجد أمراض مزمنة مسجلة'}
+                                    {patient.chronic_diseases || 'لا توجد أمراض مزمنة مسجلة'}
                                 </p>
                             </div>
                         </div>
@@ -381,7 +381,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                             {/* Filter Tabs */}
                             <div className="flex bg-white/5 p-1 rounded-lg border border-white/10 backdrop-blur-md">
                                 {[
-                                    { id: 'all', label: 'الظƒل' },
+                                    { id: 'all', label: 'الكل' },
                                     { id: 'diagnosis', label: 'طھشخظٹص' },
                                     { id: 'treatment', label: 'علاج' }
                                 ].map((tab) => (
@@ -402,7 +402,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                         {loading && (
                             <div className="flex flex-col items-center justify-center py-24 opacity-50">
                                 <Loader2 className="h-10 w-10 text-primary animate-spin mb-4" />
-                                <p className="text-xs font-medium">جارظٹ طھحمظٹل السجل الطبظٹ...</p>
+                                <p className="text-xs font-medium">جارظٹ تحميل السجل الطبظٹ...</p>
                             </div>
                         )}
 
@@ -433,7 +433,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                                     apt.status === 'cancelled' ? 'border-red-500/30 text-red-500 bg-red-500/10' :
                                                         'border-amber-500/30 text-amber-500 bg-amber-500/10'
                                                     }`}>
-                                                    {apt.status === 'completed' ? 'مظƒطھمل' : apt.status === 'cancelled' ? 'ملط؛ظٹ' : 'مجدظˆل'}
+                                                    {apt.status === 'completed' ? 'مظƒتمل' : apt.status === 'cancelled' ? 'ملط؛ظٹ' : 'مجدظˆل'}
                                                 </div>
                                             </div>
 
@@ -442,7 +442,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                                 <div className="p-4 rounded-lg bg-white/[0.02] border-r-4 border-primary/40">
                                                     <div className="flex items-center gap-2 mb-2 opacity-70">
                                                         <StickyNote className="h-3.5 w-3.5 text-primary" />
-                                                        <span className="text-[10px] font-bold text-primary">ملاحظاطھ الزظٹارة</span>
+                                                        <span className="text-[10px] font-bold text-primary">ملاحظات الزظٹارة</span>
                                                     </div>
                                                     <p className="text-sm text-foreground/80 leading-relaxed font-medium">{apt.notes}</p>
                                                 </div>
@@ -459,7 +459,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                                                 <span className="text-xs font-bold text-indigo-400">الطھشخظٹص الطبظٹ</span>
                                                             </div>
                                                             <p className="text-sm font-medium text-foreground leading-relaxed">
-                                                                {apt.medicalRecords[0].diagnosis || 'بانطھظار الطھشخظٹص'}
+                                                                {apt.medicalRecords[0].diagnosis || 'بانتظار الطھشخظٹص'}
                                                             </p>
                                                         </div>
 
@@ -470,13 +470,13 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                                                                 <span className="text-xs font-bold text-emerald-400">الخطة العلاجظٹة</span>
                                                             </div>
                                                             <p className="text-sm font-medium text-foreground leading-relaxed">
-                                                                {apt.medicalRecords[0].treatment || 'لم ظٹطھم طھحدظٹد علاج'}
+                                                                {apt.medicalRecords[0].treatment || 'لم ظٹتم تحديد علاج'}
                                                             </p>
                                                         </div>
                                                     </>
                                                 ) : (
                                                     <div className="col-span-2 p-6 text-center border border-dashed border-white/10 rounded-lg bg-white/[0.01]">
-                                                        <p className="text-xs text-muted-foreground opacity-50">لا طھظˆجد سجلاطھ طبظٹة مرطھبطة بهذه الزظٹارة</p>
+                                                        <p className="text-xs text-muted-foreground opacity-50">لا توجد سجلاطھ طبظٹة مرطھبطة بهذه الزظٹارة</p>
                                                     </div>
                                                 )}
                                             </div>
@@ -488,7 +488,7 @@ export const PatientDetails = ({ patient: initialPatient, onBack, onOpenChat, on
                             <div className="flex flex-col items-center justify-center py-20 border-2 border-dashed border-white/5 rounded-xl">
                                 <FileText className="h-16 w-16 text-muted-foreground/20 mb-4" />
                                 <p className="text-sm text-muted-foreground opacity-50">
-                                    لا طھظˆجد زظٹاراطھ سابقة مسجلة ظپظٹ النظام
+                                    لا توجد زظٹاراطھ سابقة مسجلة في النظام
                                 </p>
                             </div>
                         )}

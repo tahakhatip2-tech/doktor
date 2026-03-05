@@ -39,7 +39,7 @@ export default function BotAnalytics() {
         }
     };
 
-    if (loading || !data) return <div className="p-12 text-center text-muted-foreground">جارظٹ طھحمظٹل الإحصائظٹاطھ...</div>;
+    if (loading || !data) return <div className="p-12 text-center text-muted-foreground">جارظٹ تحميل الإحصائيات...</div>;
 
     const stats = [
         { title: 'إجمالظٹ الردظˆد الآلظٹة', value: data.stats.auto_replies, icon: Zap, color: 'text-yellow-500' },
@@ -80,7 +80,7 @@ export default function BotAnalytics() {
                 {/* Top Triggers Chart */}
                 <Card className="border-border/50">
                     <CardHeader>
-                        <CardTitle className="text-lg">أظƒثر الظƒلماطھ المظپطھاحظٹة اسطھخداماً</CardTitle>
+                        <CardTitle className="text-lg">أظƒثر الكلماطھ المظپطھاحظٹة اسطھخداماً</CardTitle>
                     </CardHeader>
                     <CardContent className="h-[300px]">
                         <ResponsiveContainer width="100%" height="100%">
@@ -128,7 +128,7 @@ export default function BotAnalytics() {
                                 <Tooltip />
                                 <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground font-bold text-lg">
                                     {Math.round((data.stats.auto_replies / data.stats.outgoing_messages) * 100) || 0}%
-                                    <tspan x="50%" dy="1.2em" fontSize="10" className="fill-muted-foreground font-normal">أطھمطھة</tspan>
+                                    <tspan x="50%" dy="1.2em" fontSize="10" className="fill-muted-foreground font-normal">أتمطھة</tspan>
                                 </text>
                             </PieChart>
                         </ResponsiveContainer>

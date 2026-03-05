@@ -46,7 +46,7 @@ export default function TelegramBot() {
 
     const handleStart = async () => {
         if (!token) {
-            toastWithSound.error('ظٹرجى إدخال الطھظˆظƒن أظˆلاً');
+            toastWithSound.error('يرجى إدخال الطھظˆظƒن أظˆلاً');
             return;
         }
 
@@ -64,13 +64,13 @@ export default function TelegramBot() {
 
             const data = await res.json();
             if (data.success) {
-                toastWithSound.success('طھم طھشط؛ظٹل البظˆطھ بنجاح!');
+                toastWithSound.success('تم تشغيل البظˆطھ بنجاح!');
                 checkStatus();
             } else {
                 throw new Error(data.error);
             }
         } catch (error: any) {
-            toastWithSound.error(error.message || 'ظپشل طھشط؛ظٹل البظˆطھ');
+            toastWithSound.error(error.message || 'ظپشل تشغيل البظˆطھ');
         } finally {
             setLoading(false);
         }
@@ -87,7 +87,7 @@ export default function TelegramBot() {
 
             const data = await res.json();
             if (data.success) {
-                toastWithSound.success('طھم إظٹقاظپ البظˆطھ');
+                toastWithSound.success('تم إظٹقاظپ البظˆطھ');
                 setStatus({ isRunning: false, username: '' });
             }
         } catch (error: any) {
@@ -116,7 +116,7 @@ export default function TelegramBot() {
                 ) : (
                     <Button onClick={handleStart} disabled={loading} className="gap-2 bg-blue-600 hover:bg-blue-700 text-white">
                         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Power className="h-4 w-4" />}
-                        {loading ? 'جارظٹ الطھشط؛ظٹل...' : 'طھشط؛ظٹل البظˆطھ'}
+                        {loading ? 'جارظٹ التشغيل...' : 'تشغيل البظˆطھ'}
                     </Button>
                 )}
             </div>
@@ -132,7 +132,7 @@ export default function TelegramBot() {
                         <p className="text-sm text-muted-foreground">
                             {status.isRunning
                                 ? `âœ… مطھصل باسم @${status.username}`
-                                : 'â‌Œ ط؛ظٹر مطھصل'}
+                                : 'â‌Œ غير مطھصل'}
                         </p>
                     </div>
                 </div>
@@ -143,7 +143,7 @@ export default function TelegramBot() {
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 text-blue-600">
                         <Info className="h-5 w-5" />
-                        <h3 className="font-bold">إعداداطھ الاطھصال</h3>
+                        <h3 className="font-bold">إعدادات الاطھصال</h3>
                     </div>
 
                     <div className="bg-muted/30 p-4 rounded-lg text-sm text-muted-foreground mb-4">

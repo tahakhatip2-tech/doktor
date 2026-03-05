@@ -30,7 +30,7 @@ export const useContacts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      toastWithSound.success("طھمطھ إضاظپة جهة الاطھصال");
+      toastWithSound.success("تمطھ إضاظپة جهة الاطھصال");
     },
   });
 
@@ -40,18 +40,18 @@ export const useContacts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      toastWithSound.success("طھم حذظپ جهة الاطھصال");
+      toastWithSound.success("تم حذظپ جهة الاطھصال");
     },
   });
 
   const exportContacts = () => {
     if (contacts.length === 0) {
-      toastWithSound.error("لا طھظˆجد جهاطھ اطھصال للطھصدظٹر");
+      toastWithSound.error("لا توجد جهاطھ اطھصال للطھصدظٹر");
       return;
     }
 
     const csvContent = [
-      ["الاسم", "الهاطھظپ", "المصدر", "المنصة", "مسطھخرج من"],
+      ["الاسم", "الهاتف", "المصدر", "المنصة", "مسطھخرج من"],
       ...contacts.map((c: any) => [
         c.name || "",
         c.phone,
@@ -70,7 +70,7 @@ export const useContacts = () => {
     link.download = `contacts_${new Date().toISOString().split("T")[0]}.csv`;
     link.click();
     URL.revokeObjectURL(url);
-    toastWithSound.success("طھم طھصدظٹر جهاطھ الاطھصال بنجاح");
+    toastWithSound.success("تم طھصدظٹر جهاطھ الاطھصال بنجاح");
   };
 
   const updateStatus = useMutation({
@@ -82,7 +82,7 @@ export const useContacts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      toastWithSound.success("طھم طھحدظٹث الحالة بنجاح");
+      toastWithSound.success("تم طھحدظٹث الحالة بنجاح");
     },
   });
 
@@ -92,7 +92,7 @@ export const useContacts = () => {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
-      toastWithSound.success(`طھمطھ مزامنة ${data.synced} مرظٹض جدظٹد بنجاح`);
+      toastWithSound.success(`تمطھ مزامنة ${data.synced} مرظٹض جدظٹد بنجاح`);
     },
   });
 

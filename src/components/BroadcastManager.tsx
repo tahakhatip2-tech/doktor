@@ -47,9 +47,9 @@ export default function BroadcastManager() {
     // CRM Statuses acting as Tags
     const CRM_TAGS = [
         { id: 'status_new', name: 'عملاط، جدد', color: '#3b82f6', isStatus: true, statusId: 'new' },
-        { id: 'status_interested', name: 'مهطھمظˆن', color: '#eab308', isStatus: true, statusId: 'interested' },
-        { id: 'status_customer', name: 'طھم البظٹع', color: '#1d4ed8', isStatus: true, statusId: 'customer' },
-        { id: 'status_junk', name: 'ط؛ظٹر مهطھم', color: '#ef4444', isStatus: true, statusId: 'junk' },
+        { id: 'status_interested', name: 'مهتمظˆن', color: '#eab308', isStatus: true, statusId: 'interested' },
+        { id: 'status_customer', name: 'تم البظٹع', color: '#1d4ed8', isStatus: true, statusId: 'customer' },
+        { id: 'status_junk', name: 'غير مهتم', color: '#ef4444', isStatus: true, statusId: 'junk' },
     ];
 
     const fetchTags = async () => {
@@ -75,7 +75,7 @@ export default function BroadcastManager() {
             const data = await res.json();
             setContacts(data.filter((c: any) => c.phone));
         } catch (error) {
-            toastWithSound.error('ظپشل طھحمظٹل جهاطھ الاطھصال');
+            toastWithSound.error('ظپشل تحميل جهاطھ الاطھصال');
         }
     };
 
@@ -120,8 +120,8 @@ export default function BroadcastManager() {
     });
 
     const startBroadcast = async () => {
-        if (selectedContacts.length === 0) return toastWithSound.error('ظٹرجى اخطھظٹار جهة اطھصال ظˆاحدة على الأقل');
-        if (!message) return toastWithSound.error('ظٹرجى ظƒطھابة نص الرسالة');
+        if (selectedContacts.length === 0) return toastWithSound.error('يرجى اخطھظٹار جهة اطھصال ظˆاحدة على الأقل');
+        if (!message) return toastWithSound.error('يرجى ظƒطھابة نص الرسالة');
 
         setSending(true);
 
@@ -146,7 +146,7 @@ export default function BroadcastManager() {
             const data = await res.json();
 
             if (data.success) {
-                toastWithSound.success('طھم إنشاط، الحملة بنجاح! جارظٹ الإرسال الآن.');
+                toastWithSound.success('تم إنشاط، الحملة بنجاح! جارظٹ الإرسال الآن.');
                 setSelectedContacts([]);
                 setMessage('');
                 fetchCampaigns();
@@ -156,7 +156,7 @@ export default function BroadcastManager() {
 
         } catch (error) {
             console.error('Failed to create campaign:', error);
-            toastWithSound.error('حدث خطأ أثناط، الاطھصال بالخادم');
+            toastWithSound.error('حدث خطأ أثناء الاطھصال بالخادم');
         } finally {
             setSending(false);
         }
@@ -164,7 +164,7 @@ export default function BroadcastManager() {
 
     const getStatusBadge = (status: string) => {
         switch (status) {
-            case 'completed': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">مظƒطھملة</span>;
+            case 'completed': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold">مظƒتملة</span>;
             case 'running': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-600 font-bold animate-pulse">جارظٹ الإرسال</span>;
             case 'paused': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 text-yellow-600 font-bold">مطھظˆقظپة</span>;
             case 'failed': return <span className="text-[10px] px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 font-bold">ظپشلطھ</span>;
@@ -177,7 +177,7 @@ export default function BroadcastManager() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-2xl font-display font-bold">نظام الإرسال الجماعظٹ</h2>
-                    <p className="text-sm text-muted-foreground">أرسل رسائلظƒ الطھرظˆظٹجظٹة بأمان عبر السظٹرظپر</p>
+                    <p className="text-sm text-muted-foreground">أرسل رسائلك الطھرظˆظٹجظٹة بأمان عبر السظٹرظپر</p>
                 </div>
                 <Megaphone className="h-8 w-8 text-primary opacity-20" />
             </div>
@@ -208,7 +208,7 @@ export default function BroadcastManager() {
                                 className="h-6 text-[10px]"
                                 onClick={() => setSelectedTag('all')}
                             >
-                                الظƒل
+                                الكل
                             </Button>
                             {allTags.map(tag => (
                                 <Button
@@ -229,7 +229,7 @@ export default function BroadcastManager() {
                                 checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
                                 onCheckedChange={selectAll}
                             />
-                            <label htmlFor="select-all" className="text-[10px] cursor-pointer">اخطھظٹار الظƒل</label>
+                            <label htmlFor="select-all" className="text-[10px] cursor-pointer">اخطھظٹار الكل</label>
                         </div>
                     </CardHeader>
                     <CardContent className="flex-1 overflow-y-auto p-0 scrollbar-hide">
@@ -262,7 +262,7 @@ export default function BroadcastManager() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium">نص الرسالة</label>
                                 <Textarea
-                                    placeholder="اظƒطھب رسالطھظƒ هنا... اسطھخدم {name} لاسم العمظٹل."
+                                    placeholder="اظƒطھب رسالتك هنا... اسطھخدم {name} لاسم العمظٹل."
                                     className="min-h-[150px] bg-muted/20"
                                     value={message}
                                     onChange={(e) => setMessage(e.target.value)}
@@ -276,7 +276,7 @@ export default function BroadcastManager() {
                                 </div>
                                 <div className="p-3 rounded-xl bg-blue-500/5 border border-blue-500/10 space-y-1">
                                     <p className="text-xs font-bold text-blue-700">âڑ™ï¸ڈ المعالجة:</p>
-                                    <p className="text-[10px] text-blue-600/80">طھعمل الحملة ظپظٹ الخلظپظٹة حطھى لظˆ أط؛لق الناظپذة.</p>
+                                    <p className="text-[10px] text-blue-600/80">طھعمل الحملة في الخلفية حطھى لظˆ أط؛لق الناظپذة.</p>
                                 </div>
                             </div>
 
@@ -305,7 +305,7 @@ export default function BroadcastManager() {
                             {campaigns.length === 0 ? (
                                 <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-2">
                                     <Clock className="h-8 w-8 opacity-20" />
-                                    <p className="text-sm">لا طھظˆجد حملاطھ مسجلة حالظٹاً</p>
+                                    <p className="text-sm">لا توجد حملاطھ مسجلة حالظٹاً</p>
                                 </div>
                             ) : (
                                 campaigns.map(camp => {
@@ -337,7 +337,7 @@ export default function BroadcastManager() {
                                                 <div className="flex justify-between items-center text-[10px] pt-1">
                                                     <div className="flex gap-3">
                                                         <span className="flex items-center gap-1 text-primary">
-                                                            <CheckCircle2 className="h-3 w-3" /> {camp.sent_count} طھم بنجاح
+                                                            <CheckCircle2 className="h-3 w-3" /> {camp.sent_count} تم بنجاح
                                                         </span>
                                                         <span className="flex items-center gap-1 text-red-500">
                                                             <AlertCircle className="h-3 w-3" /> {camp.failed_count} ظپشل

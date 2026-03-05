@@ -39,7 +39,7 @@ export function DealDialog({ contact, open, onClose, onUpdate }: DealDialogProps
             });
 
             if (res.ok) {
-                toastWithSound.success('طھم طھحدظٹث طھظپاصظٹل الصظپقة');
+                toastWithSound.success('تم طھحدظٹث تفاصيل الصظپقة');
                 onUpdate();
                 onClose();
             }
@@ -54,7 +54,7 @@ export function DealDialog({ contact, open, onClose, onUpdate }: DealDialogProps
         <Dialog open={open} onOpenChange={onClose}>
             <DialogContent dir="rtl">
                 <DialogHeader>
-                    <DialogTitle>طھظپاصظٹل الصظپقة - {contact?.name}</DialogTitle>
+                    <DialogTitle>تفاصيل الصظپقة - {contact?.name}</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                     <div className="grid grid-cols-4 items-center gap-4">
@@ -80,7 +80,7 @@ export function DealDialog({ contact, open, onClose, onUpdate }: DealDialogProps
                         </Select>
                     </div>
                     <div className="grid grid-cols-4 items-center gap-4">
-                        <Label className="text-right">الاحطھمالظٹة %</Label>
+                        <Label className="text-right">الاحتمالظٹة %</Label>
                         <Input
                             type="number"
                             min="0"

@@ -39,7 +39,7 @@ const Admin = () => {
     const handleStatusChange = async (userId: number, newStatus: string) => {
         try {
             await adminApi.updateUser(userId, { status: newStatus });
-            toastWithSound.success("طھم طھحدظٹث حالة المسطھخدم");
+            toastWithSound.success("تم طھحدظٹث حالة المسطھخدم");
             fetchUsers();
         } catch (err: any) {
             toastWithSound.error(err.message);
@@ -52,7 +52,7 @@ const Admin = () => {
 
         try {
             await adminApi.updateUser(userId, { expiry_date: newDate.toISOString() });
-            toastWithSound.success("طھم طھمدظٹد العضظˆظٹة لمدة شهر");
+            toastWithSound.success("تم تمدظٹد العضظˆظٹة لمدة شهر");
             fetchUsers();
         } catch (err: any) {
             toastWithSound.error(err.message);
@@ -85,11 +85,11 @@ const Admin = () => {
                             <div>
                                 <h1 className="text-3xl font-black flex items-center gap-2 text-white drop-shadow-md">
                                     <Shield className="h-8 w-8 text-orange-400" />
-                                    لظˆحة طھحظƒم المدظٹر
+                                    لظˆحة طھحظƒم المدير
                                 </h1>
                                 <p className="text-blue-200 mt-2 font-medium">إدارة المسطھخدمظٹنطŒ الاشطھراظƒاطھطŒ ظˆحظر الحساباطھ</p>
                             </div>
-                            <Button variant="outline" onClick={() => navigate("/")} className="bg-white/10 hover:bg-white/20 text-white border-white/20">العظˆدة للرئظٹسظٹة</Button>
+                            <Button variant="outline" onClick={() => navigate("/")} className="bg-white/10 hover:bg-white/20 text-white border-white/20">العودة للرئظٹسظٹة</Button>
                         </div>
 
                         <div className="grid gap-6">
@@ -102,7 +102,7 @@ const Admin = () => {
                                         <table className="w-full text-sm">
                                             <thead className="bg-blue-900/40 border-b border-white/10 text-white">
                                                 <tr>
-                                                    <th className="p-4 text-right">البرظٹد الإلظƒطھرظˆنظٹ</th>
+                                                    <th className="p-4 text-right">البرظٹد الإلكطھرظˆنظٹ</th>
                                                     <th className="p-4 text-right">الحالة</th>
                                                     <th className="p-4 text-right">طھارظٹخ الانطھهاط،</th>
                                                     <th className="p-4 text-right">الإجراط،اطھ</th>
@@ -132,7 +132,7 @@ const Admin = () => {
                                                                     className="border-white/20 hover:bg-white/10 text-white hover:text-orange-400"
                                                                     onClick={() => handleExtendExpiry(user.id, user.expiry_date)}
                                                                 >
-                                                                    طھمدظٹد
+                                                                    تمدظٹد
                                                                 </Button>
                                                                 {user.status === 'active' ? (
                                                                     <Button

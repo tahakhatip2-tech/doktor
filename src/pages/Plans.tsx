@@ -23,7 +23,7 @@ const Plans = () => {
             price: 'مجاناً',
             period: 'لمدة أسبظˆع',
             description: 'طھجربة شاملة للنظام',
-            features: ['لظˆحة طھحظƒم أساسظٹة', 'عدد محدظˆد من المرضى', 'دعم ظپنظٹ عبر البرظٹد', ' صلاحظٹة لمدة 7 أظٹام'],
+            features: ['لظˆحة طھحظƒم أساسظٹة', 'عدد محدظˆد من المرضى', 'دعم ظپنظٹ عبر البرظٹد', ' صلاحظٹة لمدة 7 أيام'],
             color: 'from-blue-400 to-blue-600',
             icon: Sparkles,
             isPopular: false
@@ -34,7 +34,7 @@ const Plans = () => {
             price: '25 دظٹنار',
             period: 'شهرظٹاً',
             description: 'للعظٹاداطھ المحطھرظپة',
-            features: ['مساعد صظˆطھظٹ ذظƒظٹ (AI Voice)', 'ربط ظˆاطھساب مطھقدم', 'عدد ط؛ظٹر محدظˆد من المرضى', 'دعم ظپنظٹ أظˆلظˆظٹ'],
+            features: ['مساعد صظˆطھظٹ ذظƒظٹ (AI Voice)', 'ربط ظˆاطھساب مطھقدم', 'عدد غير محدظˆد من المرضى', 'دعم ظپنظٹ أظˆلظˆظٹ'],
             color: 'from-purple-500 to-indigo-600',
             icon: Phone,
             isPopular: true
@@ -44,8 +44,8 @@ const Plans = () => {
             name: 'الباقة الشاملة (Premium)',
             price: '45 دظٹنار',
             period: 'شهرظٹاً',
-            description: 'طھحظƒم ظƒامل ظˆأطھمطھة',
-            features: ['نظام ظˆصظپاطھ طبظٹة PDF', 'جمظٹع ممظٹزاطھ Pro', 'طھقارظٹر ظˆطھحلظٹلاطھ مطھقدمة', 'مدظٹر حساب خاص'],
+            description: 'طھحظƒم ظƒامل ظˆأتمطھة',
+            features: ['نظام ظˆصظپاطھ طبظٹة PDF', 'جمظٹع ممظٹزاطھ Pro', 'طھقارظٹر ظˆطھحلظٹلاطھ مطھقدمة', 'مدير حساب خاص'],
             color: 'from-orange-400 to-red-500',
             icon: FileText,
             isPopular: false
@@ -73,10 +73,10 @@ const Plans = () => {
             // Mock Success logic
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            toastWithSound.success("طھم اسطھلام طلبظƒ! سظٹطھم طھظپعظٹل الباقة خلال دقائق.");
+            toastWithSound.success("تم اسطھلام طلبك! سظٹتم طھظپعظٹل الباقة خلال دقائق.");
             // navigate('/'); // Uncomment to redirect after success
         } catch (error) {
-            toastWithSound.error("حدث خطأ أثناط، الاشطھراظƒ. ظٹرجى المحاظˆلة مرة أخرى.");
+            toastWithSound.error("حدث خطأ أثناء الاشطھراظƒ. يرجى المحاظˆلة مرة أخرى.");
         } finally {
             setIsLoading(false);
         }
@@ -95,10 +95,10 @@ const Plans = () => {
             <div className="relative z-10 w-full max-w-6xl space-y-8 animate-fade-in-up">
                 <div className="text-center space-y-4">
                     <h1 className="text-4xl lg:text-5xl font-black text-white drop-shadow-lg tracking-tight">
-                        اخطھر خططھظƒ المناسبة
+                        اختر خطتك المناسبة
                     </h1>
                     <p className="text-blue-100 text-lg lg:text-xl font-medium max-w-2xl mx-auto">
-                        ارطھقظگ بعظٹادطھظƒ مع حلظˆلنا الذظƒظٹة. اخطھر الباقة الطھظٹ طھناسب احطھظٹاجاطھظƒ ظˆابدأ الطھحظˆل الرقمظٹ الظٹظˆم.
+                        ارطھقظگ بعظٹادتك مع حلظˆلنا الذظƒظٹة. اختر الباقة الطھظٹ طھناسب احطھظٹاجاتك ظˆابدأ الطھحظˆل الرقمظٹ اليوم.
                     </p>
                 </div>
 
@@ -152,7 +152,7 @@ const Plans = () => {
                                             ? "bg-orange-500 border-orange-500 text-white shadow-lg shadow-orange-500/30"
                                             : "border-white/20 text-white/60 group-hover:border-white/40 group-hover:text-white"
                                     )}>
-                                        {selectedPlan === plan.id ? "طھم الاخطھظٹار" : "اخطھر الباقة"}
+                                        {selectedPlan === plan.id ? "تم الاخطھظٹار" : "اختر الباقة"}
                                     </div>
                                 </div>
                             </div>
@@ -175,7 +175,7 @@ const Plans = () => {
                                         <span className="text-2xl font-mono font-bold text-white tracking-wider" dir="ltr">+962 7 9585 2716</span>
                                         <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded font-bold">دظٹنارظƒ</span>
                                     </div>
-                                    <p className="text-xs text-blue-300/60">* ظٹرجى إرظپاق صظˆرة الظˆصل لطھأظƒظٹد الطھظپعظٹل</p>
+                                    <p className="text-xs text-blue-300/60">* يرجى إرظپاق صظˆرة الظˆصل لتأكيد الطھظپعظٹل</p>
                                 </div>
                             </div>
 
@@ -215,7 +215,7 @@ const Plans = () => {
                                 جارظٹ الطھظپعظٹل...
                             </>
                         ) : (
-                            "طھأظƒظٹد الاشطھراظƒ ظˆطھظپعظٹل الحساب"
+                            "تأكيد الاشطھراظƒ ظˆطھظپعظٹل الحساب"
                         )}
                     </Button>
                 </div>

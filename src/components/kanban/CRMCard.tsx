@@ -14,7 +14,7 @@ interface CRMCardProps {
 
 const STATUS_OPTS = [
     { id: 'new', label: 'جدظٹد', color: '#3b82f6', icon: Clock },
-    { id: 'interested', label: 'مهطھم', color: '#eab308', icon: Target },
+    { id: 'interested', label: 'مهتم', color: '#eab308', icon: Target },
     { id: 'customer', label: 'زبظˆن', color: '#22c55e', icon: CheckCircle },
     { id: 'junk', label: 'مهمل', color: '#ef4444', icon: XCircle },
 ];
@@ -50,7 +50,7 @@ export function CRMCard({ contact, onDelete, onUpdateStatus, onOpenChat }: CRMCa
                 <div className="flex justify-between items-start mb-3">
                     <div className="flex flex-col">
                         <h4 className="font-bold text-sm text-foreground/90 group-hover:text-primary transition-colors truncate max-w-[140px]">
-                            {(!contact.name || contact.name.toLowerCase() === 'unknown' || contact.name === 'ط؛ظٹر معرظˆظپ') ? 'عمظٹل جدظٹد' : contact.name}
+                            {(!contact.name || contact.name.toLowerCase() === 'unknown' || contact.name === 'غير معرظˆظپ') ? 'عمظٹل جدظٹد' : contact.name}
                         </h4>
                     </div>
                     {contact.platform && contact.platform.toLowerCase() !== 'unknown' && contact.platform.toLowerCase() !== 'manual import' && (
@@ -72,7 +72,7 @@ export function CRMCard({ contact, onDelete, onUpdateStatus, onOpenChat }: CRMCa
                         onClick={(e) => {
                             e.stopPropagation();
                             navigator.clipboard.writeText(contact.phone);
-                            toastWithSound.success("طھم نسخ الرقم بنجاح");
+                            toastWithSound.success("تم نسخ الرقم بنجاح");
                         }}
                         title="اضط؛ط لنسخ الرقم"
                     >

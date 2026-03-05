@@ -16,7 +16,7 @@ export default function LeadFinder() {
 
     const handleSearch = async () => {
         if (!keyword) {
-            toastWithSound.error("ظٹرجى إدخال ظƒلمة مظپطھاحظٹة للبحث");
+            toastWithSound.error("يرجى إدخال كلمة مظپطھاحظٹة للبحث");
             return;
         }
         setLoading(true);
@@ -25,9 +25,9 @@ export default function LeadFinder() {
             const data = await dataApi.searchLeads({ keyword, location, platform });
             if (data.results && data.results.length > 0) {
                 setResults(data.results);
-                toastWithSound.success(`طھم العثظˆر على ${data.results.length} نطھظٹجة`);
+                toastWithSound.success(`تم العثظˆر على ${data.results.length} نطھظٹجة`);
             } else {
-                toastWithSound.error("لم ظٹطھم العثظˆر على نطھائجطŒ جرب ظƒلماطھ مظپطھاحظٹة مخطھلظپة");
+                toastWithSound.error("لم ظٹتم العثظˆر على نطھائجطŒ جرب كلماطھ مظپطھاحظٹة مخطھلظپة");
             }
         } catch (error: any) {
             toastWithSound.error(error.message || "ظپشل البحث");
@@ -37,11 +37,11 @@ export default function LeadFinder() {
     };
 
     const handleExtract = async (url: string) => {
-        toastWithSound.success("جارظٹ اسطھخراج البظٹاناطھ من الرابط...");
+        toastWithSound.success("جارظٹ اسطھخراج البيانات من الرابط...");
         try {
             // We use the same scrape endpoint
             await dataApi.scrape({ url, platform });
-            toastWithSound.success("طھم اسطھخراج ظˆحظپظ البظٹاناطھ بنجاح ظپظٹ قاعدة البظٹاناطھ!");
+            toastWithSound.success("تم اسطھخراج ظˆحظپظ البيانات بنجاح في قاعدة البيانات!");
         } catch (error) {
             toastWithSound.error("ظپشل الاسطھخراج من هذا الرابط");
         }
@@ -52,7 +52,7 @@ export default function LeadFinder() {
             <div className="flex items-center justify-between">
                 <div>
                     <h2 className="text-3xl font-display font-bold">الباحث الذظƒظٹ (Lead Finder)</h2>
-                    <p className="text-muted-foreground">ابحث عن عملاط، محطھملظٹن بدقة عالظٹة عبر محرظƒاطھ البحث المطھقدمةطŒ دظˆن الحاجة لحساباطھ أظˆ APIs.</p>
+                    <p className="text-muted-foreground">ابحث عن عملاط، محتملظٹن بدقة عالظٹة عبر محرظƒاطھ البحث المطھقدمةطŒ دظˆن الحاجة لحساباطھ أظˆ APIs.</p>
                 </div>
                 <Button variant="outline" className="gap-2" onClick={() => window.location.hash = '/'}>
                     <ArrowUp className="h-4 w-4 transform -rotate-90" />
@@ -66,7 +66,7 @@ export default function LeadFinder() {
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Target className="h-5 w-5 text-primary" />
-                            إعداداطھ الاسطھهداظپ
+                            إعدادات الاسطھهداظپ
                         </CardTitle>
                         <CardDescription>حدد مظˆاصظپاطھ جمهظˆرظƒ المسطھهدظپ بدقة</CardDescription>
                     </CardHeader>
@@ -75,7 +75,7 @@ export default function LeadFinder() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium flex items-center gap-2">
                                     <Briefcase className="h-4 w-4 text-muted-foreground" />
-                                    الظƒلمة المظپطھاحظٹة / الاهطھمام
+                                    الكلمة المظپطھاحظٹة / الاهتمام
                                 </label>
                                 <Input
                                     placeholder="مثال: مهندس مدنظٹطŒ طھجارة سظٹاراطھطŒ عقاراطھ"
@@ -88,7 +88,7 @@ export default function LeadFinder() {
                             <div className="space-y-2">
                                 <label className="text-sm font-medium flex items-center gap-2">
                                     <MapPin className="h-4 w-4 text-muted-foreground" />
-                                    المظˆقع الجط؛راظپظٹ
+                                    المظˆقع الجط؛رافي
                                 </label>
                                 <Input
                                     placeholder="مثال: الرظٹاضطŒ دبظٹطŒ القاهرة"
@@ -103,11 +103,11 @@ export default function LeadFinder() {
                             <label className="text-sm font-medium">المنصة المسطھهدظپة</label>
                             <Select value={platform} onValueChange={setPlatform}>
                                 <SelectTrigger className="bg-background/50">
-                                    <SelectValue placeholder="اخطھر المنصة" />
+                                    <SelectValue placeholder="اختر المنصة" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="google">جظˆجل / خرائط جظˆجل (Google Maps)</SelectItem>
-                                    <SelectItem value="facebook">ظپظٹسبظˆظƒ (Facebook)</SelectItem>
+                                    <SelectItem value="facebook">فيسبظˆظƒ (Facebook)</SelectItem>
                                     <SelectItem value="linkedin">لظٹنظƒد إن (LinkedIn)</SelectItem>
                                     <SelectItem value="instagram">إنسطھجرام (Instagram)</SelectItem>
                                     <SelectItem value="twitter">طھظˆظٹطھر (X)</SelectItem>
@@ -125,7 +125,7 @@ export default function LeadFinder() {
                                 {loading ? (
                                     <>
                                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                        جارظٹ البحث ظپظٹ جظˆجل...
+                                        جارظٹ البحث في جظˆجل...
                                     </>
                                 ) : (
                                     <>
@@ -146,7 +146,7 @@ export default function LeadFinder() {
                     <CardContent className="space-y-4 text-sm text-muted-foreground leading-relaxed">
                         <ul className="list-disc list-inside space-y-2">
                             <li>ظٹسطھخرج الرظˆابط من نطھائج البحث المطھقدمة.</li>
-                            <li>ظٹمظƒنظƒ بعد ذلظƒ "اسطھخراج البظٹاناطھ" من ظƒل رابط بنقرة زر.</li>
+                            <li>ظٹمظƒنظƒ بعد ذلك "اسطھخراج البيانات" من كل رابط بنقرة زر.</li>
                         </ul>
                     </CardContent>
                 </Card>
@@ -163,14 +163,14 @@ export default function LeadFinder() {
                     <CardContent className="space-y-4">
                         <textarea
                             className="w-full h-32 p-3 rounded-md bg-background/50 border border-input resize-none focus:ring-2 focus:ring-primary/50 outline-none"
-                            placeholder="الصق النص هنا... (مثلاً: عظٹادة الدظƒطھظˆر X - 079xxxxx...)"
+                            placeholder="الصق النص هنا... (مثلاً: عظٹادة الدكتور X - 079xxxxx...)"
                             id="import-text"
                         />
                         <div className="flex justify-end">
                             <Button
                                 onClick={async () => {
                                     const text = (document.getElementById('import-text') as HTMLTextAreaElement).value;
-                                    if (!text) return toastWithSound.error("ظٹرجى لصق نص أظˆلاً");
+                                    if (!text) return toastWithSound.error("يرجى لصق نص أظˆلاً");
 
                                     toastWithSound.success("جارظٹ طھحلظٹل النص...");
                                     try {
@@ -184,12 +184,12 @@ export default function LeadFinder() {
                                         });
                                         const data = await res.json();
                                         if (data.success) {
-                                            toastWithSound.success(`طھم اسطھخراج ظˆحظپظ ${data.count} جهة اطھصال جدظٹدة!`);
+                                            toastWithSound.success(`تم اسطھخراج ظˆحظپظ ${data.count} جهة اطھصال جديدة!`);
                                         } else {
                                             toastWithSound.error("ظپشل الطھحلظٹل");
                                         }
                                     } catch (e) {
-                                        toastWithSound.error("حدث خطأ أثناط، الاطھصال بالخادم");
+                                        toastWithSound.error("حدث خطأ أثناء الاطھصال بالخادم");
                                     }
                                 }}
                                 className="bg-primary hover:bg-primary/90 text-white gap-2"
@@ -227,7 +227,7 @@ export default function LeadFinder() {
                                         onClick={() => handleExtract(result.url)}
                                     >
                                         <Search className="h-4 w-4" />
-                                        اسطھخراج البظٹاناطھ
+                                        اسطھخراج البيانات
                                     </Button>
                                 </div>
                             </Card>

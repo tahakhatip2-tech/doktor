@@ -47,31 +47,31 @@ const Auth = () => {
         const { error } = await signIn(email, password);
         if (error) {
           if (error.includes("Invalid credentials") || error.includes("401")) {
-            toastWithSound.error("البرظٹد الإلظƒطھرظˆنظٹ أظˆ ظƒلمة المرظˆر ط؛ظٹر صحظٹحة");
+            toastWithSound.error("البرظٹد الإلكطھرظˆنظٹ أظˆ كلمة المرظˆر غير صحظٹحة");
           } else {
             toastWithSound.error(error);
           }
         } else {
-          toastWithSound.success("طھم طھسجظٹل الدخظˆل بنجاح");
+          toastWithSound.success("تم تسجيل الدخظˆل بنجاح");
           navigate("/");
         }
       } else {
         const { error } = await signUp(email, password, fullName, phone);
         if (error) {
           if (error.includes("already exists") || error.includes("400")) {
-            toastWithSound.error("هذا البرظٹد الإلظƒطھرظˆنظٹ مسجل مسبقاً");
+            toastWithSound.error("هذا البرظٹد الإلكطھرظˆنظٹ مسجل مسبقاً");
           } else {
             toastWithSound.error(error);
           }
         } else {
           // Set flag for new user to trigger onboarding tutorial
           localStorage.setItem('isNewUser', 'true');
-          toastWithSound.success("طھم إنشاط، الحساب بنجاح");
+          toastWithSound.success("تم إنشاط، الحساب بنجاح");
           navigate("/");
         }
       }
     } catch (error) {
-      toastWithSound.error("حدث خطأ ط؛ظٹر مطھظˆقع");
+      toastWithSound.error("حدث خطأ غير متوقع");
     } finally {
       setIsLoading(false);
     }
@@ -149,7 +149,7 @@ const Auth = () => {
 
             <h2 className="text-xs lg:text-base font-black text-center mb-3 text-white uppercase tracking-wider flex items-center justify-center gap-3 opacity-90">
               <span className="h-px w-6 bg-gradient-to-l from-white/20 to-transparent"></span>
-              {isLogin ? "طھسجظٹل الدخظˆل" : "إنشاط، حساب جدظٹد"}
+              {isLogin ? "تسجيل الدخظˆل" : "إنشاط، حساب جدظٹد"}
               <span className="h-px w-6 bg-gradient-to-r from-white/20 to-transparent"></span>
             </h2>
 
@@ -157,18 +157,18 @@ const Auth = () => {
               {!isLogin && (
                 <>
                   <div className="space-y-1">
-                    <Label htmlFor="fullName" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">الاسم الظƒامل</Label>
+                    <Label htmlFor="fullName" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">الاسم الكامل</Label>
                     <Input
                       id="fullName"
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="أدخل اسمظƒ الظƒامل"
+                      placeholder="أدخل اسمظƒ الكامل"
                       className="!bg-transparent border border-orange-500/50 focus:border-orange-400 focus:ring-0 text-white placeholder:text-blue-200/20 rounded-none h-9 text-sm transition-all text-right"
                     />
                   </div>
                   <div className="space-y-1">
-                    <Label htmlFor="phone" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">رقم الهاطھظپ</Label>
+                    <Label htmlFor="phone" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">رقم الهاتف</Label>
                     <Input
                       id="phone"
                       type="tel"
@@ -183,7 +183,7 @@ const Auth = () => {
               )}
 
               <div className="space-y-1">
-                <Label htmlFor="email" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">البرظٹد الإلظƒطھرظˆنظٹ</Label>
+                <Label htmlFor="email" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">البرظٹد الإلكطھرظˆنظٹ</Label>
                 <Input
                   id="email"
                   type="email"
@@ -196,7 +196,7 @@ const Auth = () => {
               </div>
 
               <div className="space-y-1">
-                <Label htmlFor="password" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">ظƒلمة المرظˆر</Label>
+                <Label htmlFor="password" className="text-blue-200/80 text-[10px] font-bold uppercase tracking-wide">كلمة المرظˆر</Label>
                 <Input
                   id="password"
                   type="password"
@@ -233,7 +233,7 @@ const Auth = () => {
                 className="w-full bg-transparent border border-blue-500 hover:bg-blue-500/10 text-blue-500 font-bold h-9 rounded-none shadow-[0_0_20px_rgba(59,130,246,0.1)] hover:shadow-[0_0_30px_rgba(59,130,246,0.2)] transition-all duration-300 text-xs uppercase tracking-wider relative overflow-hidden group/portal"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover/portal:translate-x-[100%] transition-transform duration-700"></span>
-                طھسجظٹل دخظˆل مظˆحد âœ¨
+                تسجيل دخظˆل مظˆحد âœ¨
               </Button>
 
               <div className="text-center">
@@ -243,7 +243,7 @@ const Auth = () => {
                 >
                   {isLogin
                     ? "مسطھخدم جدظٹدطں إنشاط، حساب"
-                    : "لدظٹظƒ حسابطں طھسجظٹل الدخظˆل"}
+                    : "لدظٹظƒ حسابطں تسجيل الدخظˆل"}
                 </button>
               </div>
             </div>
@@ -253,14 +253,14 @@ const Auth = () => {
               {/* Vision Text - Compact */}
               <div className="text-center w-full px-2">
                 <p className="text-[8px] font-bold leading-tight text-white/80 w-full mx-auto">
-                  "أظˆل نظام <span className="text-blue-400">ذظƒظٹ</span> لإدارة العظٹاداطھطŒ بسظƒرطھظٹر آلظٹ."
+                  "أظˆل نظام <span className="text-blue-400">ذظƒظٹ</span> لإدارة العياداتطŒ بسظƒرطھظٹر آلظٹ."
                 </p>
               </div>
 
               {/* Footer Line - High Visibility */}
               <div className="w-full text-center pb-1 space-y-0.5">
                 <p className="text-[8px] text-blue-300/60 font-medium whitespace-nowrap">
-                  طھم برمجة المظˆقع بظˆاسطة الخطظٹب للبرمجظٹاطھ
+                  تم برمجة المظˆقع بظˆاسطة الخطظٹب للبرمجظٹاطھ
                 </p>
                 <p className="text-[8px] text-orange-500/80 font-mono font-bold uppercase tracking-widest whitespace-nowrap">
                   Doctor Jo â€¢ Version 1.0
@@ -290,7 +290,7 @@ const Auth = () => {
               </div>
 
               <p className="text-3xl font-black leading-tight text-white max-w-2xl drop-shadow-2xl">
-                "أظˆل نظام <span className="text-blue-400">ذظƒظٹ</span> ظپظٹ الشرق الأظˆسط لإدارة العظٹاداطھ ظˆطھطظˆظٹر النظام الصحظٹ العامطŒ مدعظˆم <span className="text-orange-500">بسظƒرطھظٹر آلظٹ</span> مطھظƒامل."
+                "أظˆل نظام <span className="text-blue-400">ذظƒظٹ</span> في الشرق الأظˆسط لإدارة العيادات ظˆطھطظˆظٹر النظام الصحظٹ العامطŒ مدعظˆم <span className="text-orange-500">بسظƒرطھظٹر آلظٹ</span> متكامل."
               </p>
 
               <div className="flex flex-wrap gap-3 pt-4">
@@ -317,7 +317,7 @@ const Auth = () => {
 
       {/* Footer minimal (Desktop) */}
       <div className="hidden lg:block absolute bottom-6 left-0 right-0 z-10 text-center pointer-events-none space-y-1">
-        <p className="text-[11px] text-blue-200/40 font-medium drop-shadow-md">طھم برمجة المظˆقع بظˆاسطة الخطظٹب للبرمجظٹاطھ</p>
+        <p className="text-[11px] text-blue-200/40 font-medium drop-shadow-md">تم برمجة المظˆقع بظˆاسطة الخطظٹب للبرمجظٹاطھ</p>
         <p className="text-[10px] text-blue-200/20 font-mono tracking-[0.5em] uppercase">Secure Access Portal â€¢ Doctor Jo v1.0</p>
       </div>
     </div>
