@@ -15,6 +15,7 @@ import {
     Loader2,
     Search,
     RefreshCw,
+    ArrowRight,
 } from 'lucide-react';
 import { apiFetch } from '@/lib/api';
 import { io, Socket } from 'socket.io-client';
@@ -188,10 +189,13 @@ export default function InternalChat() {
     };
 
     return (
-        <div className="flex h-[calc(100vh-160px)] gap-0 rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-background" dir="rtl">
+        <div className="flex h-[calc(100vh-160px)] gap-0 rounded-3xl overflow-hidden border border-border/50 shadow-2xl bg-background relative" dir="rtl">
 
             {/* ── Sidebar: قائمة المحادثات ───────────────────────────────── */}
-            <div className="w-80 flex-shrink-0 border-l border-border/50 flex flex-col bg-card/50">
+            <div className={cn(
+                "flex-shrink-0 border-l border-border/50 flex flex-col bg-card/50 h-full transition-all duration-300",
+                selectedConv ? "hidden md:flex md:w-80" : "w-full md:w-80"
+            )}>
                 {/* Header */}
                 <div className="px-4 py-4 border-b border-border/50">
                     <div className="flex items-center justify-between mb-3">
@@ -282,9 +286,12 @@ export default function InternalChat() {
 
             {/* ── Chat Area ───────────────────────────────────────────────── */}
             {selectedConv ? (
-                <div className="flex-1 flex flex-col">
+                <div className="flex-1 flex flex-col h-full w-full bg-background absolute md:relative inset-0 z-10 md:z-auto">
                     {/* Chat Header */}
-                    <div className="flex items-center gap-3 px-5 py-4 border-b border-border/50 bg-background/80 backdrop-blur">
+                    <div className="flex items-center gap-3 px-3 py-3 md:px-5 md:py-4 border-b border-border/50 bg-background/80 backdrop-blur">
+                        <Button variant="ghost" size="icon" className="md:hidden shrink-0" onClick={() => setSelectedConv(null)}>
+                            <ArrowRight className="h-5 w-5" />
+                        </Button>
                         <Avatar className="h-9 w-9">
                             <AvatarFallback className="gradient-primary text-white font-bold text-sm">
                                 {selectedConv.patient?.fullName?.[0] || 'م'}
@@ -357,7 +364,7 @@ export default function InternalChat() {
                 </div>
             ) : (
                 // Empty State
-                <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center p-8 bg-muted/10">
+                <div className="hidden md:flex flex-1 flex-col items-center justify-center gap-4 text-center p-8 bg-muted/10 h-full">
                     <div className="h-20 w-20 rounded-3xl gradient-primary flex items-center justify-center shadow-glow">
                         <MessageCircle className="h-10 w-10 text-white" />
                     </div>

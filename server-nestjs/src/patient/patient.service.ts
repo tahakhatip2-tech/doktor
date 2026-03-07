@@ -167,11 +167,10 @@ export class PatientService {
     }
 
     async getClinics() {
-        return this.prisma.user.findMany({
+        const users = await this.prisma.user.findMany({
             where: {
                 role: 'USER',
                 status: 'active',
-                clinic_name: { not: null },
             },
             select: {
                 id: true,
@@ -184,9 +183,36 @@ export class PatientService {
                 clinic_phone: true,
                 clinic_specialty: true,
                 working_hours: true,
+                settings: {
+                    where: {
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url'] },
+                    },
+                    select: { key: true, value: true },
+                },
             },
-            orderBy: { clinic_name: 'asc' },
+            orderBy: { name: 'asc' },
         });
+
+        // Merge settings keys into each clinic object
+        return users
+            .map((u) => {
+                const settingsMap: Record<string, string> = {};
+                u.settings.forEach((s) => { settingsMap[s.key] = s.value; });
+                const resolvedClinicName = settingsMap['clinic_name'] || u.clinic_name;
+                return {
+                    ...u,
+                    settings: undefined,
+                    clinic_name: resolvedClinicName,
+                    clinic_specialty: settingsMap['clinic_specialty'] || u.clinic_specialty,
+                    clinic_logo: settingsMap['clinic_logo'] || null,
+                    clinic_description: settingsMap['clinic_description'] || null,
+                    location_url: settingsMap['location_url'] || null,
+                    clinic_address: settingsMap['address'] || u.clinic_address,
+                    clinic_phone: settingsMap['phone'] || u.clinic_phone,
+                };
+            })
+            // Only return clinics that have a name
+            .filter((u) => u.clinic_name);
     }
 
     async getClinicById(clinicId: number) {
@@ -203,6 +229,12 @@ export class PatientService {
                 clinic_phone: true,
                 clinic_specialty: true,
                 working_hours: true,
+                settings: {
+                    where: {
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url'] },
+                    },
+                    select: { key: true, value: true },
+                },
             },
         });
 
@@ -210,6 +242,19 @@ export class PatientService {
             throw new NotFoundException('العيادة غير موجودة');
         }
 
-        return clinic;
+        const settingsMap: Record<string, string> = {};
+        clinic.settings.forEach((s) => { settingsMap[s.key] = s.value; });
+
+        return {
+            ...clinic,
+            settings: undefined,
+            clinic_name: settingsMap['clinic_name'] || clinic.clinic_name,
+            clinic_specialty: settingsMap['clinic_specialty'] || clinic.clinic_specialty,
+            clinic_logo: settingsMap['clinic_logo'] || null,
+            clinic_description: settingsMap['clinic_description'] || null,
+            location_url: settingsMap['location_url'] || null,
+            clinic_address: settingsMap['address'] || clinic.clinic_address,
+            clinic_phone: settingsMap['phone'] || clinic.clinic_phone,
+        };
     }
 }

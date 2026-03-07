@@ -8,6 +8,7 @@ import { Calendar, Clock, Building2, FileText, Bell, Plus } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import PatientHero from '@/components/patient/PatientHero';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -61,15 +62,30 @@ export default function PatientDashboard() {
     };
 
     return (
-        <div className="space-y-6 animate-fade-in">
-            {/* Welcome Section */}
-            <div className="gradient-primary rounded-lg p-6 text-white shadow-glow">
-                <h1 className="text-3xl font-bold mb-2">مرحباً، {user?.fullName}!</h1>
-                <p className="text-white/90">نتمنى لك صحة وعافية</p>
-            </div>
+        <div className="space-y-6 sm:space-y-8 animate-fade-in pb-8">
+            {/* Elegant Hero Section */}
+            <PatientHero
+                title={`مرحباً بك، ${user?.fullName || ''}`}
+                subtitle="في تطبيق Doctor Jo"
+                description="نحن هنا لنقدم لك ولعائلتك أفضل رعاية طبية لتنعموا بحياة صحية وسعيدة."
+                badgeText="دائماً في خدمتك"
+            >
+                {/* Dashboard Specific Quick Stats inside Hero */}
+                <div className="flex flex-col gap-3 min-w-[200px]">
+                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-white shadow-xl flex items-center justify-between">
+                        <div>
+                            <p className="text-[10px] font-bold opacity-80 uppercase tracking-wider mb-1">المواعيد القادمة</p>
+                            <p className="text-2xl font-black">{upcomingAppointments.length}</p>
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-orange-400" />
+                        </div>
+                    </div>
+                </div>
+            </PatientHero>
 
             {/* Quick Actions */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="px-4 sm:px-0 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link to="/patient/clinics">
                     <Card className="hover:shadow-glow transition-all cursor-pointer group">
                         <CardContent className="p-6 flex items-center gap-4">
@@ -113,7 +129,7 @@ export default function PatientDashboard() {
                 </Link>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="px-4 sm:px-0 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Upcoming Appointments */}
                 <Card className="shadow-card">
                     <CardHeader>
@@ -239,7 +255,7 @@ export default function PatientDashboard() {
                     </CardContent>
                 </Card>
             </div>
-        </div>
+        </div >
     );
 }
 

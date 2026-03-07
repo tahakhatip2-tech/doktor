@@ -24,6 +24,7 @@ interface ClinicSettings {
     auto_reply_enabled: boolean;
     reminder_enabled: boolean;
     reminder_time: number;
+    location_url: string;
 }
 
 export default function ClinicSettings() {
@@ -41,6 +42,7 @@ export default function ClinicSettings() {
         auto_reply_enabled: true,
         reminder_enabled: true,
         reminder_time: 60,
+        location_url: '',
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -114,6 +116,27 @@ export default function ClinicSettings() {
 
     const updateSetting = (key: keyof ClinicSettings, value: any) => {
         setSettings(prev => ({ ...prev, [key]: value }));
+    };
+
+    const handleGetCurrentLocation = () => {
+        if (!navigator.geolocation) {
+            toastWithSound.error('متصفحك لا يدعم تحديد الموقع');
+            return;
+        }
+
+        toastWithSound.success('جاري جلب الموقع...');
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const url = `https://maps.google.com/?q=${latitude},${longitude}`;
+                updateSetting('location_url', url);
+                toastWithSound.success('تم جلب الموقع بنجاح');
+            },
+            (error) => {
+                console.error('GPS error:', error);
+                toastWithSound.error('فشل في الوصول للموقع. تأكد من تفعيل الصلاحية.');
+            }
+        );
     };
 
     return (
@@ -274,7 +297,7 @@ export default function ClinicSettings() {
                         />
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-2 lg:col-span-2">
                         <Label htmlFor="address" className="text-blue-900 dark:text-blue-100 font-semibold text-right w-full block">العنوان الفعلي</Label>
                         <Input
                             id="address"
@@ -283,6 +306,29 @@ export default function ClinicSettings() {
                             placeholder="عمان، شارع المدينة المنورة..."
                             className="bg-white/50 dark:bg-black/20 border-blue-200 dark:border-blue-800 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-11 transition-all text-right"
                         />
+                    </div>
+
+                    <div className="space-y-2 lg:col-span-2">
+                        <Label htmlFor="location_url" className="text-blue-900 dark:text-blue-100 font-semibold text-right w-full block">رابط الموقع على الخريطة (Google Maps)</Label>
+                        <div className="flex flex-col sm:flex-row gap-2">
+                            <Input
+                                id="location_url"
+                                value={settings.location_url || ''}
+                                onChange={(e) => updateSetting('location_url', e.target.value)}
+                                placeholder="https://maps.google.com/..."
+                                dir="ltr"
+                                className="bg-white/50 dark:bg-black/20 border-blue-200 dark:border-blue-800 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-11 transition-all text-left flex-1"
+                            />
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={handleGetCurrentLocation}
+                                className="bg-white hover:bg-blue-50 text-blue-700 border-blue-200 shadow-sm shrink-0 h-11"
+                            >
+                                <MapPin className="h-4 w-4 ml-2" />
+                                تحديد موقعي 📍
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </Card>

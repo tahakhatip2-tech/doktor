@@ -25,45 +25,40 @@ async function bootstrap() {
 
   app.enableCors({
     origin: (origin, callback) => {
-      const isProduction = process.env.NODE_ENV === 'production';
-
-      const allowedOrigins = [
-        'https://hakeem-jordan-jordan.vercel.app',
-        'https://hakeemjordanjo.vercel.app',
-        'https://hakeem-jordan-five.vercel.app',
-        'http://localhost:8080',
-        'http://localhost:5173',
-        'http://localhost:3000',
-      ];
-
-      // Allow requests with no origin (mobile apps, curl, etc.)
+      // Allow requests with no origin (mobile apps, Postman, curl, etc.)
       if (!origin) return callback(null, true);
 
-      // Vercel preview deployments
+      // Always allow: localhost dev
+      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+        return callback(null, true);
+      }
+
+      // Always allow: all Vercel preview/production deployments
       if (origin.endsWith('.vercel.app')) return callback(null, true);
 
-      // ngrok — للتطوير والعروض التجريبية
-      if (origin.includes('ngrok-free.app') || origin.includes('ngrok.io') || origin.includes('ngrok-free.dev')) {
+      // Always allow: ngrok tunnels for development/demo
+      if (
+        origin.includes('ngrok-free.app') ||
+        origin.includes('ngrok.io') ||
+        origin.includes('ngrok-free.dev')
+      ) {
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin)) {
+      // In development: allow everything
+      if (process.env.NODE_ENV !== 'production') {
         return callback(null, true);
       }
 
-      if (!isProduction) {
-        // في التطوير: اسمح بكل شيء مع تسجيل
-        console.warn(`[CORS] ⚠️ Request from unknown origin in DEV: ${origin}`);
-        return callback(null, true);
-      }
-
-      // في الإنتاج: ارفض
-      console.error(`[CORS] ❌ Blocked origin in PROD: ${origin}`);
+      // Production: block unknown origins
+      console.error(`[CORS] ❌ Blocked origin: ${origin}`);
       callback(new Error(`CORS: Origin not allowed: ${origin}`), false);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization, ngrok-skip-browser-warning, bypass-tunnel-reminder, X-Requested-With, sentry-trace, baggage',
+    allowedHeaders: 'Content-Type, Accept, Authorization, ngrok-skip-browser-warning, bypass-tunnel-reminder, Bypass-Tunnel-Reminder, X-Requested-With, sentry-trace, baggage',
     credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   });
 
   app.setGlobalPrefix('api');

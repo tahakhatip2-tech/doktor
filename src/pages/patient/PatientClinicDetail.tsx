@@ -16,20 +16,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import {
-    Building2,
-    MapPin,
-    Phone,
-    Clock,
-    ArrowRight,
-    Calendar,
-    MessageCircle,
-    Loader2,
-    ChevronLeft,
-    ChevronRight,
-    CheckCircle2,
-    AlertCircle,
-} from 'lucide-react';
+import { Building2, MapPin, Phone, Clock, Calendar, MessageCircle, ArrowRight, ChevronRight, ChevronLeft, Loader2, CheckCircle2, AlertCircle, Plus, Search, User } from 'lucide-react';
 import axios from 'axios';
 import { cn } from '@/lib/utils';
 import { format, startOfDay, isSameDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
@@ -202,33 +189,57 @@ export default function PatientClinicDetail() {
             <Card className="shadow-card overflow-hidden">
                 <div className="h-3 gradient-primary" />
                 <CardHeader className="pb-4">
-                    <div className="flex items-start justify-between flex-wrap gap-3">
-                        <div className="flex items-center gap-4">
-                            <div className="w-14 h-14 rounded-2xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0 overflow-hidden bg-muted">
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                        {/* 1. Doctor Profile */}
+                        <div className="flex items-center gap-4 bg-muted/20 p-4 rounded-xl border border-border/40 flex-1">
+                            <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border-2 border-primary/20 shadow-sm">
                                 {clinic.avatar ? (
                                     <img
                                         src={clinic.avatar.startsWith('http') ? clinic.avatar : `${BASE_URL}${clinic.avatar.startsWith('/') ? '' : '/'}${clinic.avatar}`}
-                                        alt={clinic.clinic_name || clinic.name}
+                                        alt={clinic.name}
                                         className="w-full h-full object-cover"
                                     />
                                 ) : (
-                                    <Building2 className="h-7 w-7 text-white" />
+                                    <User className="h-8 w-8 text-muted-foreground" />
                                 )}
                             </div>
                             <div>
-                                <CardTitle className="text-2xl">{clinic.clinic_name || clinic.name}</CardTitle>
+                                <p className="text-sm font-medium text-muted-foreground mb-1">الدكتور</p>
+                                <CardTitle className="text-2xl leading-none">{clinic.name}</CardTitle>
+                            </div>
+                        </div>
+
+                        {/* 2. Clinic Profile */}
+                        <div className="flex items-center gap-4 bg-primary/5 p-4 rounded-xl border border-primary/10 flex-1">
+                            <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0 text-white overflow-hidden">
+                                {clinic.clinic_logo ? (
+                                    <img
+                                        src={clinic.clinic_logo.startsWith('http') ? clinic.clinic_logo : `${BASE_URL}${clinic.clinic_logo.startsWith('/') ? '' : '/'}${clinic.clinic_logo}`}
+                                        alt={clinic.clinic_name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <Building2 className="h-8 w-8" />
+                                )}
+                            </div>
+                            <div>
+                                <CardTitle className="text-xl mb-1">{clinic.clinic_name || clinic.name}</CardTitle>
                                 {clinic.clinic_specialty && (
-                                    <Badge variant="secondary" className="mt-1">{clinic.clinic_specialty}</Badge>
+                                    <Badge variant="secondary" className="font-medium">{clinic.clinic_specialty}</Badge>
+                                )}
+                                {clinic.clinic_description && (
+                                    <p className="text-xs text-muted-foreground mt-1">{clinic.clinic_description}</p>
                                 )}
                             </div>
                         </div>
-                        {/* أزرار التواصل — واتساب + مراسلة داخلية */}
-                        <div className="flex items-center gap-2 flex-wrap">
+
+                        {/* 3. Actions */}
+                        <div className="flex lg:flex-col items-center justify-center gap-3">
                             {/* ✅ زر واتساب — يبقى كما هو للتواصل الخارجي */}
                             <Button
                                 variant="outline"
                                 size="sm"
-                                className="hover:bg-green-500 hover:text-white transition-colors gap-2"
+                                className="hover:bg-green-500 hover:text-white transition-colors gap-2 flex-1 lg:w-full"
                                 onClick={() => {
                                     const phone = (clinic.clinic_phone || clinic.phone)?.replace(/\D/g, '');
                                     if (phone) window.open(`https://wa.me/${phone}`, '_blank');
@@ -238,14 +249,27 @@ export default function PatientClinicDetail() {
                                 واتساب
                             </Button>
 
+                            {/* ✅ رابط الخريطة */}
+                            {clinic.location_url && (
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="hover:bg-blue-500 hover:text-white transition-colors gap-2 flex-1 lg:w-full"
+                                    onClick={() => window.open(clinic.location_url, '_blank')}
+                                >
+                                    <MapPin className="h-4 w-4" />
+                                    الموقع
+                                </Button>
+                            )}
+
                             {/* ✅ زر مراسلة داخلية جديد — يفتح شات المريض */}
                             <Button
                                 size="sm"
-                                className="gap-2 gradient-primary text-white shadow-glow"
+                                className="gap-2 gradient-primary text-white shadow-glow flex-1 lg:w-full"
                                 onClick={() => navigate(`/patient/chat/${clinic.id}`)}
                             >
                                 <MessageCircle className="h-4 w-4" />
-                                مراسلة العيادة
+                                مراسلة
                             </Button>
                         </div>
                     </div>
