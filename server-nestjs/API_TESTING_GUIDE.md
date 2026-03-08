@@ -18,7 +18,7 @@ http://localhost:3000/api/docs
 
 أو عبر ngrok:
 ```
-https://your-ngrok-url.ngrok-free.dev/api/docs
+https://tsunamic-unshameable-maricruz.ngrok-free.dev/api/docs
 ```
 
 ### المميزات

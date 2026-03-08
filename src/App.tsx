@@ -23,6 +23,7 @@ import PatientNotifications from "./pages/patient/PatientNotifications";
 import PatientMedicalRecords from "./pages/patient/PatientMedicalRecords";
 import PatientChat from "./pages/patient/PatientChat";
 import PatientMessages from "./pages/patient/PatientMessages";
+import PatientProfile from "./pages/patient/PatientProfile";
 import InternalChat from "./pages/InternalChat";
 
 import { ClinicProvider } from "./context/ClinicContext";
@@ -65,6 +66,7 @@ const App = () => (
                             <Route path="notifications" element={<PatientNotifications />} />
                             <Route path="medical-records" element={<PatientMedicalRecords />} />
                             <Route path="messages" element={<PatientMessages />} />
+                            <Route path="profile" element={<PatientProfile />} />
                             <Route path="chat/:clinicId" element={<PatientChat />} />
                         </Route>
 

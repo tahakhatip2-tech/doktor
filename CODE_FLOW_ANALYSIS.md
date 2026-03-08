@@ -1123,8 +1123,8 @@ JWT_SECRET="your-secret-key"
 GEMINI_API_KEY="your-gemini-key"
 
 # Frontend URLs
-VITE_API_URL="https://your-ngrok-url.ngrok-free.dev/api"
-VITE_API_BASE_URL="https://your-ngrok-url.ngrok-free.dev"
+VITE_API_URL="https://tsunamic-unshameable-maricruz.ngrok-free.dev/api"
+VITE_API_BASE_URL="https://tsunamic-unshameable-maricruz.ngrok-free.dev"
 ```
 
 ---

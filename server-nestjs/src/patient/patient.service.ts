@@ -68,13 +68,13 @@ export class PatientService {
     }
 
     async login(dto: LoginPatientDto) {
-        // Find patient by phone number
+        // Find patient by email
         const patient = await this.prisma.patient.findUnique({
-            where: { phone: dto.phone },
+            where: { email: dto.email },
         });
 
         if (!patient) {
-            throw new UnauthorizedException('رقم الهاتف أو كلمة المرور غير صحيحة');
+            throw new UnauthorizedException('البريد الإلكتروني أو كلمة المرور غير صحيحة');
         }
 
         if (!patient.isActive) {
@@ -83,12 +83,12 @@ export class PatientService {
 
         const isPasswordValid = await bcrypt.compare(dto.password, patient.password);
         if (!isPasswordValid) {
-            throw new UnauthorizedException('رقم الهاتف أو كلمة المرور غير صحيحة');
+            throw new UnauthorizedException('البريد الإلكتروني أو كلمة المرور غير صحيحة');
         }
 
         const token = this.jwtService.sign({
             sub: patient.id,
-            phone: patient.phone,
+            email: patient.email,
             type: 'patient',
         });
 

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
                 'https://hakeem-jordan-jordan.vercel.app/'
             ],
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-            allowedHeaders: 'Content-Type, Accept, Authorization, Bypass-Tunnel-Reminder, ngrok-skip-browser-warning',
+            allowedHeaders: 'Content-Type, Accept, Authorization, Bypass-Tunnel-Reminder, ngrok-skip-browser-warning, X-Requested-With',
             credentials: true,
         });
 

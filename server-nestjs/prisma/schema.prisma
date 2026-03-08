@@ -9,44 +9,41 @@ datasource db {
 }
 
 model User {
-  id                 Int                 @id @default(autoincrement())
-  email              String              @unique
-  password           String
-  name               String?
-  avatar             String?
-  phone              String?             @unique
-  role               UserRole            @default(USER)
-  status             String              @default("active")
-  expiryDate         DateTime?
-  subscriptionStatus SubscriptionStatus  @default(FREE)
-  stripeCustomerId   String?             @unique
-  planId             Int?
-  
-  // Clinic Settings (migrated from Setting table)
-  clinic_name        String?             // اسم العيادة
-  clinic_address     String?             // عنوان العيادة
-  clinic_phone       String?             // رقم هاتف العيادة
-  clinic_specialty   String?             // التخصص
-  working_hours      String?             // ساعات العمل
-  auto_reply_enabled Boolean             @default(false)
-  ai_api_key         String?             // Gemini API Key
-  ai_system_instruction String?          // AI System Instruction
-  
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
-  appointments       Appointment[]
-  autoReplyTemplates AutoReplyTemplate[]
-  campaigns          Campaign[]
-  contacts           Contact[]
-  customerTags       CustomerTag[]
-  groups             Group[]
-  notifications      Notification[]
-  payments           Payment[]
-  pipelines          Pipeline[]
-  services           Service[]
-  settings           Setting[]
-  plan               Plan?               @relation(fields: [planId], references: [id])
-  whatsAppChats      WhatsAppChat[]
+  id                    Int                    @id @default(autoincrement())
+  email                 String                 @unique
+  password              String
+  name                  String?
+  avatar                String?
+  role                  UserRole               @default(USER)
+  status                String                 @default("active")
+  expiryDate            DateTime?
+  subscriptionStatus    SubscriptionStatus     @default(FREE)
+  stripeCustomerId      String?                @unique
+  planId                Int?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  phone                 String?                @unique
+  clinic_name           String?
+  clinic_phone          String?
+  clinic_address        String?
+  auto_reply_enabled    Boolean                @default(false)
+  ai_api_key            String?
+  ai_system_instruction String?
+  clinic_specialty      String?
+  working_hours         String?
+  appointments          Appointment[]
+  autoReplyTemplates    AutoReplyTemplate[]
+  campaigns             Campaign[]
+  contacts              Contact[]
+  customerTags          CustomerTag[]
+  groups                Group[]
+  notifications         Notification[]
+  payments              Payment[]
+  pipelines             Pipeline[]
+  services              Service[]
+  settings              Setting[]
+  plan                  Plan?                  @relation(fields: [planId], references: [id])
+  whatsAppChats         WhatsAppChat[]
   internalConversations InternalConversation[] @relation("ClinicConversations")
 }
 
@@ -254,29 +251,29 @@ model CustomerTag {
 }
 
 model Appointment {
-  id                Int                   @id @default(autoincrement())
-  userId            Int?                  // Doctor/Clinic ID
-  phone             String
-  customerName      String?
-  appointmentDate   DateTime
-  status            String                @default("pending")  // pending, confirmed, completed, cancelled
-  notes             String?
-  patientId         Int?                  // Contact ID (for walk-in patients)
-  patientUserId     Int?                  // Patient Portal User ID
-  doctorId          Int?
-  duration          Int                   @default(30)
-  type              String                @default("consultation")
-  reminderSent      Boolean               @default(false)
-  confirmedAt       DateTime?             // When doctor confirmed
-  cancelledAt       DateTime?             // When cancelled
-  cancellationReason String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  contact           Contact?              @relation(fields: [patientId], references: [id])
-  user              User?                 @relation(fields: [userId], references: [id])
-  patientUser       Patient?              @relation(fields: [patientUserId], references: [id])
-  medicalRecords    MedicalRecord[]
-  notifications     Notification[]
+  id                   Int                   @id @default(autoincrement())
+  userId               Int?
+  phone                String
+  customerName         String?
+  appointmentDate      DateTime
+  status               String                @default("pending")
+  notes                String?
+  patientId            Int?
+  doctorId             Int?
+  duration             Int                   @default(30)
+  type                 String                @default("consultation")
+  reminderSent         Boolean               @default(false)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  cancellationReason   String?
+  cancelledAt          DateTime?
+  confirmedAt          DateTime?
+  patientUserId        Int?
+  contact              Contact?              @relation(fields: [patientId], references: [id])
+  patientUser          Patient?              @relation(fields: [patientUserId], references: [id])
+  user                 User?                 @relation(fields: [userId], references: [id])
+  medicalRecords       MedicalRecord[]
+  notifications        Notification[]
   patientNotifications PatientNotification[]
 }
 
@@ -345,7 +342,6 @@ model MedicalRecord {
   id            Int         @id @default(autoincrement())
   appointmentId Int
   patientId     Int?
-  patientUserId Int?        // Patient Portal User ID
   diagnosis     String?
   treatment     String?
   age           String?
@@ -354,9 +350,78 @@ model MedicalRecord {
   attachmentUrl String?
   recordType    String      @default("prescription")
   createdAt     DateTime    @default(now())
+  patientUserId Int?
   appointment   Appointment @relation(fields: [appointmentId], references: [id])
   contact       Contact?    @relation(fields: [patientId], references: [id])
   patientUser   Patient?    @relation(fields: [patientUserId], references: [id])
+}
+
+model Patient {
+  id                    Int                    @id @default(autoincrement())
+  email                 String                 @unique
+  password              String
+  fullName              String
+  phone                 String                 @unique
+  avatar                String?
+  dateOfBirth           DateTime?
+  gender                String?
+  bloodType             String?
+  allergies             String?
+  chronicDiseases       String?
+  emergencyContact      String?
+  address               String?
+  nationalId            String?                @unique
+  isEmailVerified       Boolean                @default(false)
+  isActive              Boolean                @default(true)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  appointments          Appointment[]
+  medicalRecords        MedicalRecord[]
+  notifications         PatientNotification[]
+  internalConversations InternalConversation[] @relation("PatientConversations")
+}
+
+model PatientNotification {
+  id            Int          @id @default(autoincrement())
+  patientId     Int
+  type          String
+  title         String
+  message       String
+  isRead        Boolean      @default(false)
+  appointmentId Int?
+  metadata      String?
+  createdAt     DateTime     @default(now())
+  readAt        DateTime?
+  appointment   Appointment? @relation(fields: [appointmentId], references: [id])
+  patient       Patient      @relation(fields: [patientId], references: [id])
+}
+
+model InternalConversation {
+  id        Int               @id @default(autoincrement())
+  clinicId  Int
+  patientId Int
+  isActive  Boolean           @default(true)
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  clinic    User              @relation("ClinicConversations", fields: [clinicId], references: [id])
+  patient   Patient           @relation("PatientConversations", fields: [patientId], references: [id])
+  messages  InternalMessage[]
+
+  @@unique([clinicId, patientId])
+  @@map("internal_conversations")
+}
+
+model InternalMessage {
+  id             Int                  @id @default(autoincrement())
+  conversationId Int
+  content        String
+  senderType     InternalSenderType
+  senderId       Int?
+  isRead         Boolean              @default(false)
+  createdAt      DateTime             @default(now())
+  conversation   InternalConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("internal_messages")
 }
 
 enum UserRole {
@@ -371,81 +436,6 @@ enum SubscriptionStatus {
   ACTIVE
   PAST_DUE
   CANCELED
-}
-
-model Patient {
-  id                Int                   @id @default(autoincrement())
-  email             String                @unique
-  password          String
-  fullName          String
-  phone             String                @unique
-  avatar            String?
-  dateOfBirth       DateTime?
-  gender            String?               // male, female
-  bloodType         String?
-  allergies         String?
-  chronicDiseases   String?
-  emergencyContact  String?
-  address           String?
-  nationalId        String?               @unique
-  isEmailVerified   Boolean               @default(false)
-  isActive          Boolean               @default(true)
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  
-  // Relations
-  appointments      Appointment[]
-  medicalRecords    MedicalRecord[]
-  notifications     PatientNotification[]
-  internalConversations InternalConversation[] @relation("PatientConversations")
-}
-
-model PatientNotification {
-  id                Int         @id @default(autoincrement())
-  patientId         Int
-  type              String      // appointment_confirmed, appointment_reminder, appointment_cancelled, etc.
-  title             String
-  message           String
-  isRead            Boolean     @default(false)
-  appointmentId     Int?
-  metadata          String?     // JSON string for additional data
-  createdAt         DateTime    @default(now())
-  readAt            DateTime?
-  
-  patient           Patient     @relation(fields: [patientId], references: [id])
-  appointment       Appointment? @relation(fields: [appointmentId], references: [id])
-}
-
-// ─── نظام الدردشة الداخلية (In-App Chat) ───────────────────────────────────
-
-model InternalConversation {
-  id          Int               @id @default(autoincrement())
-  clinicId    Int               // User (Doctor) ID
-  patientId   Int               // Patient ID
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-
-  clinic      User              @relation("ClinicConversations", fields: [clinicId], references: [id])
-  patient     Patient           @relation("PatientConversations", fields: [patientId], references: [id])
-  messages    InternalMessage[]
-
-  @@unique([clinicId, patientId])
-  @@map("internal_conversations")
-}
-
-model InternalMessage {
-  id             Int                    @id @default(autoincrement())
-  conversationId Int
-  content        String
-  senderType     InternalSenderType     // PATIENT | DOCTOR | BOT
-  senderId       Int?                   // patientId or userId depending on senderType
-  isRead         Boolean                @default(false)
-  createdAt      DateTime               @default(now())
-
-  conversation   InternalConversation   @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-
-  @@map("internal_messages")
 }
 
 enum InternalSenderType {
