@@ -55,7 +55,7 @@ async function bootstrap() {
       callback(new Error(`CORS: Origin not allowed: ${origin}`), false);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization, ngrok-skip-browser-warning, bypass-tunnel-reminder, Bypass-Tunnel-Reminder, X-Requested-With, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform',
+    allowedHeaders: 'Content-Type, Accept, Authorization, ngrok-skip-browser-warning, bypass-tunnel-reminder, Bypass-Tunnel-Reminder, X-Requested-With, sentry-trace, baggage, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform',
     credentials: true,
     preflightContinue: false,
     optionsSuccessStatus: 204,

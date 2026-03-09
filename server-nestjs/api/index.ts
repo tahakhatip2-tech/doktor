@@ -14,6 +14,7 @@ export default async function handler(req, res) {
 
         app.enableCors({
             origin: [
+                'https://doktor-jo.vercel.app',
                 'https://hakeem-jordan-jordan.vercel.app',
                 'https://hakeemjordanjo.vercel.app',
                 'https://hakeem-jordan-five.vercel.app',
@@ -24,7 +25,7 @@ export default async function handler(req, res) {
                 'https://hakeem-jordan-jordan.vercel.app/'
             ],
             methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-            allowedHeaders: 'Content-Type, Accept, Authorization, Bypass-Tunnel-Reminder, ngrok-skip-browser-warning, X-Requested-With',
+            allowedHeaders: 'Content-Type, Accept, Authorization, Bypass-Tunnel-Reminder, ngrok-skip-browser-warning, X-Requested-With, sentry-trace, baggage',
             credentials: true,
         });
 
