@@ -41,7 +41,11 @@ export function useSocketNotifications() {
             query: {
                 userId: user.id
             },
-            transports: ['websocket', 'polling'], // Allow polling fallack
+            transports: ['polling', 'websocket'], // البدء بـ polling للمزيد من الاستقرار مع ngrok
+            extraHeaders: {
+                'ngrok-skip-browser-warning': 'true',
+                'bypass-tunnel-reminder': 'true'
+            },
             reconnectionAttempts: 5,
             reconnectionDelay: 1000,
         });

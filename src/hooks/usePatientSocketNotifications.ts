@@ -28,7 +28,11 @@ export function usePatientSocketNotifications(onNewNotification?: () => void) {
                 type: 'patient',
             },
             auth: { token },
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'], // البدء بـ polling للمزيد من الاستقرار مع ngrok
+            extraHeaders: {
+                'ngrok-skip-browser-warning': 'true',
+                'bypass-tunnel-reminder': 'true'
+            },
             reconnectionAttempts: 5,
             reconnectionDelay: 2000,
         });

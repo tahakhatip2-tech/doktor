@@ -113,7 +113,11 @@ export default function InternalChat() {
         const socket = io(SOCKET_URL, {
             query: { userId: user.id },
             auth: { token },
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'], // البدء بـ polling للمزيد من الاستقرار مع ngrok
+            extraHeaders: {
+                'ngrok-skip-browser-warning': 'true',
+                'bypass-tunnel-reminder': 'true'
+            },
         });
 
         socket.on('connect', () => console.log('[DoctorChat] Socket connected'));

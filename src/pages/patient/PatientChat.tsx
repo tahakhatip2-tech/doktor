@@ -90,7 +90,11 @@ export default function PatientChat() {
         const socket = io(SOCKET_URL, {
             query: { patientId: patient.id, type: 'patient' },
             auth: { token },
-            transports: ['websocket', 'polling'],
+            transports: ['polling', 'websocket'], // البدء بـ polling للمزيد من الاستقرار مع ngrok
+            extraHeaders: {
+                'ngrok-skip-browser-warning': 'true',
+                'bypass-tunnel-reminder': 'true'
+            },
         });
 
         socket.on('connect', () => {
