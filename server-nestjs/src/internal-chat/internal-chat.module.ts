@@ -7,12 +7,15 @@ import {
 import { PrismaModule } from '../prisma/prisma.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { JwtModule } from '@nestjs/jwt';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';import { WhatsAppModule } from '../whatsapp/whatsapp.module';
+import { AppointmentsModule } from '../appointments/appointments.module';
 
 @Module({
     imports: [
         PrismaModule,
         NotificationsModule,
+        WhatsAppModule,
+        AppointmentsModule,
         JwtModule.registerAsync({
             imports: [ConfigModule],
             useFactory: (config: ConfigService) => ({

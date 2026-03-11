@@ -2,17 +2,14 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import { usePatientAuth } from '@/hooks/usePatientAuth';
 import {
     ArrowRight,
     Send,
-    Building2,
     Bot,
     User,
-    MessageCircle,
     Loader2,
 } from 'lucide-react';
 import axios from 'axios';
@@ -35,7 +32,13 @@ interface Message {
 
 interface Conversation {
     id: number;
-    clinic: { id: number; name: string; clinic_name: string };
+    clinic: {
+        id: number;
+        name: string;
+        clinic_name: string;
+        clinic_specialty?: string;
+        clinic_logo?: string;
+    };
     patient: { id: number; fullName: string; phone: string };
     messages: Message[];
 }
@@ -160,57 +163,69 @@ export default function PatientChat() {
     };
 
     const clinicDisplayName = conversation?.clinic?.clinic_name || conversation?.clinic?.name || 'العيادة';
+    const doctorImage = conversation?.clinic?.clinic_logo;
+    const clinicSpecialty = conversation?.clinic?.clinic_specialty;
+    const firstLetter = clinicDisplayName.charAt(0);
 
     const getBubbleStyle = (type: Message['senderType']) => {
-        if (type === 'PATIENT') return 'bg-primary text-white rounded-2xl rounded-tr-sm ml-auto';
-        if (type === 'BOT') return 'bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl rounded-tl-sm';
-        return 'bg-card border border-border rounded-2xl rounded-tl-sm';
+        if (type === 'PATIENT') return 'bg-gradient-to-l from-blue-600 to-blue-500 text-white rounded-2xl rounded-tr-sm ml-auto shadow-sm';
+        if (type === 'BOT') return 'bg-orange-50 border border-orange-200 text-orange-900 rounded-2xl rounded-tl-sm shadow-sm';
+        return 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm shadow-sm';
     };
 
     const getSenderIcon = (type: Message['senderType']) => {
         if (type === 'PATIENT') return <User className="h-4 w-4" />;
-        if (type === 'BOT') return <Bot className="h-4 w-4 text-amber-600" />;
-        return <Building2 className="h-4 w-4 text-primary" />;
+        if (type === 'BOT') return <Bot className="h-4 w-4 text-orange-600" />;
+        return doctorImage ? (
+            <img src={doctorImage} alt="Dr" className="h-full w-full object-cover rounded-xl" />
+        ) : (
+            <span className="font-bold text-sm text-blue-800">{firstLetter}</span>
+        );
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)]" dir="rtl">
+        <div className="flex flex-col" dir="rtl" style={{ height: 'calc(100vh - 4rem)' }}>
             {/* ── Header ─────────────────────────────────────────────────── */}
-            <div className="flex items-center gap-4 px-4 py-3 border-b bg-background/95 backdrop-blur sticky top-0 z-10">
+            <div className="flex-shrink-0 flex items-center gap-4 px-4 py-3 border-b bg-white shadow-sm">
                 <Button
                     variant="ghost"
                     size="icon"
                     onClick={() => navigate(-1)}
-                    className="rounded-xl"
+                    className="rounded-xl hover:bg-slate-100/50"
                 >
-                    <ArrowRight className="h-5 w-5" />
+                    <ArrowRight className="h-5 w-5 text-slate-600" />
                 </Button>
 
                 {loading ? (
                     <Skeleton className="h-10 w-48" />
                 ) : (
                     <div className="flex items-center gap-3 flex-1">
-                        <div className="h-10 w-10 rounded-xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
-                            <Building2 className="h-5 w-5 text-white" />
+                        <div className="relative h-11 w-11 rounded-xl bg-gradient-to-tr from-orange-500 to-blue-600 p-0.5 flex flex-shrink-0 items-center justify-center shadow-sm">
+                            <div className="h-full w-full rounded-[10px] bg-white flex items-center justify-center overflow-hidden">
+                                {doctorImage ? (
+                                    <img src={doctorImage} alt={clinicDisplayName} className="h-full w-full object-cover" />
+                                ) : (
+                                    <span className="font-bold text-lg text-blue-800">{firstLetter}</span>
+                                )}
+                            </div>
+                            <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-green-500 border-2 border-white shadow-sm" />
                         </div>
                         <div>
-                            <p className="font-bold text-sm">{clinicDisplayName}</p>
-                            <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                <span className="h-1.5 w-1.5 rounded-full bg-green-500 inline-block" />
+                            <p className="font-extrabold text-slate-900 text-sm">{clinicDisplayName}</p>
+                            {clinicSpecialty && (
+                                <p className="text-[11px] font-bold text-orange-500">{clinicSpecialty}</p>
+                            )}
+                            <p className="text-[10px] font-bold text-green-600 flex items-center gap-1">
                                 متاح للرد
                             </p>
                         </div>
                     </div>
                 )}
 
-                <Badge variant="secondary" className="text-xs gap-1">
-                    <MessageCircle className="h-3 w-3" />
-                    دردشة داخلية
-                </Badge>
             </div>
 
             {/* ── Messages Area ───────────────────────────────────────────── */}
-            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-muted/20">
+            <div className="flex-1 overflow-y-auto px-4 py-6 space-y-4 bg-slate-50/50">
                 {loading ? (
                     <div className="space-y-4">
                         {[1, 2, 3].map(i => (
@@ -219,12 +234,12 @@ export default function PatientChat() {
                     </div>
                 ) : messages.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 text-center py-20">
-                        <div className="h-16 w-16 rounded-2xl gradient-primary flex items-center justify-center shadow-glow">
+                        <div className="h-16 w-16 rounded-2xl bg-gradient-to-tr from-orange-400 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
                             <MessageCircle className="h-8 w-8 text-white" />
                         </div>
                         <div>
-                            <p className="font-bold text-lg">ابدأ المحادثة</p>
-                            <p className="text-muted-foreground text-sm mt-1">
+                            <p className="font-extrabold text-slate-800 text-lg">ابدأ المحادثة</p>
+                            <p className="text-slate-500 font-medium text-sm mt-1">
                                 أرسل رسالتك لـ {clinicDisplayName} وسيردّ عليك في أقرب وقت
                             </p>
                         </div>
@@ -239,12 +254,12 @@ export default function PatientChat() {
                             )}
                         >
                             <div className={cn(
-                                'h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-1',
+                                'h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-1 shadow-sm overflow-hidden border',
                                 msg.senderType === 'PATIENT'
-                                    ? 'bg-primary/10 text-primary'
+                                    ? 'bg-blue-100 text-blue-600 border-blue-200'
                                     : msg.senderType === 'BOT'
-                                        ? 'bg-amber-100'
-                                        : 'bg-primary/10'
+                                        ? 'bg-orange-100 text-orange-600 border-orange-200'
+                                        : 'bg-white border-slate-200'
                             )}>
                                 {getSenderIcon(msg.senderType)}
                             </div>
@@ -269,14 +284,14 @@ export default function PatientChat() {
             {/* ── Input Bar ───────────────────────────────────────────────── */}
             <form
                 onSubmit={handleSend}
-                className="flex items-center gap-3 px-4 py-3 border-t bg-background/95 backdrop-blur"
+                className="flex items-center gap-3 px-4 py-3 border-t bg-white sticky bottom-0 z-10 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]"
             >
                 <Input
                     ref={inputRef}
                     value={input}
                     onChange={e => setInput(e.target.value)}
-                    placeholder="اكتب رسالتك..."
-                    className="flex-1 rounded-2xl h-12 bg-muted/50 border-border/50 focus:border-primary/50"
+                    placeholder="اكتب رسالتك هنا..."
+                    className="flex-1 rounded-full h-12 bg-slate-50 border-slate-200 focus:border-blue-500 focus:bg-white shadow-inner font-medium"
                     disabled={loading || sending}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
                     dir="auto"
@@ -284,13 +299,13 @@ export default function PatientChat() {
                 <Button
                     type="submit"
                     size="icon"
-                    className="h-12 w-12 rounded-2xl gradient-primary shadow-glow flex-shrink-0"
+                    className="h-12 w-12 rounded-full bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg shadow-blue-500/30 flex-shrink-0 hover:shadow-xl hover:-translate-y-0.5 transition-all text-white"
                     disabled={!input.trim() || loading || sending}
                 >
                     {sending ? (
                         <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
-                        <Send className="h-5 w-5 rotate-180" />
+                        <Send className="h-5 w-5 rtl:rotate-180" />
                     )}
                 </Button>
             </form>

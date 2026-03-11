@@ -20,6 +20,11 @@ export class PatientAppointmentController {
         return this.appointmentService.getMedicalRecords(req.user.id);
     }
 
+    @Get('medical-records/:id/advice')
+    async getRecordAiAdvice(@Request() req, @Param('id', ParseIntPipe) id: number) {
+        return this.appointmentService.getRecordAiAdvice(req.user.id, id);
+    }
+
     // ─── المسارات الديناميكية بعد الثابتة ──────────────────────────────────
 
     @Post()

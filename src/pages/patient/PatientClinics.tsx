@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, MapPin, Phone, Clock, Search, Calendar, MessageCircle, ArrowLeft, User } from 'lucide-react';
+import { Building2, MapPin, Phone, Clock, Search, Calendar, MessageCircle } from 'lucide-react';
 import axios from 'axios';
 
 import { BASE_URL } from '@/lib/api';
@@ -108,105 +108,105 @@ export default function PatientClinics() {
                         {filteredClinics.map((clinic) => (
                             <Card
                                 key={clinic.id}
-                                className="shadow-card hover:shadow-glow transition-all group cursor-pointer hover:-translate-y-1"
+                                className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col h-full"
                                 onClick={() => navigate(`/patient/clinics/${clinic.id}`)}
                             >
-                                <CardHeader className="pb-3 border-b border-border/5">
-                                    <div className="flex flex-col gap-4">
-                                        {/* Doctor section */}
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border-2 border-primary/20">
-                                                {clinic.avatar ? (
-                                                    <img
-                                                        src={clinic.avatar.startsWith('http') ? clinic.avatar : `${BASE_URL}${clinic.avatar.startsWith('/') ? '' : '/'}${clinic.avatar}`}
-                                                        alt={clinic.name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <User className="h-6 w-6 text-muted-foreground" />
-                                                )}
+                                <div className="flex-1">
+                                    {/* ── Header (Avatar, Doctor, Clinic) ───────────────── */}
+                                    <div className="flex items-start justify-between p-5 pb-4">
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative">
+                                                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
+                                                    <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white">
+                                                        {(clinic.clinic_logo || clinic.avatar) ? (
+                                                            <img
+                                                                src={(clinic.clinic_logo || clinic.avatar).startsWith('http') ? (clinic.clinic_logo || clinic.avatar) : `${BASE_URL}${(clinic.clinic_logo || clinic.avatar).startsWith('/') ? '' : '/'}${clinic.clinic_logo || clinic.avatar}`}
+                                                                alt={clinic.clinic_name || clinic.name}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        ) : (
+                                                            <span className="font-black text-xl text-blue-800">
+                                                                {(clinic.clinic_name || clinic.name || 'ع').charAt(0)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-medium text-muted-foreground mb-0.5">الدكتور</p>
-                                                <CardTitle className="text-lg truncate leading-tight">{clinic.name}</CardTitle>
-                                            </div>
-                                        </div>
-
-                                        {/* Clinic section */}
-                                        <div className="flex items-center gap-3 bg-muted/30 p-2.5 rounded-lg border border-border/50 transition-colors group-hover:bg-muted/50">
-                                            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center flex-shrink-0 shadow-sm text-white overflow-hidden">
-                                                {clinic.clinic_logo ? (
-                                                    <img
-                                                        src={clinic.clinic_logo.startsWith('http') ? clinic.clinic_logo : `${BASE_URL}${clinic.clinic_logo.startsWith('/') ? '' : '/'}${clinic.clinic_logo}`}
-                                                        alt={clinic.clinic_name}
-                                                        className="w-full h-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <Building2 className="h-5 w-5" />
-                                                )}
-                                            </div>
-                                            <div className="min-w-0 flex-1">
-                                                <p className="font-semibold text-sm truncate">{clinic.clinic_name || clinic.name || 'لم يحدد'}</p>
+                                            
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                <p className="font-extrabold text-base text-slate-900 truncate">
+                                                    {clinic.clinic_name || clinic.name}
+                                                </p>
+                                                
                                                 {clinic.clinic_specialty && (
-                                                    <Badge variant="secondary" className="mt-1 text-[10px] h-5 py-0 font-medium">
+                                                    <p className="text-xs text-orange-600 font-bold mt-1 bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100 truncate">
                                                         {clinic.clinic_specialty}
-                                                    </Badge>
+                                                    </p>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
-                                </CardHeader>
-                                <CardContent className="space-y-3">
-                                    {clinic.clinic_address && (
-                                        <div className="flex items-start gap-2 text-sm text-muted-foreground">
-                                            <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                                            {clinic.location_url ? (
-                                                <a
-                                                    href={clinic.location_url}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="line-clamp-1 hover:text-blue-600 hover:underline cursor-pointer"
-                                                    onClick={(e) => e.stopPropagation()}
-                                                >
-                                                    {clinic.clinic_address}
-                                                </a>
-                                            ) : (
-                                                <span className="line-clamp-1">{clinic.clinic_address}</span>
-                                            )}
-                                        </div>
-                                    )}
-                                    {(clinic.clinic_phone || clinic.phone) && (
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Phone className="h-4 w-4" />
-                                            <span dir="ltr">{clinic.clinic_phone || clinic.phone}</span>
-                                        </div>
-                                    )}
-                                    {clinic.working_hours && (
-                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                            <Clock className="h-4 w-4" />
-                                            <span>{clinic.working_hours}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex gap-2 pt-4">
-                                        <Button
-                                            className="flex-1 gradient-primary text-white shadow-glow gap-2 group-hover:scale-[1.02] transition-transform"
-                                            onClick={(e) => { e.stopPropagation(); navigate(`/patient/clinics/${clinic.id}`); }}
-                                        >
-                                            <Calendar className="h-4 w-4" />
-                                            احجز موعد
-                                            <ArrowLeft className="h-3 w-3 mr-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </Button>
-                                        <Button
-                                            variant="outline"
-                                            size="icon"
-                                            onClick={(e) => handleWhatsApp(e, clinic)}
-                                            className="hover:bg-green-500 hover:text-white transition-colors hover:border-green-500"
-                                            title="تواصل عبر واتساب"
-                                        >
-                                            <MessageCircle className="h-4 w-4" />
-                                        </Button>
+
+                                    {/* ── Content (Specialty, Address, Contact) ───────────── */}
+                                    <div className="px-5 pb-5 space-y-3">
+                                        {clinic.clinic_specialty && (
+                                            <div className="text-sm font-bold text-slate-800 bg-slate-50 px-3 py-2 rounded-md border border-slate-100 mb-3 shadow-sm inline-block w-full text-center">
+                                                {clinic.clinic_specialty}
+                                            </div>
+                                        )}
+                                        
+                                        {clinic.clinic_address && (
+                                            <div className="flex items-start gap-2 text-sm text-slate-600 font-medium">
+                                                <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0 text-blue-500" />
+                                                {clinic.location_url ? (
+                                                    <a
+                                                        href={clinic.location_url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="line-clamp-1 hover:text-blue-700 hover:underline cursor-pointer"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        {clinic.clinic_address}
+                                                    </a>
+                                                ) : (
+                                                    <span className="line-clamp-1">{clinic.clinic_address}</span>
+                                                )}
+                                            </div>
+                                        )}
+                                        {(clinic.clinic_phone || clinic.phone) && (
+                                            <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                                                <Phone className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                                <span dir="ltr">{clinic.clinic_phone || clinic.phone}</span>
+                                            </div>
+                                        )}
+                                        {clinic.working_hours && (
+                                            <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                                                <Clock className="h-4 w-4 text-orange-400 flex-shrink-0" />
+                                                <span className="truncate">{clinic.working_hours}</span>
+                                            </div>
+                                        )}
                                     </div>
-                                </CardContent>
+                                </div>
+
+                                {/* ── Bottom Action Bar ───────────────────────────────── */}
+                                <div className="flex items-center gap-1.5 px-3 py-3 bg-slate-50 border-t border-slate-200 mt-auto">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/patient/clinics/${clinic.id}`); }}
+                                        className="flex-[2] flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                                    >
+                                        <Calendar className="h-3.5 w-3.5" />
+                                        احجز موعد
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => handleWhatsApp(e, clinic)}
+                                        className="flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-white text-green-600 border border-green-200 hover:bg-green-50 shadow-sm"
+                                    >
+                                        <MessageCircle className="h-3.5 w-3.5" />
+                                        تواصل
+                                    </button>
+                                </div>
                             </Card>
                         ))}
                     </div>

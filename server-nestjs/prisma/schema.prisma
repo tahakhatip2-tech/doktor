@@ -45,6 +45,8 @@ model User {
   plan                  Plan?                  @relation(fields: [planId], references: [id])
   whatsAppChats         WhatsAppChat[]
   internalConversations InternalConversation[] @relation("ClinicConversations")
+  offers                Offer[]
+  offerLikes            OfferLike[]
 }
 
 model Plan {
@@ -349,6 +351,7 @@ model MedicalRecord {
   feeDetails    String?
   attachmentUrl String?
   recordType    String      @default("prescription")
+  aiAdvice      String?
   createdAt     DateTime    @default(now())
   patientUserId Int?
   appointment   Appointment @relation(fields: [appointmentId], references: [id])
@@ -379,6 +382,7 @@ model Patient {
   medicalRecords        MedicalRecord[]
   notifications         PatientNotification[]
   internalConversations InternalConversation[] @relation("PatientConversations")
+  offerLikes            OfferLike[]
 }
 
 model PatientNotification {
@@ -436,6 +440,36 @@ enum SubscriptionStatus {
   ACTIVE
   PAST_DUE
   CANCELED
+}
+
+model Offer {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  title       String
+  content     String
+  image       String?
+  isPermanent Boolean     @default(false)
+  startDate   DateTime    @default(now())
+  endDate     DateTime?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id])
+  likes       OfferLike[]
+}
+
+model OfferLike {
+  id        Int      @id @default(autoincrement())
+  offerId   Int
+  patientId Int?
+  userId    Int?
+  createdAt DateTime @default(now())
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  patient   Patient? @relation(fields: [patientId], references: [id])
+  user      User?    @relation(fields: [userId], references: [id])
+
+  @@unique([offerId, patientId])
+  @@unique([offerId, userId])
 }
 
 enum InternalSenderType {

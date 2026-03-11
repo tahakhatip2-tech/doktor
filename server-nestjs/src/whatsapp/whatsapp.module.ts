@@ -10,6 +10,6 @@ import { SupabaseService } from '../storage/supabase.service';
   imports: [forwardRef(() => AppointmentsModule)],
   providers: [WhatsAppService, AiService, SupabaseService],
   controllers: [WhatsAppController],
-  exports: [WhatsAppService],
+  exports: [WhatsAppService, AiService],
 })
 export class WhatsAppModule { }

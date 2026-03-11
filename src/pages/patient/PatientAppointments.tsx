@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -137,63 +137,83 @@ export default function PatientAppointments() {
                         ) : (
                             <div className="space-y-4">
                                 {filteredAppointments.map((appointment) => (
-                                    <Card key={appointment.id} className="shadow-card hover:shadow-glow transition-shadow">
-                                        <CardHeader>
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex-1">
-                                                    <CardTitle className="text-xl">
-                                                        {appointment.user?.clinic_name || appointment.user?.name}
-                                                    </CardTitle>
-                                                    <CardDescription className="mt-1">
-                                                        {appointment.user?.clinic_specialty}
-                                                    </CardDescription>
+                                    <Card key={appointment.id} className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
+                                        {/* ── Header ───────────────── */}
+                                        <div className="flex items-start justify-between p-5 pb-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="relative">
+                                                    <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10 flex items-center justify-center">
+                                                        <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white text-blue-800 font-bold text-lg">
+                                                            {appointment.user?.name?.[0] || 'د'}
+                                                        </div>
+                                                    </div>
                                                 </div>
+                                                
+                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                    <div className="flex items-center gap-2">
+                                                        <p className="font-extrabold text-base text-slate-900 truncate">
+                                                            {appointment.user?.name || appointment.user?.clinic_name}
+                                                        </p>
+                                                    </div>
+                                                    
+                                                    <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                                                        <p className="text-xs text-orange-600 font-bold flex items-center gap-1.5 truncate bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100">
+                                                            <span>{appointment.user?.clinic_specialty || 'عيادة طبية'}</span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex flex-col items-end pt-1">
                                                 {getStatusBadge(appointment.status)}
                                             </div>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    <Calendar className="h-4 w-4 text-primary" />
+                                        </div>
+
+                                        {/* ── Content ───────────── */}
+                                        <div className="px-5 pb-5 space-y-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                                                    <Calendar className="h-4 w-4 text-blue-500 flex-shrink-0" />
                                                     <span>{format(new Date(appointment.appointmentDate), 'PPP', { locale: ar })}</span>
                                                 </div>
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    <Clock className="h-4 w-4 text-primary" />
+                                                <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
+                                                    <Clock className="h-4 w-4 text-orange-500 flex-shrink-0" />
                                                     <span>{format(new Date(appointment.appointmentDate), 'p', { locale: ar })}</span>
                                                 </div>
                                                 {appointment.user?.clinic_address && (
-                                                    <div className="flex items-start gap-2 text-sm md:col-span-2">
-                                                        <MapPin className="h-4 w-4 text-primary mt-0.5" />
+                                                    <div className="flex items-start gap-2 text-sm text-slate-600 font-medium sm:col-span-2">
+                                                        <MapPin className="h-4 w-4 text-green-500 flex-shrink-0 mt-0.5" />
                                                         <span>{appointment.user.clinic_address}</span>
                                                     </div>
                                                 )}
                                             </div>
 
                                             {appointment.notes && (
-                                                <div className="bg-muted/50 p-3 rounded-lg">
-                                                    <div className="flex items-start gap-2 text-sm">
-                                                        <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                                                <div className="bg-slate-50 p-3 rounded-lg border border-slate-100 mt-2">
+                                                    <div className="flex items-start gap-2 text-sm text-slate-600">
+                                                        <FileText className="h-4 w-4 text-slate-400 mt-0.5" />
                                                         <div>
-                                                            <p className="font-medium mb-1">ملاحظات:</p>
-                                                            <p className="text-muted-foreground">{appointment.notes}</p>
+                                                            <p className="font-bold text-slate-800 mb-0.5">ملاحظات الموعد:</p>
+                                                            <p className="text-slate-600 leading-relaxed">{appointment.notes}</p>
                                                         </div>
                                                     </div>
                                                 </div>
                                             )}
+                                        </div>
 
-                                            {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
-                                                <div className="flex gap-2 pt-2">
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => { setSelectedAppointment(appointment); setCancelDialogOpen(true); }}
-                                                    >
-                                                        <X className="h-4 w-4 ml-2" />
-                                                        إلغاء الموعد
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </CardContent>
+                                        {/* ── Bottom Action Bar ───────────────────────────────── */}
+                                        {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
+                                            <div className="flex items-center gap-1.5 px-3 py-3 bg-slate-50 border-t border-slate-200">
+                                                <button
+                                                    onClick={() => { setSelectedAppointment(appointment); setCancelDialogOpen(true); }}
+                                                    className="flex-[1] flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-white text-red-600 border border-red-200 hover:bg-red-50 shadow-sm max-w-[150px]"
+                                                >
+                                                    <X className="h-3.5 w-3.5" />
+                                                    إلغاء الموعد
+                                                </button>
+                                            </div>
+                                        )}
                                     </Card>
                                 ))}
                             </div>

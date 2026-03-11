@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePatientAppointmentDto, CancelAppointmentDto } from './patient-appointment.dto';
+import { AiService } from '../whatsapp/ai.service';
 
 @Injectable()
 export class PatientAppointmentService {
-    constructor(private prisma: PrismaService) { }
+    constructor(
+        private prisma: PrismaService,
+        private aiService: AiService
+    ) { }
 
     async createAppointment(patientId: number, dto: CreatePatientAppointmentDto) {
         // Verify clinic exists
@@ -257,9 +261,18 @@ export class PatientAppointmentService {
     }
 
     async getMedicalRecords(patientId: number) {
+        // جلب السجلات المرتبطة مباشرة بالمريض عبر patientUserId
         const records = await this.prisma.medicalRecord.findMany({
             where: {
-                patientUserId: patientId,
+                OR: [
+                    { patientUserId: patientId },
+                    // أيضاً السجلات المرتبطة بمواعيد هذا المريض (مثل حجوزات الدردشة الداخلية)
+                    {
+                        appointment: {
+                            patientUserId: patientId,
+                        },
+                    },
+                ],
             },
             include: {
                 appointment: {
@@ -281,5 +294,43 @@ export class PatientAppointmentService {
         });
 
         return records;
+    }
+
+    async getRecordAiAdvice(patientId: number, recordId: number) {
+        const record = await this.prisma.medicalRecord.findFirst({
+            where: {
+                id: recordId,
+                patientUserId: patientId
+            },
+            include: {
+                appointment: true
+            }
+        });
+
+        if (!record) {
+            throw new NotFoundException('السجل غير موجود');
+        }
+
+        // If advice already exists, return it
+        if (record.aiAdvice) {
+            return { advice: record.aiAdvice };
+        }
+
+        // Generate new advice
+        const advice = await this.aiService.generateMedicalAdvice(
+            record.appointment.userId ?? 1,
+            record.diagnosis || 'غير محدد',
+            record.treatment || 'غير محدد'
+        );
+
+        if (advice) {
+            // Save it for future use
+            await this.prisma.medicalRecord.update({
+                where: { id: recordId },
+                data: { aiAdvice: advice }
+            });
+        }
+
+        return { advice: advice || 'لا تتوفر نصائح حالياً، يرجى المحاولة لاحقاً' };
     }
 }

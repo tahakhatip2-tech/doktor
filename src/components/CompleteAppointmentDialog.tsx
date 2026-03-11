@@ -1,4 +1,4 @@
-﻿
+
 import React, { useState, useEffect } from 'react';
 import {
     Dialog,
@@ -101,7 +101,7 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
         setLoading(true);
         try {
             const data: any = {
-                patientId: appointment.patientId || appointment.patient_id,
+                // لا نرسل patientId — الباك اند سيجلبه من الموعد مباشرة
                 diagnosis: formData.diagnosis,
                 treatment: formData.treatment,
                 feeAmount: parseFloat(formData.fee_amount) || 0,
@@ -232,10 +232,17 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <div className="text-sm font-black pr-6">
-                                                {appointment.customerName || appointment.patient_name || appointment.customer_name || 'عميل'}
+                                                {appointment.customerName 
+                                                    || appointment.patient_name 
+                                                    || appointment.customer_name 
+                                                    || appointment.patient?.fullName 
+                                                    || 'مريض'}
                                             </div>
                                             <div className="text-[10px] text-muted-foreground pr-6 uppercase tracking-widest font-bold">
                                                 رقم الموعد: #{appointment.id}
+                                                {appointment.notes?.includes('[BOT-INTERNAL]') && (
+                                                    <span className="mr-2 text-amber-600">• حجز موظف آلي</span>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

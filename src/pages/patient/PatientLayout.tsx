@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -23,6 +23,7 @@ import {
     LogOut,
     MessageCircle,
     Languages,
+    Tag,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
@@ -63,9 +64,9 @@ export default function PatientLayout() {
     const navItems = [
         { path: '/patient/dashboard', label: 'الرئيسية', icon: Home },
         { path: '/patient/appointments', label: 'مواعيدي', icon: Calendar },
+        { path: '/patient/offers', label: 'العروض', icon: Tag },
         { path: '/patient/clinics', label: 'العيادات', icon: Building2 },
         { path: '/patient/messages', label: 'رسائلي', icon: MessageCircle },
-        { path: '/patient/medical-records', label: 'سجلاتي', icon: FileText },
     ];
 
     if (loading) {
@@ -180,10 +181,14 @@ export default function PatientLayout() {
             </header>
 
             {/* Main Content */}
-            <main className="min-h-[calc(100vh-4rem)] pb-24">
-                <div className="container px-4 sm:px-8 py-4 sm:py-6 mx-auto max-w-7xl">
+            <main className="min-h-[calc(100vh-4rem)]">
+                {location.pathname.startsWith('/patient/chat') ? (
                     <Outlet />
-                </div>
+                ) : (
+                    <div className="container px-4 sm:px-8 py-4 sm:py-6 mx-auto max-w-7xl pb-24">
+                        <Outlet />
+                    </div>
+                )}
             </main>
 
             {/* Footer */}

@@ -20,7 +20,7 @@ export class AiService {
         }
     }
 
-    async getAIResponse(userId: number, userMessage: string, phone?: string, contactName: string = 'غير معروف', audioFilePath?: string): Promise<string | null> {
+    async getAIResponse(userId: number, userMessage: string, phone?: string, contactName: string = 'غير معروف', audioFilePath?: string, historyStrOverride?: string): Promise<string | null> {
         try {
             // 1. Fetch ALL Settings & Templates for deep context
             const [settings, templates, services] = await Promise.all([
@@ -110,8 +110,8 @@ ${getSetting('ai_system_instruction')}
 `;
 
             // 5. Build History
-            let historyStr = "";
-            if (phone) {
+            let historyStr = historyStrOverride || "";
+            if (!historyStrOverride && phone) {
                 const chat = await this.prisma.whatsAppChat.findUnique({
                     where: { userId_phone: { userId, phone } }
                 });
@@ -216,4 +216,20 @@ ${getSetting('ai_system_instruction')}
             return null;
         }
     }
+
+    async generateMedicalAdvice(userId: number, diagnosis: string, treatment: string): Promise<string | null> {
+        const prompt = `أنت طبيب استشاري خبير. بناءً على التشخيص والعلاج التاليين لمريض، قدم 3-5 نصائح طبية عملية ومختصرة للمريض لمساعدته في رحلة العلاج.
+
+التشخيص: ${diagnosis}
+العلاج: ${treatment}
+
+المطلوب:
+- لغة عربية سهلة وودودة.
+- نصائح محددة وعملية.
+- كن مختصراً جداً.
+- لا تضف أي مقدمات أو خاتمة، فقط النصائح كنقاط.`;
+
+        return this.getAIResponse(userId, prompt, undefined, 'نظام السجلات الطبية');
+    }
 }
+

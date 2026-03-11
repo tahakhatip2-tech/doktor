@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -113,42 +113,54 @@ export default function PatientNotifications() {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {notifications.map((notification) => (
                             <Card
                                 key={notification.id}
-                                className={`shadow-card hover:shadow-md transition-all cursor-pointer ${!notification.isRead ? 'bg-primary/5 border-primary/20' : ''}`}
+                                className={`relative rounded-md border bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer group ${!notification.isRead ? 'border-orange-500 bg-orange-50/30' : 'border-slate-200 hover:border-blue-300'}`}
                                 onClick={() => !notification.isRead && markAsRead(notification.id)}
                             >
-                                <CardContent className="p-4">
-                                    <div className="flex items-start gap-4">
-                                        <div className={`p-3 rounded-lg ${!notification.isRead ? 'bg-primary text-white' : 'bg-muted text-muted-foreground'}`}>
-                                            <Bell className="h-5 w-5" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-start justify-between gap-2 mb-1">
-                                                <h4 className="font-semibold">{notification.title}</h4>
-                                                {!notification.isRead && (
-                                                    <Badge variant="default" className="flex-shrink-0">جديد</Badge>
+                                {!notification.isRead && (
+                                    <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-orange-500 to-blue-600"></div>
+                                )}
+                                <div className="p-5 flex items-start gap-4">
+                                    <div className="relative">
+                                        {!notification.isRead ? (
+                                            <>
+                                                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-lg blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                <div className="relative h-12 w-12 rounded-lg bg-orange-500 flex items-center justify-center text-white shadow-sm z-10 border border-white/20">
+                                                    <Bell className="h-6 w-6 animate-pulse" />
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="relative h-12 w-12 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors">
+                                                <Bell className="h-6 w-6" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-start justify-between gap-2 mb-1.5">
+                                            <h4 className="font-extrabold text-base text-slate-900 group-hover:text-blue-700 transition-colors">{notification.title}</h4>
+                                            {!notification.isRead && (
+                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded-sm bg-orange-100 text-orange-600 border border-orange-200">جديد</span>
                                                 )}
-                                            </div>
-                                            <p className="text-sm text-muted-foreground mb-2">{notification.message}</p>
-                                            <div className="flex items-center justify-between">
-                                                <p className="text-xs text-muted-foreground">
-                                                    {format(new Date(notification.createdAt), 'PPp', { locale: ar })}
-                                                </p>
-                                                <Button
-                                                    variant="ghost"
-                                                    size="sm"
-                                                    onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}
-                                                    className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
+                                        </div>
+                                        <p className="text-sm text-slate-600 leading-relaxed mb-3">{notification.message}</p>
+                                        <div className="flex items-center justify-between pt-3 border-t border-slate-100">
+                                            <p className="text-xs font-bold text-slate-400">
+                                                {format(new Date(notification.createdAt), 'PPp', { locale: ar })}
+                                            </p>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={(e) => { e.stopPropagation(); deleteNotification(notification.id); }}
+                                                className="text-red-500 hover:text-red-600 hover:bg-red-50 h-8 px-2"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
                                         </div>
                                     </div>
-                                </CardContent>
+                                </div>
                             </Card>
                         ))}
                     </div>

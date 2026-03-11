@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -87,42 +87,45 @@ export default function PatientDashboard() {
             {/* Quick Actions */}
             <div className="px-4 sm:px-0 grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link to="/patient/clinics">
-                    <Card className="hover:shadow-glow transition-all cursor-pointer group">
+                    <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500"></div>
                         <CardContent className="p-6 flex items-center gap-4">
-                            <div className="p-3 rounded-lg bg-primary/10 group-hover:bg-primary group-hover:text-white transition-colors">
-                                <Building2 className="h-6 w-6 text-primary group-hover:text-white" />
+                            <div className="p-3 rounded-lg bg-orange-50 group-hover:bg-orange-500 transition-colors border border-orange-100 group-hover:border-orange-500 shadow-sm">
+                                <Building2 className="h-6 w-6 text-orange-600 group-hover:text-white transition-colors" />
                             </div>
                             <div>
-                                <h3 className="font-semibold">تصفح العيادات</h3>
-                                <p className="text-sm text-muted-foreground">ابحث عن عيادة</p>
+                                <h3 className="font-extrabold text-slate-900">تصفح العيادات</h3>
+                                <p className="text-sm font-medium text-slate-500">ابحث عن عيادة</p>
                             </div>
                         </CardContent>
                     </Card>
                 </Link>
 
                 <Link to="/patient/appointments">
-                    <Card className="hover:shadow-glow transition-all cursor-pointer group">
+                    <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500"></div>
                         <CardContent className="p-6 flex items-center gap-4">
-                            <div className="p-3 rounded-lg bg-accent/10 group-hover:bg-accent group-hover:text-white transition-colors">
-                                <Calendar className="h-6 w-6 text-accent group-hover:text-white" />
+                            <div className="p-3 rounded-lg bg-blue-50 group-hover:bg-blue-600 transition-colors border border-blue-100 group-hover:border-blue-600 shadow-sm">
+                                <Calendar className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" />
                             </div>
                             <div>
-                                <h3 className="font-semibold">مواعيدي</h3>
-                                <p className="text-sm text-muted-foreground">إدارة المواعيد</p>
+                                <h3 className="font-extrabold text-slate-900">مواعيدي</h3>
+                                <p className="text-sm font-medium text-slate-500">إدارة المواعيد</p>
                             </div>
                         </CardContent>
                     </Card>
                 </Link>
 
                 <Link to="/patient/medical-records">
-                    <Card className="hover:shadow-glow transition-all cursor-pointer group">
+                    <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500"></div>
                         <CardContent className="p-6 flex items-center gap-4">
-                            <div className="p-3 rounded-lg bg-success/10 group-hover:bg-success group-hover:text-white transition-colors">
-                                <FileText className="h-6 w-6 text-success group-hover:text-white" />
+                            <div className="p-3 rounded-lg bg-green-50 group-hover:bg-green-600 transition-colors border border-green-100 group-hover:border-green-600 shadow-sm">
+                                <FileText className="h-6 w-6 text-green-600 group-hover:text-white transition-colors" />
                             </div>
                             <div>
-                                <h3 className="font-semibold">السجلات الطبية</h3>
-                                <p className="text-sm text-muted-foreground">عرض السجلات</p>
+                                <h3 className="font-extrabold text-slate-900">السجلات الطبية</h3>
+                                <p className="text-sm font-medium text-slate-500">عرض السجلات</p>
                             </div>
                         </CardContent>
                     </Card>
@@ -131,21 +134,24 @@ export default function PatientDashboard() {
 
             <div className="px-4 sm:px-0 grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Upcoming Appointments */}
-                <Card className="shadow-card">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Calendar className="h-5 w-5 text-primary" />
-                                    المواعيد القادمة
-                                </CardTitle>
-                                <CardDescription>مواعيدك المجدولة</CardDescription>
-                            </div>
-                            <Link to="/patient/appointments">
-                                <Button variant="ghost" size="sm">عرض الكل</Button>
-                            </Link>
+                <Card className="relative rounded-md border border-slate-200 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-orange-500"></div>
+                    <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div>
+                            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                                <span className="bg-blue-100 p-1.5 rounded-md">
+                                    <Calendar className="h-5 w-5 text-blue-600" />
+                                </span>
+                                المواعيد القادمة
+                            </h3>
+                            <p className="text-xs font-bold text-slate-500 mt-1">مواعيدك الطبية المجدولة قريباً</p>
                         </div>
-                    </CardHeader>
+                        <Link to="/patient/appointments">
+                            <Button variant="outline" size="sm" className="font-bold text-xs border-orange-200 text-orange-600 hover:bg-orange-50 hover:text-orange-700">
+                                عرض الكل
+                            </Button>
+                        </Link>
+                    </div>
                     <CardContent>
                         {loading ? (
                             <div className="space-y-3">
@@ -165,31 +171,34 @@ export default function PatientDashboard() {
                                 </Link>
                             </div>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {upcomingAppointments.map((appointment) => (
                                     <div
                                         key={appointment.id}
-                                        className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                                        className="relative rounded-md border border-orange-500 bg-white p-4 hover:shadow-lg transition-all duration-300 overflow-hidden group"
                                     >
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div>
-                                                <h4 className="font-semibold">
+                                        <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-orange-500 to-blue-600"></div>
+                                        <div className="flex items-start justify-between mb-3 pr-2">
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-extrabold text-slate-900 truncate">
                                                     {appointment.user?.clinic_name || appointment.user?.name}
                                                 </h4>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {appointment.user?.clinic_specialty}
+                                                <p className="text-xs text-orange-600 font-bold bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100 mt-1">
+                                                    {appointment.user?.clinic_specialty || 'عيادة طبية'}
                                                 </p>
                                             </div>
-                                            {getStatusBadge(appointment.status)}
-                                        </div>
-                                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                                            <div className="flex items-center gap-1">
-                                                <Calendar className="h-4 w-4" />
-                                                {format(new Date(appointment.appointmentDate), 'PPP', { locale: ar })}
+                                            <div className="flex-shrink-0 pt-0.5">
+                                                {getStatusBadge(appointment.status)}
                                             </div>
-                                            <div className="flex items-center gap-1">
-                                                <Clock className="h-4 w-4" />
-                                                {format(new Date(appointment.appointmentDate), 'p', { locale: ar })}
+                                        </div>
+                                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 font-medium bg-slate-50 p-2 rounded-md border border-slate-100 pr-2">
+                                            <div className="flex items-center gap-1.5">
+                                                <Calendar className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
+                                                <span>{format(new Date(appointment.appointmentDate), 'PPP', { locale: ar })}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <Clock className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
+                                                <span dir="ltr">{format(new Date(appointment.appointmentDate), 'p', { locale: ar })}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -200,21 +209,24 @@ export default function PatientDashboard() {
                 </Card>
 
                 {/* Recent Notifications */}
-                <Card className="shadow-card">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <Bell className="h-5 w-5 text-accent" />
-                                    الإشعارات الأخيرة
-                                </CardTitle>
-                                <CardDescription>آخر التحديثات</CardDescription>
-                            </div>
-                            <Link to="/patient/notifications">
-                                <Button variant="ghost" size="sm">عرض الكل</Button>
-                            </Link>
+                <Card className="relative rounded-md border border-slate-200 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
+                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-blue-600"></div>
+                    <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+                        <div>
+                            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                                <span className="bg-orange-100 p-1.5 rounded-md">
+                                    <Bell className="h-5 w-5 text-orange-600" />
+                                </span>
+                                الإشعارات الأخيرة
+                            </h3>
+                            <p className="text-xs font-bold text-slate-500 mt-1">آخر التحديثات والتنبيهات</p>
                         </div>
-                    </CardHeader>
+                        <Link to="/patient/notifications">
+                            <Button variant="outline" size="sm" className="font-bold text-xs border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700">
+                                عرض الكل
+                            </Button>
+                        </Link>
+                    </div>
                     <CardContent>
                         {loading ? (
                             <div className="space-y-3">
@@ -232,20 +244,23 @@ export default function PatientDashboard() {
                                 {notifications.map((notification) => (
                                     <div
                                         key={notification.id}
-                                        className={`p-3 border rounded-lg ${!notification.isRead ? 'bg-primary/5 border-primary/20' : ''}`}
+                                        className={`relative p-4 border rounded-lg transition-all ${!notification.isRead ? 'border-orange-500 bg-orange-50 shadow-sm' : 'border-slate-200 bg-white hover:border-blue-300'}`}
                                     >
+                                        {!notification.isRead && (
+                                            <div className="absolute top-0 right-0 w-1 h-full bg-orange-500 rounded-r-lg"></div>
+                                        )}
                                         <div className="flex items-start justify-between">
-                                            <div className="flex-1">
-                                                <h4 className="font-medium text-sm">{notification.title}</h4>
-                                                <p className="text-sm text-muted-foreground mt-1">
+                                            <div className="flex-1 pr-1">
+                                                <h4 className="font-extrabold text-sm text-slate-800">{notification.title}</h4>
+                                                <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
                                                     {notification.message}
                                                 </p>
                                             </div>
                                             {!notification.isRead && (
-                                                <div className="h-2 w-2 rounded-full bg-primary flex-shrink-0 mt-2" />
+                                                <div className="h-2 w-2 rounded-full bg-orange-600 flex-shrink-0 mt-1.5 shadow-[0_0_8px_rgba(234,88,12,0.6)] animate-pulse" />
                                             )}
                                         </div>
-                                        <p className="text-xs text-muted-foreground mt-2">
+                                        <p className="text-xs font-bold text-slate-400 mt-3 pt-3 border-t border-slate-200/50">
                                             {format(new Date(notification.createdAt), 'PPp', { locale: ar })}
                                         </p>
                                     </div>

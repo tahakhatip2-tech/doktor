@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
 import {
     Send,
@@ -17,7 +18,7 @@ import {
     RefreshCw,
     ArrowRight,
 } from 'lucide-react';
-import { apiFetch } from '@/lib/api';
+import { apiFetch, whatsappApi } from '@/lib/api';
 import { io, Socket } from 'socket.io-client';
 import { format, formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -52,6 +53,7 @@ export default function InternalChat() {
     const [input, setInput] = useState('');
     const [search, setSearch] = useState('');
     const [unreadTotal, setUnreadTotal] = useState(0);
+    const [aiEnabled, setAiEnabled] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const socketRef = useRef<Socket | null>(null);
@@ -65,6 +67,9 @@ export default function InternalChat() {
 
             const countData = await apiFetch('/internal-chat/unread-count');
             setUnreadTotal(countData || 0);
+
+            const settings = await whatsappApi.getSettings();
+            setAiEnabled(settings.ai_enabled === '1' || settings.ai_enabled === true || settings.ai_enabled === 'true');
         } catch {
             toast({ variant: 'destructive', title: 'خطأ', description: 'تعذّر تحميل المحادثات' });
         } finally {
@@ -75,6 +80,17 @@ export default function InternalChat() {
     useEffect(() => {
         loadConversations();
     }, [loadConversations]);
+
+    const handleToggleAI = async (checked: boolean) => {
+        setAiEnabled(checked);
+        try {
+            await whatsappApi.updateSettings({ ai_enabled: checked ? '1' : '0' });
+            toast({ title: checked ? 'تم تفعيل الرد الآلي' : 'تم إيقاف الرد الآلي للمحادثات' });
+        } catch {
+            setAiEnabled(!checked);
+            toast({ variant: 'destructive', title: 'فشل تغيير حالة الموظف الآلي' });
+        }
+    };
 
     // ── تحميل رسائل محادثة بعينها ────────────────────────────────────────────
     const loadMessages = async (conv: Conversation) => {
@@ -202,21 +218,40 @@ export default function InternalChat() {
             )}>
                 {/* Header */}
                 <div className="px-4 py-4 border-b border-border/50">
-                    <div className="flex items-center justify-between mb-3">
-                        <div>
-                            <h3 className="font-black text-lg flex items-center gap-2">
-                                <MessageCircle className="h-5 w-5 text-primary" />
-                                الدردشة الداخلية
-                            </h3>
-                            {unreadTotal > 0 && (
-                                <Badge className="bg-destructive text-white text-xs mt-0.5">
-                                    {unreadTotal} رسالة جديدة
-                                </Badge>
-                            )}
+                    <div className="flex flex-col gap-3 mb-3">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h3 className="font-black text-lg flex items-center gap-2">
+                                    <MessageCircle className="h-5 w-5 text-primary" />
+                                    الدردشة الداخلية
+                                </h3>
+                                {unreadTotal > 0 && (
+                                    <Badge className="bg-destructive text-white text-xs mt-0.5">
+                                        {unreadTotal} رسالة جديدة
+                                    </Badge>
+                                )}
+                            </div>
+                            <Button variant="ghost" size="icon" onClick={loadConversations} className="rounded-xl">
+                                <RefreshCw className="h-4 w-4" />
+                            </Button>
                         </div>
-                        <Button variant="ghost" size="icon" onClick={loadConversations} className="rounded-xl">
-                            <RefreshCw className="h-4 w-4" />
-                        </Button>
+                        
+                        {/* Toggle AI Button */}
+                        <div className="flex items-center justify-between bg-amber-50/80 border border-amber-200/50 rounded-2xl p-3 shadow-sm transition-all hover:bg-amber-100/50">
+                            <div className="flex items-center gap-2.5">
+                                <div className={cn(
+                                    "p-2 rounded-xl transition-all duration-300", 
+                                    aiEnabled ? "bg-amber-500 text-white shadow-lg shadow-amber-500/20" : "bg-amber-100 text-amber-600"
+                                )}>
+                                    <Bot className="h-4 w-4" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-black text-amber-900 leading-none">الموظف الآلي</p>
+                                    <p className="text-[10px] text-amber-700 font-medium mt-1">الرد التلقائي والحجز</p>
+                                </div>
+                            </div>
+                            <Switch checked={aiEnabled} onCheckedChange={handleToggleAI} className="data-[state=checked]:bg-amber-500" />
+                        </div>
                     </div>
 
                     {/* Search */}

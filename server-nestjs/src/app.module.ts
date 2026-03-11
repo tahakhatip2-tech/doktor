@@ -13,6 +13,7 @@ import { GroupsModule } from './groups/groups.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { PatientModule } from './patient/patient.module';
 import { InternalChatModule } from './internal-chat/internal-chat.module';
+import { OffersModule } from './offers/offers.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 
@@ -34,6 +35,7 @@ import { join } from 'path';
     SubscriptionsModule,
     PatientModule,
     InternalChatModule,
+    OffersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

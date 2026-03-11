@@ -1,14 +1,13 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { usePatientAuth } from '@/hooks/usePatientAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-    FileText, Stethoscope, Calendar, Search, Download,
+    Stethoscope, Calendar, Search, Download,
     ChevronDown, ChevronUp, ClipboardList, FlaskConical,
-    Bed, ArrowRightLeft, Loader2, AlertCircle, FileX,
+    Bed, ArrowRightLeft, Loader2, AlertCircle, FileX, Sparkles,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -38,6 +37,7 @@ interface MedicalRecord {
     feeAmount: number | null;
     recordType: string;
     pdfUrl: string | null;
+    aiAdvice?: string | null;
     appointment: {
         appointmentDate: string;
         customerName: string;
@@ -53,6 +53,8 @@ export default function PatientMedicalRecords() {
     const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [expandedId, setExpandedId] = useState<number | null>(null);
+    // AI advice state: { [recordId]: { loading, advice } }
+    const [adviceState, setAdviceState] = useState<Record<number, { loading: boolean; advice: string | null }>>({});
 
     useEffect(() => {
         if (token) fetchRecords();
@@ -72,6 +74,26 @@ export default function PatientMedicalRecords() {
             setError(err.response?.data?.message || 'حدث خطأ في جلب السجلات الطبية');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAiAdvice = async (record: MedicalRecord) => {
+        // If advice already embedded in record, show it directly
+        if (record.aiAdvice) {
+            setAdviceState(prev => ({ ...prev, [record.id]: { loading: false, advice: record.aiAdvice! } }));
+            return;
+        }
+        setAdviceState(prev => ({ ...prev, [record.id]: { loading: true, advice: null } }));
+        try {
+            const res = await axios.get(`${API_URL}/patient/appointments/medical-records/${record.id}/advice`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const advice = res.data?.advice || 'لا تتوفر نصائح حالياً';
+            setAdviceState(prev => ({ ...prev, [record.id]: { loading: false, advice } }));
+            // Also update the local record so we don't re-fetch
+            setRecords(prev => prev.map(r => r.id === record.id ? { ...r, aiAdvice: advice } : r));
+        } catch {
+            setAdviceState(prev => ({ ...prev, [record.id]: { loading: false, advice: 'تعذر جلب النصائح' } }));
         }
     };
 
@@ -163,48 +185,55 @@ export default function PatientMedicalRecords() {
                             const date = record.appointment?.appointmentDate
                                 ? format(new Date(record.appointment.appointmentDate), 'dd MMMM yyyy', { locale: ar })
                                 : '—';
+                            const advice = adviceState[record.id];
 
                             return (
-                                <Card key={record.id} className="overflow-hidden transition-all duration-300">
+                                <Card key={record.id} className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
                                     <button className="w-full text-right" onClick={() => setExpandedId(isExpanded ? null : record.id)}>
-                                        <CardHeader className="pb-3">
-                                            <div className="flex items-start justify-between gap-3">
-                                                <div className="flex items-start gap-3 flex-1">
-                                                    <div className={`p-2 rounded-lg ${typeInfo.color} shrink-0`}>
-                                                        <Icon className="h-5 w-5" />
-                                                    </div>
-                                                    <div className="min-w-0">
-                                                        <div className="flex flex-wrap items-center gap-2 mb-1">
-                                                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${typeInfo.color}`}>{typeInfo.label}</span>
-                                                            <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${statusInfo.color}`}>{statusInfo.label}</span>
-                                                        </div>
-                                                        <CardTitle className="text-base">
-                                                            {record.appointment?.doctor?.clinic_name || 'عيادة'}
-                                                        </CardTitle>
-                                                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-muted-foreground">
-                                                            <span className="flex items-center gap-1">
-                                                                <Calendar className="h-3 w-3" />
-                                                                {date}
-                                                            </span>
-                                                            {record.appointment?.doctor?.clinic_specialty && (
-                                                                <span className="flex items-center gap-1">
-                                                                    <Stethoscope className="h-3 w-3" />
-                                                                    {record.appointment.doctor.clinic_specialty}
-                                                                </span>
-                                                            )}
-                                                            {record.feeAmount && (
-                                                                <span className="text-primary font-medium">
-                                                                    {Number(record.feeAmount).toFixed(2)} د.أ
-                                                                </span>
-                                                            )}
+                                        <div className="flex items-start justify-between p-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="relative">
+                                                    <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative h-12 w-12 rounded-full bg-white p-0.5 z-10 flex items-center justify-center">
+                                                        <div className={`h-full w-full rounded-full flex items-center justify-center overflow-hidden border border-white ${typeInfo.color}`}>
+                                                            <Icon className="h-5 w-5" />
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <div className="text-muted-foreground shrink-0 pt-1">
-                                                    {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                                                
+                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                    <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm ${typeInfo.color}`}>{typeInfo.label}</span>
+                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm ${statusInfo.color}`}>{statusInfo.label}</span>
+                                                    </div>
+                                                    <h4 className="font-extrabold text-base text-slate-900 truncate">
+                                                        {record.appointment?.doctor?.clinic_name || 'عيادة طبية'}
+                                                    </h4>
+                                                    
+                                                    <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                                                        <p className="text-xs text-orange-600 font-bold flex items-center gap-1.5 truncate bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100">
+                                                            <Stethoscope className="h-3 w-3" />
+                                                            <span>{record.appointment?.doctor?.clinic_specialty || 'سجل طبي'}</span>
+                                                        </p>
+                                                        <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
+                                                            <Calendar className="h-3 w-3 text-blue-400" />
+                                                            {date}
+                                                        </p>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </CardHeader>
+                                            
+                                            <div className="flex flex-col items-center h-full py-1 gap-4">
+                                                {record.feeAmount && (
+                                                    <span className="text-sm font-black text-blue-600">
+                                                        {Number(record.feeAmount).toFixed(2)} د.أ
+                                                    </span>
+                                                )}
+                                                <div className="text-slate-400 transition-transform duration-300">
+                                                    {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                                                </div>
+                                            </div>
+                                        </div>
                                     </button>
 
                                     {isExpanded && (
@@ -224,6 +253,51 @@ export default function PatientMedicalRecords() {
                                             {!record.diagnosis && !record.treatment && (
                                                 <p className="text-sm text-muted-foreground text-center py-2">لا توجد تفاصيل إضافية</p>
                                             )}
+
+                                            {/* AI Advice Section */}
+                                            {(record.diagnosis || record.treatment) && (
+                                                <div className="border rounded-xl p-4 bg-gradient-to-br from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20">
+                                                    <div className="flex items-center justify-between mb-3">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="p-1.5 rounded-lg bg-violet-100 dark:bg-violet-900/30">
+                                                                <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+                                                            </div>
+                                                            <p className="text-sm font-bold text-violet-700 dark:text-violet-300">نصائح طبية ذكية</p>
+                                                        </div>
+                                                        {!advice && (
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                                className="text-xs border-violet-300 text-violet-700 hover:bg-violet-100 dark:border-violet-700 dark:text-violet-300"
+                                                                onClick={() => fetchAiAdvice(record)}
+                                                            >
+                                                                <Sparkles className="h-3 w-3 ml-1" />
+                                                                اطلب نصائح AI
+                                                            </Button>
+                                                        )}
+                                                    </div>
+
+                                                    {advice?.loading && (
+                                                        <div className="flex items-center gap-2 text-violet-600 dark:text-violet-400 text-sm">
+                                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                                            <span>جارٍ توليد نصائح مخصصة لك...</span>
+                                                        </div>
+                                                    )}
+
+                                                    {advice?.advice && !advice.loading && (
+                                                        <div className="text-sm text-violet-900 dark:text-violet-200 leading-relaxed whitespace-pre-wrap">
+                                                            {advice.advice}
+                                                        </div>
+                                                    )}
+
+                                                    {!advice && (
+                                                        <p className="text-xs text-violet-500 dark:text-violet-400">
+                                                            احصل على نصائح طبية مخصصة بناءً على تشخيصك وعلاجك بمساعدة الذكاء الاصطناعي.
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            )}
+
                                             {record.pdfUrl && (
                                                 <a href={`${API_URL.replace('/api', '')}${record.pdfUrl}`} target="_blank" rel="noopener noreferrer">
                                                     <Button size="sm" className="w-full gap-2" variant="outline">
@@ -243,4 +317,3 @@ export default function PatientMedicalRecords() {
         </div >
     );
 }
-

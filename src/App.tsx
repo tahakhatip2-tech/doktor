@@ -1,4 +1,4 @@
-﻿import { Toaster } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -24,6 +24,7 @@ import PatientMedicalRecords from "./pages/patient/PatientMedicalRecords";
 import PatientChat from "./pages/patient/PatientChat";
 import PatientMessages from "./pages/patient/PatientMessages";
 import PatientProfile from "./pages/patient/PatientProfile";
+import PatientOffers from "./pages/patient/PatientOffers";
 import InternalChat from "./pages/InternalChat";
 
 import { ClinicProvider } from "./context/ClinicContext";
@@ -67,6 +68,7 @@ const App = () => (
                             <Route path="medical-records" element={<PatientMedicalRecords />} />
                             <Route path="messages" element={<PatientMessages />} />
                             <Route path="profile" element={<PatientProfile />} />
+                            <Route path="offers" element={<PatientOffers />} />
                             <Route path="chat/:clinicId" element={<PatientChat />} />
                         </Route>
 

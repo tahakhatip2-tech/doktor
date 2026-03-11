@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import {
     Linkedin,
     Twitter,
     MessagesSquare,
+    Tag,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -64,6 +65,7 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
         { id: 'internal-chat', label: 'رسائل المرضى', icon: MessagesSquare },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
+        { id: 'offers', label: 'العروض', icon: Tag },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
     ];

@@ -129,18 +129,24 @@ export class SaveMedicalRecordDto {
         description: 'التشخيص الطبي',
         example: 'التهاب في الحلق',
     })
+    @IsOptional()
+    @IsString()
     diagnosis?: string;
 
     @ApiPropertyOptional({
         description: 'العلاج الموصوف',
         example: 'مضاد حيوي + مسكن للألم',
     })
+    @IsOptional()
+    @IsString()
     treatment?: string;
 
     @ApiPropertyOptional({
         description: 'عمر المريض',
         example: '35',
     })
+    @IsOptional()
+    @IsString()
     age?: string;
 
     @ApiPropertyOptional({
@@ -148,18 +154,23 @@ export class SaveMedicalRecordDto {
         example: 50.00,
         type: 'number',
     })
+    @IsOptional()
     feeAmount?: number;
 
     @ApiPropertyOptional({
         description: 'تفاصيل الفاتورة',
         example: 'كشف + أدوية',
     })
+    @IsOptional()
+    @IsString()
     feeDetails?: string;
 
     @ApiPropertyOptional({
         description: 'رابط المرفقات',
         example: '/uploads/prescription-123.pdf',
     })
+    @IsOptional()
+    @IsString()
     attachmentUrl?: string;
 
     @ApiPropertyOptional({
@@ -168,7 +179,17 @@ export class SaveMedicalRecordDto {
         enum: ['prescription', 'lab_report', 'sick_leave', 'referral'],
         default: 'prescription',
     })
+    @IsOptional()
+    @IsString()
     recordType?: string;
+
+    @ApiPropertyOptional({
+        description: 'الرقم الوطني للمريض',
+        example: 'NID1234567',
+    })
+    @IsOptional()
+    @IsString()
+    nationalId?: string;
 }
 
 export class AppointmentResponseDto {

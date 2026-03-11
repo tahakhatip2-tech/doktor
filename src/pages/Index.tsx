@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import { UpcomingAppointments } from "@/components/UpcomingAppointments";
 import { ClinicProvider } from "@/context/ClinicContext";
 import ClinicSettings from "@/components/ClinicSettings";
 import { ClinicStats } from "@/components/ClinicStats";
+import OffersManager from "@/components/OffersManager";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PatientCardSkeleton } from "@/components/skeletons/PatientCardSkeleton";
 import HeroSection from "@/components/HeroSection";
@@ -43,7 +44,8 @@ import {
     Settings,
     LineChart,
     Sparkles,
-    Download
+    Download,
+    Tag
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BottomNav } from "@/components/BottomNav";
@@ -225,7 +227,8 @@ const Index = () => {
                                                 activeTab === 'appointments' ? "نظرة شاملة على جميع المواعيد المحجوزة والقدرة على جدولتها" :
                                                     activeTab === 'templates' ? "تحكم في الرسائل الجاهزة والردود الآلية لتوفير وقتك" :
                                                         activeTab === 'clinic-settings' ? "تعديل بيانات العيادة وشعارها بما يتناسب مع هويتك" :
-                                                            activeTab === 'bot-stats' ? "تحليل دقيق لتفاعلات المرضى مع المساعد الذكي الخاص بك" : "إدارة طبية متكاملة"
+                                                            activeTab === 'offers' ? "إدارة وتوزيع عروضك وتخفيضاتك الطبية" :
+                                                                activeTab === 'bot-stats' ? "تحليل دقيق لتفاعلات المرضى مع المساعد الذكي الخاص بك" : "إدارة طبية متكاملة"
                                     }
                                     icon={
                                         activeTab === 'dashboard' ? LayoutDashboard :
@@ -233,7 +236,8 @@ const Index = () => {
                                                 activeTab === 'appointments' ? Calendar :
                                                     activeTab === 'templates' ? FileText :
                                                         activeTab === 'clinic-settings' ? Settings :
-                                                            activeTab === 'bot-stats' ? LineChart : Sparkles
+                                                            activeTab === 'offers' ? Tag :
+                                                                activeTab === 'bot-stats' ? LineChart : Sparkles
                                     }
                                 />
                             )}
@@ -666,6 +670,8 @@ const Index = () => {
                             {activeTab === 'clinic-settings' && <ClinicSettings />}
 
                             {activeTab === 'bot-stats' && <ClinicStats />}
+
+                            {activeTab === 'offers' && <OffersManager />}
 
                             {activeTab === 'internal-chat' && (
                                 <div className="-mx-4 md:-mx-10 -mt-0">

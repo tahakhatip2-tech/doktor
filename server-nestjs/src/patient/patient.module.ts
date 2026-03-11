@@ -10,12 +10,15 @@ import { PatientNotificationController } from './patient-notification.controller
 import { PatientNotificationService } from './patient-notification.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AppointmentsModule } from '../appointments/appointments.module';
+import { WhatsAppModule } from '../whatsapp/whatsapp.module';
+import { AiService } from '../whatsapp/ai.service';
 
 @Module({
     imports: [
         PrismaModule,
         ConfigModule,
         forwardRef(() => AppointmentsModule),
+        forwardRef(() => WhatsAppModule),
         JwtModule.registerAsync({
             imports: [ConfigModule],
             inject: [ConfigService],

@@ -477,7 +477,6 @@ export class AppointmentsService {
 
   async saveMedicalRecord(appointmentId: number, userId: number, data: any) {
     const {
-      patientId,
       diagnosis,
       treatment,
       feeAmount,
@@ -487,58 +486,65 @@ export class AppointmentsService {
       attachmentUrl,
     } = data;
 
-    // Verify ownership
-    await this.findOne(appointmentId, userId);
+    // ─── جلب بيانات الموعد الكاملة (الموثوقة 100%) ───────────────────────
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, userId },
+      include: { contact: true, patientUser: true },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException('الموعد غير موجود أو ليس لديك صلاحية الوصول إليه');
+    }
+
+    // استخدم البيانات من الموعد مباشرة — لا تعتمد على ما يُرسله الفرونت اند
+    const resolvedContactId = appointment.patientId;    // contact.id (الاتصال في العيادة)
+    const resolvedPatientUserId = appointment.patientUserId;  // patient portal id
 
     return this.prisma.$transaction(async (tx) => {
-      // Update Contact with National ID and Age if provided
-      if (patientId) {
+      // ─── تحديث بيانات جهة الاتصال إذا توفرت ──────────────────────────
+      if (resolvedContactId && (nationalId || age)) {
         const updateData: any = {};
         if (nationalId) updateData.nationalId = nationalId;
         if (age) updateData.ageRange = age;
-
-        if (Object.keys(updateData).length > 0) {
-          await tx.contact.update({
-            where: { id: patientId },
-            data: updateData,
-          });
-        }
+        await tx.contact.update({
+          where: { id: resolvedContactId },
+          data: updateData,
+        }).catch(() => { /* تجاهل إذا لم يكن contact موجوداً */ });
       }
 
+      // ─── إغلاق الموعد كـ "مكتمل" ──────────────────────────────────────
       await tx.appointment.update({
         where: { id: appointmentId },
         data: { status: 'completed' },
       });
 
+      // ─── حفظ أو تحديث السجل الطبي ──────────────────────────────────────
       const existing = await tx.medicalRecord.findFirst({
         where: { appointmentId },
       });
 
+      const recordData = {
+        diagnosis,
+        treatment,
+        age,
+        feeAmount: feeAmount ? parseFloat(String(feeAmount)) : undefined,
+        feeDetails,
+        attachmentUrl,
+        recordType: data.recordType || 'prescription',
+      };
+
       if (existing) {
         return tx.medicalRecord.update({
           where: { id: existing.id },
-          data: {
-            diagnosis,
-            treatment,
-            age,
-            feeAmount,
-            feeDetails,
-            attachmentUrl,
-            recordType: data.recordType,
-          },
+          data: recordData,
         });
       } else {
         return tx.medicalRecord.create({
           data: {
             appointmentId,
-            patientId,
-            diagnosis,
-            treatment,
-            age,
-            feeAmount,
-            feeDetails,
-            attachmentUrl,
-            recordType: data.recordType || 'prescription',
+            patientId: resolvedContactId,         // contact.id
+            patientUserId: resolvedPatientUserId,  // ✅ ربط ببوابة المرضى
+            ...recordData,
           },
         });
       }

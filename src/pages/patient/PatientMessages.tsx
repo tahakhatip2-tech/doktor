@@ -22,7 +22,13 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 interface Conversation {
     id: number;
-    clinic: { id: number; name: string; clinic_name: string };
+    clinic: {
+        id: number;
+        name: string;
+        clinic_name: string;
+        clinic_specialty?: string;
+        clinic_logo?: string;
+    };
     messages: Array<{
         id: number;
         content: string;
@@ -99,58 +105,73 @@ export default function PatientMessages() {
                         </Button>
                     </Card>
                 ) : (
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {conversations.map(conv => {
                             const lastMsg = conv.messages?.[0];
                             const isUnread = lastMsg && !lastMsg.isRead && lastMsg.senderType !== 'PATIENT';
                             const clinicName = conv.clinic?.clinic_name || conv.clinic?.name || 'عيادة';
+                            const doctorImage = conv.clinic?.clinic_logo;
+                            const specialty = conv.clinic?.clinic_specialty;
+                            const firstLetter = clinicName.charAt(0);
 
                             return (
                                 <Card
                                     key={conv.id}
-                                    className="p-4 rounded-2xl cursor-pointer hover:shadow-md transition-all hover:border-primary/30 group"
+                                    className={`relative rounded-md border bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden cursor-pointer group ${isUnread ? 'border-orange-500 bg-orange-50/20' : 'border-slate-200 hover:border-blue-300'}`}
                                     onClick={() => navigate(`/patient/chat/${conv.clinic.id}`)}
                                 >
-                                    <div className="flex items-center gap-4">
+                                    {isUnread && (
+                                        <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-orange-500 to-blue-600"></div>
+                                    )}
+                                    <div className="p-4 flex items-center gap-4">
+                                        
                                         <div className="relative">
-                                            <div className="h-12 w-12 rounded-2xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0">
-                                                <Building2 className="h-6 w-6 text-white" />
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-60 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10 flex flex-shrink-0 items-center justify-center">
+                                                <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white text-blue-800 font-black text-xl">
+                                                    {doctorImage ? (
+                                                        <img src={doctorImage} alt={clinicName} className="h-full w-full object-cover" />
+                                                    ) : (
+                                                        firstLetter
+                                                    )}
+                                                </div>
                                             </div>
                                             {isUnread && (
-                                                <div className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-primary border-2 border-background" />
+                                                <div className="absolute top-0 right-0 h-3.5 w-3.5 rounded-full bg-orange-500 border-2 border-white z-20 shadow-sm animate-pulse" />
                                             )}
                                         </div>
 
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center justify-between mb-1">
-                                                <p className={`font-bold text-sm truncate ${isUnread ? 'text-primary' : ''}`}>
+                                        <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                            <div className="flex items-center justify-between mb-0.5">
+                                                <p className={`font-extrabold text-base truncate ${isUnread ? 'text-slate-900' : 'text-slate-800'}`}>
                                                     {clinicName}
                                                 </p>
-                                                <span className="text-[11px] text-muted-foreground flex-shrink-0 mr-2">
+                                                <span className="text-[11px] font-bold text-slate-400 flex-shrink-0 mr-2">
                                                     {conv.updatedAt && formatDistanceToNow(new Date(conv.updatedAt), { locale: ar, addSuffix: true })}
                                                 </span>
                                             </div>
+                                            {specialty && (
+                                                <span className="text-[11px] font-bold text-orange-500 mb-1">{specialty}</span>
+                                            )}
 
                                             {lastMsg ? (
-                                                <div className="flex items-center gap-1">
-                                                    {lastMsg.senderType === 'BOT' && (
-                                                        <Bot className="h-3 w-3 text-amber-500 flex-shrink-0" />
-                                                    )}
-                                                    <p className={`text-xs truncate ${isUnread ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
-                                                        {lastMsg.senderType === 'PATIENT' ? '← أنت: ' : ''}
+                                                <div className="flex items-center gap-1.5">
+                                                    {lastMsg.senderType === 'BOT' ? (
+                                                        <Bot className="h-4 w-4 text-orange-400 flex-shrink-0" />
+                                                    ) : lastMsg.senderType === 'PATIENT' ? (
+                                                        <span className="text-xs font-bold text-slate-400 shrink-0">أنت:</span>
+                                                    ) : null}
+                                                    <p className={`text-sm truncate w-full ${isUnread ? 'text-slate-800 font-bold' : 'text-slate-500'}`}>
                                                         {lastMsg.content}
                                                     </p>
                                                 </div>
                                             ) : (
-                                                <p className="text-xs text-muted-foreground">ابدأ المحادثة...</p>
+                                                <p className="text-sm text-slate-400 italic">ابدأ المحادثة...</p>
                                             )}
                                         </div>
 
-                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                            {isUnread && (
-                                                <Badge className="bg-primary text-white text-xs h-5 px-1.5">جديد</Badge>
-                                            )}
-                                            <ChevronLeft className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                        <div className="flex items-center gap-2 flex-shrink-0 text-slate-400 group-hover:text-blue-500 transition-colors">
+                                            <ChevronLeft className="h-5 w-5" />
                                         </div>
                                     </div>
                                 </Card>
