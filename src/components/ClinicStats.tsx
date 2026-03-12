@@ -1,4 +1,4 @@
-﻿import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { appointmentsApi } from "@/lib/api";
 import {
@@ -89,33 +89,23 @@ export const ClinicStats = () => {
                             delay: idx * 0.1,
                         }}
                     >
-                        <Card className="p-6 border-y border-white/5 bg-blue-950/5 backdrop-blur-[80px] rounded-none shadow-2xl relative group overflow-hidden transition-all duration-700 hover:shadow-primary/20 h-full cursor-pointer">
-                            <div className="light-sweep opacity-30" />
-
-                            <div className="relative z-10 flex items-start justify-between">
-                                <div className="space-y-2">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">
-                                        {card.title}
-                                    </p>
-                                    <h4 className="text-3xl font-black text-foreground italic uppercase tracking-tighter">
-                                        {card.value}
-                                    </h4>
-                                    <p className="text-[10px] font-black text-green-500 flex items-center gap-1 uppercase tracking-widest">
-                                        <ArrowUpRight className="h-3 w-3" />
-                                        {card.trend}
-                                    </p>
+                        <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group p-6 h-full cursor-pointer flex flex-col justify-between">
+                            <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10"></div>
+                            <div className="relative z-20 flex justify-between items-start mb-4">
+                                <div className="p-3 rounded-lg bg-blue-50 group-hover:bg-blue-600 transition-colors border border-blue-100 group-hover:border-blue-600 shadow-sm flex items-center justify-center">
+                                    <card.icon className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" strokeWidth={2} />
                                 </div>
-                                <div className="h-12 w-12 bg-primary/10 text-primary flex items-center justify-center border border-primary/20 transition-all duration-700 group-hover:bg-primary group-hover:text-white group-hover:scale-110 shadow-lg group-hover:rotate-12">
-                                    <card.icon className="h-6 w-6" strokeWidth={1.5} />
+                                <p className="text-[10px] font-bold text-green-600 flex items-center gap-1 bg-green-50 px-2 py-1 rounded-full">
+                                    <ArrowUpRight className="h-3 w-3" />
+                                    {card.trend}
+                                </p>
+                            </div>
+                            <div className="relative z-20 flex flex-col items-start gap-1">
+                                <p className="text-xs md:text-sm font-bold text-slate-500">{card.title}</p>
+                                <div className="text-3xl md:text-4xl lg:text-5xl font-black text-slate-900 font-display">
+                                    {card.value}
                                 </div>
                             </div>
-
-                            {/* Bottom Power Line */}
-                            <div className="absolute bottom-0 left-0 w-full flex opacity-40 group-hover:opacity-100 transition-opacity duration-1000">
-                                <div className="h-[3px] w-2/5 bg-primary shadow-[0_0_15px_rgba(var(--primary),0.6)]" />
-                                <div className="h-[3px] flex-1 bg-white/5" />
-                            </div>
-                            <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
                         </Card>
                     </motion.div>
                 ))}
@@ -125,33 +115,25 @@ export const ClinicStats = () => {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
                 {/* مخطط نشاط العيادة الأسبوعي */}
-                <Card className="lg:col-span-2 p-8 border-y border-white/5 rounded-none shadow-2xl bg-blue-950/5 backdrop-blur-[100px] relative group overflow-hidden transition-all duration-700 hover:shadow-primary/5">
-                    <div className="light-sweep opacity-[0.15]" />
+                <Card className="lg:col-span-2 p-8 border border-orange-500 rounded-md shadow-sm bg-white relative group overflow-hidden transition-all duration-300 hover:shadow-xl">
+                    <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10" />
 
                     <div className="flex items-center justify-between mb-8 relative z-10">
-                        <div className="flex items-center gap-5">
-                            <div className="h-14 w-1.5 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                        <div className="flex items-center gap-4">
+                            <div className="h-12 w-12 flex items-center justify-center bg-blue-50 border border-blue-100 rounded-lg group-hover:bg-blue-600 transition-colors shadow-sm shrink-0">
+                                <Activity className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" />
+                            </div>
                             <div className="flex flex-col">
-                                <h3 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-foreground">
+                                <h3 className="text-xl md:text-2xl font-black text-slate-900">
                                     نشاط العيادة
                                 </h3>
                                 <div className="flex items-center gap-2 mt-1">
-                                    <span className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">
-                                        CLINIC_ACTIVITY_v1
-                                    </span>
-                                    <div className="h-px w-8 bg-white/10" />
-                                    <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-wider">
+                                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                                         الزيارات الأسبوعية
                                     </p>
                                 </div>
                             </div>
                         </div>
-                        <Activity className="h-8 w-8 text-primary opacity-20 group-hover:opacity-40 transition-opacity" />
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 w-full flex opacity-30 group-hover:opacity-100 transition-opacity duration-700">
-                        <div className="h-[2px] w-1/4 bg-primary" />
-                        <div className="h-[2px] flex-1 bg-white/5" />
                     </div>
 
                     <div className="h-[350px] w-full">
@@ -185,30 +167,23 @@ export const ClinicStats = () => {
                 </Card>
 
                 {/* مخطط توزيع الحالات */}
-                <Card className="p-8 border-y border-white/5 rounded-none shadow-2xl bg-blue-950/5 backdrop-blur-[100px] relative group overflow-hidden transition-all duration-700 hover:shadow-primary/5">
-                    <div className="light-sweep opacity-[0.15]" />
+                <Card className="p-8 border border-orange-500 rounded-md shadow-sm bg-white relative group overflow-hidden transition-all duration-300 hover:shadow-xl">
+                    <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10" />
 
-                    <div className="mb-8 relative z-10 flex items-center gap-5">
-                        <div className="h-14 w-1.5 bg-primary rounded-full shadow-[0_0_15px_rgba(var(--primary),0.5)]" />
+                    <div className="mb-8 relative z-10 flex items-center gap-4">
+                        <div className="h-12 w-12 flex items-center justify-center bg-blue-50 border border-blue-100 rounded-lg group-hover:bg-blue-600 transition-colors shadow-sm shrink-0">
+                            <PieChart className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" />
+                        </div>
                         <div className="flex flex-col">
-                            <h3 className="text-xl md:text-2xl font-black italic uppercase tracking-tighter text-foreground">
+                            <h3 className="text-xl md:text-2xl font-black text-slate-900">
                                 توزيع الحالات
                             </h3>
                             <div className="flex items-center gap-2 mt-1">
-                                <span className="text-[9px] font-black text-primary uppercase tracking-[0.3em]">
-                                    ANALYTICS_CORE
-                                </span>
-                                <div className="h-px w-8 bg-white/10" />
-                                <p className="text-[10px] text-muted-foreground/40 font-bold uppercase tracking-wider">
+                                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">
                                     إحصائيات المواعيد
                                 </p>
                             </div>
                         </div>
-                    </div>
-
-                    <div className="absolute bottom-0 left-0 w-full flex opacity-30 group-hover:opacity-100 transition-opacity duration-700">
-                        <div className="h-[2px] w-1/2 bg-primary" />
-                        <div className="h-[2px] flex-1 bg-white/5" />
                     </div>
 
                     <div className="h-[300px] w-full relative">
@@ -257,12 +232,13 @@ export const ClinicStats = () => {
             {/* ── رؤى إضافية ───────────────────────────────────────────────── */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
-                <Card className="p-8 border border-white/5 rounded-none shadow-xl bg-blue-950/5 backdrop-blur-[60px] relative group">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-2.5 bg-primary/10 text-primary border border-primary/20">
+                <Card className="p-8 border border-orange-500 rounded-md shadow-sm bg-white relative group transition-all duration-300 hover:shadow-xl overflow-hidden">
+                    <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10" />
+                    <div className="flex items-center gap-4 mb-4 relative z-20">
+                        <div className="p-2.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-lg group-hover:bg-blue-600 group-hover:text-white transition-colors shadow-sm shrink-0">
                             <Clock className="h-6 w-6" />
                         </div>
-                        <h4 className="font-black italic uppercase tracking-tighter">أوقات الذروة</h4>
+                        <h4 className="font-extrabold text-slate-900 text-lg">أوقات الذروة</h4>
                     </div>
                     <p className="text-muted-foreground text-sm font-bold leading-relaxed">
                         أكثر الأوقات ازدحاماً هي الفترة الصباحية بين الساعة ٩ و ١١ صباحاً.
@@ -278,12 +254,13 @@ export const ClinicStats = () => {
                     </div>
                 </Card>
 
-                <Card className="p-8 border border-white/5 rounded-none shadow-xl bg-blue-950/5 backdrop-blur-[60px] relative group">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="p-2.5 bg-orange-500/10 text-orange-500 border border-orange-500/20">
+                <Card className="p-8 border border-orange-500 rounded-md shadow-sm bg-white relative group transition-all duration-300 hover:shadow-xl overflow-hidden">
+                    <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10" />
+                    <div className="flex items-center gap-4 mb-4 relative z-20">
+                        <div className="p-2.5 bg-orange-50 text-orange-500 border border-orange-100 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-colors shadow-sm shrink-0">
                             <AlertCircle className="h-6 w-6" />
                         </div>
-                        <h4 className="font-black italic uppercase tracking-tighter">نصائح لتحسين الأداء</h4>
+                        <h4 className="font-extrabold text-slate-900 text-lg">نصائح لتحسين الأداء</h4>
                     </div>
                     <p className="text-muted-foreground text-sm font-bold leading-relaxed">
                         فعّل رسائل التذكير التلقائية عبر واتساب قبل ٢٤ ساعة من الموعد

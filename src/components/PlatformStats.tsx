@@ -1,4 +1,4 @@
-﻿import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useContacts } from "@/hooks/useContacts";
 import {
   Facebook,
@@ -41,35 +41,36 @@ const PlatformStats = () => {
   }
 
   return (
-    <Card className="border-border/50 bg-card/50 backdrop-blur">
-      <CardHeader>
-        <CardTitle className="text-lg">إحصائظٹاطھ المنصاطھ</CardTitle>
+    <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
+      <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10"></div>
+      <CardHeader className="relative z-20">
+        <CardTitle className="text-lg font-black text-slate-900">إحصائيات المنصات</CardTitle>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
+      <CardContent className="relative z-20">
+        <div className="space-y-4">
           {sortedPlatforms.map(([platform, count]) => {
             const config = platformConfig[platform] || {
               icon: Globe,
               name: platform,
-              color: 'text-muted-foreground',
-              bg: 'bg-muted',
+              color: 'text-slate-500',
+              bg: 'bg-slate-100',
             };
             const Icon = config.icon;
             const percentage = Math.round(((count as any) / contacts.length) * 100);
 
             return (
               <div key={platform} className="flex items-center gap-3">
-                <div className={`p-2 rounded-lg ${config.bg}`}>
-                  <Icon className={`h-4 w-4 ${config.color}`} />
+                <div className={`p-2 rounded-lg ${config.bg} shadow-sm border border-slate-100`}>
+                  <Icon className={`h-5 w-5 ${config.color}`} />
                 </div>
                 <div className="flex-1">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-sm font-medium">{config.name}</span>
-                    <span className="text-sm text-muted-foreground">{(count as any)}</span>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-sm font-bold text-slate-700">{config.name}</span>
+                    <span className="text-sm font-black text-slate-900">{(count as any)}</span>
                   </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
+                  <div className="h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
                     <div
-                      className={`h-full ${config.bg.replace('/10', '')} opacity-50`}
+                      className={`h-full ${config.bg.replace('/10', '')}`}
                       style={{ width: `${percentage}%` }}
                     />
                   </div>

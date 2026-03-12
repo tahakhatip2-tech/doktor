@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     BarChart,
@@ -60,14 +60,15 @@ export default function BotAnalytics() {
             {/* Stats Overview */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {stats.map((stat, i) => (
-                    <Card key={i} className="border-border/50 bg-card/50 backdrop-blur">
-                        <CardContent className="p-6">
+                    <Card key={i} className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                        <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10" />
+                        <CardContent className="p-6 relative z-20">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <p className="text-xs font-medium text-muted-foreground mb-1">{stat.title}</p>
-                                    <p className="text-3xl font-display font-bold">{stat.value}</p>
+                                    <p className="text-sm font-bold text-slate-500 mb-1">{stat.title}</p>
+                                    <p className="text-3xl font-black text-slate-900">{stat.value}</p>
                                 </div>
-                                <div className={`p-3 rounded-xl bg-muted/50 ${stat.color}`}>
+                                <div className={`p-4 rounded-lg bg-slate-50 border border-slate-100 shadow-sm ${stat.color} group-hover:scale-110 transition-transform`}>
                                     <stat.icon className="h-6 w-6" />
                                 </div>
                             </div>
@@ -78,43 +79,45 @@ export default function BotAnalytics() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Top Triggers Chart */}
-                <Card className="border-border/50">
-                    <CardHeader>
-                        <CardTitle className="text-lg">أظƒثر الكلماطھ المظپطھاحظٹة اسطھخداماً</CardTitle>
+                <Card className="relative rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-1 h-full bg-blue-500 z-10" />
+                    <CardHeader className="border-b border-slate-100 bg-slate-50 py-4 relative z-20">
+                        <CardTitle className="text-lg font-black text-slate-900">أكثر الكلمات المفتاحية استخداماً</CardTitle>
                     </CardHeader>
-                    <CardContent className="h-[300px]">
+                    <CardContent className="h-[300px] pt-6 relative z-20">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={data.topTriggers} layout="vertical">
-                                <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
                                 <XAxis type="number" hide />
                                 <YAxis
                                     dataKey="trigger"
                                     type="category"
                                     width={100}
-                                    tick={{ fontSize: 12 }}
+                                    tick={{ fontSize: 12, fill: '#64748b', fontWeight: 'bold' }}
                                 />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#1f2937', border: 'none', borderRadius: '8px', color: '#fff' }}
-                                    itemStyle={{ color: '#fff' }}
+                                    contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#0f172a', fontWeight: 'bold', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    itemStyle={{ color: '#0f172a' }}
                                 />
-                                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={20} />
+                                <Bar dataKey="count" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={20} />
                             </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
                 </Card>
 
                 {/* Engagement Distribution */}
-                <Card className="border-border/50">
-                    <CardHeader>
-                        <CardTitle className="text-lg">طھظˆزظٹع الطھظپاعل</CardTitle>
+                <Card className="relative rounded-md border border-slate-200 bg-white shadow-sm overflow-hidden group">
+                    <div className="absolute top-0 right-0 w-1 h-full bg-orange-500 z-10" />
+                    <CardHeader className="border-b border-slate-100 bg-slate-50 py-4 relative z-20">
+                        <CardTitle className="text-lg font-black text-slate-900">توزيع التفاعل</CardTitle>
                     </CardHeader>
-                    <CardContent className="h-[300px]">
+                    <CardContent className="h-[300px] pt-6 relative z-20">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
                                     data={[
-                                        { name: 'ردظˆد آلظٹة', value: data.stats.auto_replies },
-                                        { name: 'رسائل ظٹدظˆظٹة', value: data.stats.outgoing_messages - data.stats.auto_replies },
+                                        { name: 'ردود آلية', value: data.stats.auto_replies },
+                                        { name: 'رسائل يدوية', value: data.stats.outgoing_messages - data.stats.auto_replies },
                                     ]}
                                     innerRadius={60}
                                     outerRadius={80}
@@ -125,10 +128,12 @@ export default function BotAnalytics() {
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
                                 </Pie>
-                                <Tooltip />
-                                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-foreground font-bold text-lg">
+                                <Tooltip 
+                                    contentStyle={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '8px', color: '#0f172a', fontWeight: 'bold', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                />
+                                <text x="50%" y="50%" textAnchor="middle" dominantBaseline="middle" className="fill-slate-900 font-black text-2xl">
                                     {Math.round((data.stats.auto_replies / data.stats.outgoing_messages) * 100) || 0}%
-                                    <tspan x="50%" dy="1.2em" fontSize="10" className="fill-muted-foreground font-normal">أتمطھة</tspan>
+                                    <tspan x="50%" dy="1.5em" fontSize="12" className="fill-slate-500 font-bold">أتمتة</tspan>
                                 </text>
                             </PieChart>
                         </ResponsiveContainer>

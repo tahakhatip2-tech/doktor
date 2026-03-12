@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { useTemplates, Template } from "@/hooks/useTemplates";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -156,32 +156,32 @@ export const TemplatesManager = () => {
             </div>
 
             {/* Content Table Card */}
-            <Card className="border border-white/10 bg-blue-950/5 backdrop-blur-md shadow-sm overflow-hidden rounded-none relative group">
-                <div className="absolute top-0 right-0 w-1 h-full bg-blue-500/20 group-hover:bg-blue-500/40 transition-colors" />
+            <Card className="border border-orange-500 bg-white shadow-sm overflow-hidden rounded-md relative group">
+                <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10" />
 
-                <CardHeader className="border-b border-white/5 bg-white/5 py-4">
-                    <CardTitle className="flex items-center gap-3 text-sm font-black text-foreground uppercase tracking-wider">
-                        <div className="p-1.5 rounded-none bg-blue-500/10 text-blue-500 border border-blue-500/20">
-                            <MessageSquare className="h-4 w-4" />
+                <CardHeader className="border-b border-slate-100 bg-slate-50 py-4 relative z-20">
+                    <CardTitle className="flex items-center gap-3 text-sm font-black text-slate-900 uppercase tracking-wider">
+                        <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-100 shadow-sm">
+                            <MessageSquare className="h-5 w-5" />
                         </div>
-                        القواعد النشطة <span className="text-blue-500">({templateList.length})</span>
+                        القواعد النشطة <span className="text-blue-600 bg-blue-50 px-2 py-0.5 rounded-sm shadow-sm border border-blue-100">{templateList.length}</span>
                     </CardTitle>
                 </CardHeader>
 
-                <CardContent className="p-0">
+                <CardContent className="p-0 relative z-20 bg-white">
                     {templateList.length === 0 ? (
                         <div className="text-center py-20 px-6">
-                            <div className="w-16 h-16 bg-blue-500/5 rounded-none flex items-center justify-center mx-auto mb-6 border border-dashed border-blue-500/20">
-                                <MessageSquare className="h-8 w-8 text-blue-500/40" />
+                            <div className="w-16 h-16 bg-blue-50 rounded-lg flex items-center justify-center mx-auto mb-6 border border-dashed border-blue-200 shadow-sm">
+                                <MessageSquare className="h-8 w-8 text-blue-400" />
                             </div>
-                            <p className="text-foreground font-bold mb-1">لا توجد قواعد رد آلي حتى الآن</p>
-                            <p className="text-xs text-muted-foreground font-bold uppercase tracking-wide mb-6">
+                            <p className="text-slate-900 font-bold mb-1">لا توجد قواعد رد آلي حتى الآن</p>
+                            <p className="text-xs text-slate-500 font-bold uppercase tracking-wide mb-6">
                                 ابدأ ببرمجة الكلمات المفتاحية لتسهيل الرد على العملاء
                             </p>
                             <Button
                                 onClick={() => handleOpenDialog()}
                                 variant="outline"
-                                className="rounded-none gap-2 border-blue-500/20 hover:bg-blue-500/5 text-blue-500 font-bold"
+                                className="rounded-md gap-2 border-blue-200 hover:bg-blue-50 text-blue-600 font-bold shadow-sm"
                             >
                                 <Plus className="h-4 w-4" />
                                 أضف أول قاعدة
@@ -190,29 +190,29 @@ export const TemplatesManager = () => {
                     ) : (
                         <div className="overflow-x-auto">
                             <Table>
-                                <TableHeader className="bg-white/5">
-                                    <TableRow className="hover:bg-transparent border-white/5">
-                                        <TableHead className="text-right font-black text-[10px] uppercase text-muted-foreground h-10 w-[200px]">
+                                <TableHeader className="bg-slate-50">
+                                    <TableRow className="hover:bg-transparent border-slate-100">
+                                        <TableHead className="text-right font-black text-[10px] uppercase text-slate-500 h-10 w-[200px]">
                                             الكلمة المفتاحية
                                         </TableHead>
-                                        <TableHead className="text-right font-black text-[10px] uppercase text-muted-foreground h-10">
+                                        <TableHead className="text-right font-black text-[10px] uppercase text-slate-500 h-10">
                                             نص الرد
                                         </TableHead>
-                                        <TableHead className="w-[100px] text-left font-black text-[10px] uppercase text-muted-foreground h-10">
+                                        <TableHead className="w-[100px] text-left font-black text-[10px] uppercase text-slate-500 h-10">
                                             إجراءات
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {templateList.map((template) => (
-                                        <TableRow key={template.id} className="border-white/5 hover:bg-blue-500/5 transition-colors group/row">
+                                        <TableRow key={template.id} className="border-slate-100 hover:bg-slate-50 transition-colors group/row">
                                             <TableCell className="font-bold py-4 align-top">
-                                                <span className="inline-flex px-3 py-1 rounded-none font-black text-[11px] text-blue-500 border border-blue-500/20 bg-blue-500/5 shadow-sm">
+                                                <span className="inline-flex px-3 py-1 rounded-md font-black text-[11px] text-blue-600 border border-blue-200 bg-blue-50 shadow-sm">
                                                     {template.trigger}
                                                 </span>
                                             </TableCell>
-                                            <TableCell className="text-foreground/80 max-w-xl py-4 align-top" dir="auto">
-                                                <div className="text-xs leading-relaxed font-medium whitespace-pre-wrap pl-4 border-l-2 border-white/5">
+                                            <TableCell className="text-slate-700 max-w-xl py-4 align-top" dir="auto">
+                                                <div className="text-xs leading-relaxed font-bold whitespace-pre-wrap pl-4 border-l-2 border-slate-100">
                                                     {template.response}
                                                 </div>
                                             </TableCell>
@@ -222,17 +222,17 @@ export const TemplatesManager = () => {
                                                         variant="ghost"
                                                         size="icon"
                                                         onClick={() => handleOpenDialog(template)}
-                                                        className="h-8 w-8 rounded-none hover:bg-blue-500/10 hover:text-blue-500 transition-colors"
+                                                        className="h-8 w-8 rounded-md hover:bg-blue-50 hover:text-blue-600 transition-colors"
                                                     >
-                                                        <Pencil className="h-3.5 w-3.5" />
+                                                        <Pencil className="h-4 w-4" />
                                                     </Button>
                                                     <Button
                                                         variant="ghost"
                                                         size="icon"
                                                         onClick={() => deleteTemplate(template.id)}
-                                                        className="h-8 w-8 rounded-none hover:bg-red-500/10 hover:text-red-500 transition-colors"
+                                                        className="h-8 w-8 rounded-md hover:bg-red-50 hover:text-red-600 transition-colors"
                                                     >
-                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                        <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 </div>
                                             </TableCell>

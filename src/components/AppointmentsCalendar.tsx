@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -167,8 +167,8 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
             />
 
             {/* Blue Glass Control Bar (Filters) */}
-            <Card className="p-2 bg-blue-600/5 border border-blue-500/10 backdrop-blur-md rounded-none shadow-sm flex flex-col md:flex-row items-center gap-4 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1 h-full bg-blue-500/20" />
+            <Card className="p-2 bg-white border border-slate-200 rounded-md shadow-sm flex flex-col md:flex-row items-center gap-4 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-1 h-full bg-blue-500" />
 
                 <div className="flex-1 flex flex-wrap items-center gap-6 px-2">
                     {/* Period Filter */}
@@ -243,10 +243,10 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
                     <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest animate-pulse">جاري تحميل الجدول...</p>
                 </div>
             ) : Object.keys(groupedByDate).length === 0 ? (
-                <Card className="py-20 text-center bg-blue-950/5 border-dashed border-white/10 rounded-none">
-                    <Calendar className="h-16 w-16 mx-auto text-muted-foreground/20 mb-6" strokeWidth={1} />
-                    <h3 className="text-xl font-black text-foreground mb-2">لا توجد مواعيد</h3>
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
+                <Card className="py-20 text-center bg-slate-50 border-dashed border-slate-200 rounded-md">
+                    <Calendar className="h-16 w-16 mx-auto text-slate-300 mb-6" strokeWidth={1} />
+                    <h3 className="text-xl font-black text-slate-900 mb-2">لا توجد مواعيد</h3>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-wide">
                         لم يتم العثور على مواعيد في الفترة المحددة
                     </p>
                 </Card>
@@ -269,15 +269,15 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
                                 {dayAppointments.map((appointment) => (
                                     <Card
                                         key={appointment.id}
-                                        className="group relative overflow-hidden p-0 bg-blue-950/5 border border-white/10 backdrop-blur-md rounded-none hover:border-blue-500/30 transition-all duration-500 hover:shadow-lg hover:shadow-blue-500/5"
+                                        className="group relative overflow-hidden p-0 bg-white border border-slate-200 rounded-md hover:border-orange-500 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5"
                                     >
-                                        <div className="absolute top-0 right-0 w-1 h-full bg-blue-500 hover:w-1.5 transition-all duration-300" />
+                                        <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500" />
 
-                                        <div className="p-4 flex flex-col gap-4">
+                                        <div className="p-4 flex flex-col gap-4 relative z-10">
                                             {/* Top Row: Info & Status */}
                                             <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                                                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                                                    <div className="h-10 w-10 rounded-sm bg-white/5 border border-white/10 flex items-center justify-center text-blue-500 group-hover:scale-105 transition-transform shrink-0">
+                                                    <div className="h-10 w-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-105 transition-transform shrink-0">
                                                         <User className="h-5 w-5" />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
@@ -306,16 +306,16 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
                                             </div>
 
                                             {/* Middle Row: Time & Type */}
-                                            <div className="flex items-center justify-between p-2 rounded-sm bg-black/5 dark:bg-white/5 border border-white/5">
+                                            <div className="flex items-center justify-between p-2 rounded-md bg-slate-50 border border-slate-100 shadow-inner">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="flex items-center gap-1.5 text-xs font-black text-blue-500">
-                                                        <Clock className="h-3.5 w-3.5" />
+                                                    <div className="flex items-center gap-1.5 text-xs font-black text-blue-600">
+                                                        <Clock className="h-4 w-4" />
                                                         <span className="tabular-nums mt-0.5">
                                                             {format(new Date(appointment.appointmentDate || appointment.appointment_date || ""), 'hh:mm a', { locale: ar })}
                                                         </span>
                                                     </div>
-                                                    <div className="h-3 w-px bg-white/10" />
-                                                    <div className="text-[10px] font-bold text-muted-foreground flex items-center gap-2">
+                                                    <div className="h-4 w-px bg-slate-200" />
+                                                    <div className="text-[10px] font-bold text-slate-600 flex items-center gap-2">
                                                         <span>{typeConfig[(appointment.type || appointment.appointment_type) as keyof typeof typeConfig] || 'عام'}</span>
 
                                                         {/* Source Indicator */}
@@ -356,7 +356,7 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
 
                                             {/* Notes if any */}
                                             {(appointment.notes || appointment.notes === '') && (
-                                                <div className="bg-orange-500/5 border-r-2 border-orange-500/30 px-2 py-1.5 text-[10px] text-muted-foreground italic line-clamp-2 text-right">
+                                                <div className="bg-orange-50 border-r-2 border-orange-400 px-3 py-2 text-[11px] text-slate-600 italic line-clamp-2 text-right rounded-l-md shadow-sm">
                                                     {(() => {
                                                         const noteRaw = appointment.notes || '';
                                                         const noteLower = noteRaw.toLowerCase().trim();
@@ -375,7 +375,7 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
                                             )}
 
                                             {/* Actions Footer */}
-                                            <div className="pt-2 mt-auto border-t border-white/5 flex gap-2">
+                                            <div className="pt-3 mt-auto border-t border-slate-100 flex gap-2">
                                                 {(appointment.status === 'scheduled' || appointment.status === 'pending') && (
                                                     <>
                                                         <Button
@@ -399,10 +399,10 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
                                                 {appointment.status === 'confirmed' && (
                                                     <Button
                                                         size="sm"
-                                                        className="w-full h-8 text-[10px] font-bold rounded-sm bg-orange-500/10 hover:bg-orange-500 text-orange-600 hover:text-white border border-orange-500/20 transition-all uppercase tracking-wider relative group/btn overflow-hidden"
+                                                        className="w-full h-8 text-[11px] font-bold rounded-md bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white border border-orange-200 hover:border-orange-500 shadow-sm transition-all uppercase tracking-wider relative group/btn overflow-hidden"
                                                         onClick={() => updateStatus(appointment.id, 'completed', appointment)}
                                                     >
-                                                        <span className="absolute inset-0 bg-orange-500/20 translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+                                                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
                                                         <span className="relative z-10 flex items-center justify-center gap-2">
                                                             تسجيل إتمام الكشف
                                                             <CheckCircle2 className="h-3 w-3" />
