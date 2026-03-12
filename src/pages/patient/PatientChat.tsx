@@ -11,6 +11,7 @@ import {
     Bot,
     User,
     Loader2,
+    MessageCircle,
 } from 'lucide-react';
 import axios from 'axios';
 import { io, Socket } from 'socket.io-client';
