@@ -19,6 +19,7 @@ import {
     Twitter,
     MessagesSquare,
     Tag,
+    Wallet,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
         { id: 'internal-chat', label: 'رسائل المرضى', icon: MessagesSquare },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
+        { id: 'finance', label: 'المحاسبة', icon: Wallet },
         { id: 'offers', label: 'العروض', icon: Tag },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
