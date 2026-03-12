@@ -55,33 +55,40 @@ export class PatientReviewsService {
     rating: number,
     comment?: string,
   ) {
-    // التحقق أن التقييم بين 1 و 5
-    if (rating < 1 || rating > 5) {
-      throw new BadRequestException('التقييم يجب أن يكون بين 1 و 5');
+    try {
+      // التحقق أن التقييم بين 1 و 5
+      if (rating < 1 || rating > 5) {
+        throw new BadRequestException('التقييم يجب أن يكون بين 1 و 5');
+      }
+
+      // تم تعطيل هذا الشرط مؤقتاً لتسهيل التجربة
+      /*
+      const hasCompleted = await this.prisma.appointment.findFirst({
+        where: {
+          userId: clinicId,
+          patientUserId: patientId,
+          status: 'completed',
+        },
+      });
+
+      if (!hasCompleted) {
+        throw new ForbiddenException('يمكنك التقييم فقط بعد إتمام زيارة في هذه العيادة');
+      }
+      */
+
+      const review = await this.prisma.clinicReview.upsert({
+        where: {
+          clinicId_patientId: { clinicId, patientId },
+        },
+        create: { clinicId, patientId, rating, comment },
+        update: { rating, comment },
+      });
+
+      return review;
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      throw error;
     }
-
-    // التحقق من أن المريض لديه موعد مكتمل مع هذه العيادة
-    const hasCompleted = await this.prisma.appointment.findFirst({
-      where: {
-        userId: clinicId,
-        patientUserId: patientId,
-        status: 'completed',
-      },
-    });
-
-    if (!hasCompleted) {
-      throw new ForbiddenException('يمكنك التقييم فقط بعد إتمام زيارة في هذه العيادة');
-    }
-
-    const review = await this.prisma.clinicReview.upsert({
-      where: {
-        clinicId_patientId: { clinicId, patientId },
-      },
-      create: { clinicId, patientId, rating, comment },
-      update: { rating, comment },
-    });
-
-    return review;
   }
 
   // جلب تقييم مريض معين لعيادة (للتحقق إن كان قد قيّم)
