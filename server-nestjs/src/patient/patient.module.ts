@@ -8,6 +8,8 @@ import { PatientAppointmentController } from './patient-appointment.controller';
 import { PatientAppointmentService } from './patient-appointment.service';
 import { PatientNotificationController } from './patient-notification.controller';
 import { PatientNotificationService } from './patient-notification.service';
+import { PatientReviewsController } from './patient-reviews.controller';
+import { PatientReviewsService } from './patient-reviews.service';
 import { PrismaModule } from '../prisma/prisma.module';
 import { AppointmentsModule } from '../appointments/appointments.module';
 import { WhatsAppModule } from '../whatsapp/whatsapp.module';
@@ -23,15 +25,26 @@ import { AiService } from '../whatsapp/ai.service';
             imports: [ConfigModule],
             inject: [ConfigService],
             useFactory: (config: ConfigService) => ({
-                // نفس الـ secret المستخدم في AuthModule للتوحيد
                 secret: config.getOrThrow<string>('JWT_SECRET'),
                 signOptions: { expiresIn: '30d' },
             }),
         }),
     ],
-    controllers: [PatientController, PatientAppointmentController, PatientNotificationController],
-    providers: [PatientService, PatientAppointmentService, PatientNotificationService, PatientAuthGuard],
+    controllers: [
+        PatientController,
+        PatientAppointmentController,
+        PatientNotificationController,
+        PatientReviewsController,
+    ],
+    providers: [
+        PatientService,
+        PatientAppointmentService,
+        PatientNotificationService,
+        PatientAuthGuard,
+        PatientReviewsService,
+    ],
     exports: [PatientService, PatientAppointmentService, PatientNotificationService],
 })
 export class PatientModule { }
+
 

@@ -47,6 +47,7 @@ model User {
   internalConversations InternalConversation[] @relation("ClinicConversations")
   offers                Offer[]
   offerLikes            OfferLike[]
+  clinicReviews         ClinicReview[]
 }
 
 model Plan {
@@ -383,6 +384,7 @@ model Patient {
   notifications         PatientNotification[]
   internalConversations InternalConversation[] @relation("PatientConversations")
   offerLikes            OfferLike[]
+  clinicReviews         ClinicReview[]
 }
 
 model PatientNotification {
@@ -476,4 +478,18 @@ enum InternalSenderType {
   PATIENT
   DOCTOR
   BOT
+}
+
+model ClinicReview {
+  id        Int      @id @default(autoincrement())
+  clinicId  Int
+  patientId Int
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  clinic    User     @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicId, patientId])
 }

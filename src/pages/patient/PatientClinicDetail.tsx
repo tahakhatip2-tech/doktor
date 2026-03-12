@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,12 +16,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, MapPin, Phone, Clock, Calendar, MessageCircle, ArrowRight, ChevronRight, ChevronLeft, Loader2, CheckCircle2, AlertCircle, Plus, Search, User } from 'lucide-react';
+import { Building2, MapPin, Phone, Clock, Calendar, MessageCircle, ArrowRight, ChevronRight, ChevronLeft, Loader2, CheckCircle2, AlertCircle, Plus, Search, User, Star } from 'lucide-react';
 import axios from 'axios';
 import { cn } from '@/lib/utils';
 import { format, startOfDay, isSameDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { BASE_URL } from '@/lib/api';
+
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -50,6 +51,15 @@ export default function PatientClinicDetail() {
     const [notes, setNotes] = useState('');
     const [customerName, setCustomerName] = useState('');
     const [bookingLoading, setBookingLoading] = useState(false);
+
+    // ── التقييمات ───────────────────────────────────────────────
+    const [reviewsData, setReviewsData] = useState<any>(null);
+    const [myReview, setMyReview] = useState<any>(null);
+    const [reviewOpen, setReviewOpen] = useState(false);
+    const [reviewRating, setReviewRating] = useState(5);
+    const [reviewComment, setReviewComment] = useState('');
+    const [reviewLoading, setReviewLoading] = useState(false);
+
 
     // â”€â”€ جلب بيانات العيادة â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     useEffect(() => {
@@ -146,6 +156,49 @@ export default function PatientClinicDetail() {
             setBookingLoading(false);
         }
     };
+
+    // ── جلب التقييمات ───────────────────────────────────────────
+    const fetchReviews = useCallback(async () => {
+        if (!id) return;
+        try {
+            const [reviewsRes, myReviewRes] = await Promise.all([
+                axios.get(`${API_URL}/patient/clinics/${id}/reviews`),
+                axios.get(`${API_URL}/patient/clinics/${id}/my-review`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem('patient_token')}` },
+                }).catch(() => ({ data: null })),
+            ]);
+            setReviewsData(reviewsRes.data);
+            setMyReview(myReviewRes.data);
+        } catch { /* ignore */ }
+    }, [id]);
+
+    useEffect(() => { fetchReviews(); }, [fetchReviews]);
+
+    // ── إرسال تقييم ─────────────────────────────────────────────
+    const handleSubmitReview = async () => {
+        if (!id) return;
+        setReviewLoading(true);
+        try {
+            await axios.post(
+                `${API_URL}/patient/clinics/${id}/reviews`,
+                { rating: reviewRating, comment: reviewComment },
+                { headers: { Authorization: `Bearer ${localStorage.getItem('patient_token')}` } }
+            );
+            toast({ title: '✅ شكراً على تقييمك!', description: 'تم حفظ تقييمك بنجاح' });
+            setReviewOpen(false);
+            fetchReviews();
+        } catch (err: any) {
+            toast({
+                variant: 'destructive',
+                title: 'لم يتم الإرسال',
+                description: err.response?.data?.message || 'يمكنك التقييم فقط بعد إتمام زيارة',
+            });
+        } finally {
+            setReviewLoading(false);
+        }
+    };
+
+
 
     // â”€â”€ بناء أيام التقويم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const calendarDays = () => {
@@ -537,9 +590,135 @@ export default function PatientClinicDetail() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* ── قسم التقييمات ──────────────────────────────── */}
+            <Card className="shadow-card overflow-hidden">
+                <div className="h-1 gradient-primary" />
+                <CardHeader className="pb-3">
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                            <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                            آراء المرضى
+                            {reviewsData && (
+                                <Badge variant="secondary" className="font-bold">{reviewsData.totalReviews} تقييم</Badge>
+                            )}
+                        </CardTitle>
+                        <Button size="sm" className="gradient-primary text-white gap-2 shadow-glow"
+                            onClick={() => {
+                                if (myReview) { setReviewRating(myReview.rating); setReviewComment(myReview.comment || ''); }
+                                setReviewOpen(true);
+                            }}>
+                            <Star className="h-4 w-4" />
+                            {myReview ? 'تعديل تقييمك' : 'أضف تقييمك'}
+                        </Button>
+                    </div>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    {reviewsData && reviewsData.totalReviews > 0 && (
+                        <div className="flex flex-col sm:flex-row items-center gap-6 p-4 bg-muted/30 rounded-xl border">
+                            <div className="text-center flex-shrink-0">
+                                <p className="text-5xl font-black">{reviewsData.avgRating}</p>
+                                <div className="flex items-center gap-0.5 justify-center mt-1">
+                                    {[1,2,3,4,5].map((s) => (
+                                        <Star key={s} className={cn('h-4 w-4', s <= Math.round(reviewsData.avgRating) ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30')} />
+                                    ))}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">{reviewsData.totalReviews} تقييم</p>
+                            </div>
+                            <div className="flex-1 space-y-1.5 w-full">
+                                {[5,4,3,2,1].map((star) => {
+                                    const d = reviewsData.distribution?.find((x: any) => x.star === star);
+                                    const count = d?.count || 0;
+                                    const pct = reviewsData.totalReviews > 0 ? (count / reviewsData.totalReviews) * 100 : 0;
+                                    return (
+                                        <div key={star} className="flex items-center gap-2">
+                                            <span className="text-xs w-4 text-right font-bold text-muted-foreground">{star}</span>
+                                            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400 flex-shrink-0" />
+                                            <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                                <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                                            </div>
+                                            <span className="text-xs text-muted-foreground w-4">{count}</span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+                    {!reviewsData || reviewsData.totalReviews === 0 ? (
+                        <div className="flex flex-col items-center justify-center py-10 text-center">
+                            <Star className="h-12 w-12 text-muted-foreground/20 mb-3" />
+                            <p className="text-muted-foreground font-medium">لا توجد تقييمات بعد</p>
+                            <p className="text-sm text-muted-foreground/60 mt-1">كن أول من يقيّم هذه العيادة!</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-3">
+                            {reviewsData.reviews.map((review: any) => (
+                                <div key={review.id} className="p-4 rounded-xl border bg-background hover:bg-muted/20 transition-colors">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 text-primary font-black text-sm border border-primary/20">
+                                            {review.patientName?.charAt(0) || 'م'}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2 flex-wrap">
+                                                <p className="font-semibold text-sm">{review.patientName}</p>
+                                                <div className="flex items-center gap-0.5">
+                                                    {[1,2,3,4,5].map((s) => (
+                                                        <Star key={s} className={cn('h-3.5 w-3.5', s <= review.rating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/20')} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {review.comment && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{review.comment}</p>}
+                                            <p className="text-[11px] text-muted-foreground/50 mt-1.5">{format(new Date(review.createdAt), 'dd MMM yyyy', { locale: ar })}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
+            {/* ── Dialog التقييم ─────────────────────────────── */}
+            <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Star className="h-5 w-5 text-yellow-400 fill-yellow-400" />
+                            {myReview ? 'تعديل تقييمك' : 'أضف تقييمك'}
+                        </DialogTitle>
+                        <DialogDescription>شاركنا رأيك في {clinic?.clinic_name || clinic?.name}</DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-5 py-2">
+                        <div className="space-y-2">
+                            <Label>تقييمك</Label>
+                            <div className="flex items-center gap-2 justify-center py-2">
+                                {[1,2,3,4,5].map((s) => (
+                                    <button key={s} onClick={() => setReviewRating(s)} className="transition-transform hover:scale-125 focus:outline-none">
+                                        <Star className={cn('h-9 w-9 transition-colors', s <= reviewRating ? 'text-yellow-400 fill-yellow-400' : 'text-muted-foreground/30 hover:text-yellow-300')} />
+                                    </button>
+                                ))}
+                            </div>
+                            <p className="text-center text-sm text-muted-foreground font-medium">
+                                {reviewRating === 5 ? 'ممتاز جداً 🌟' : reviewRating === 4 ? 'جيد جداً 👍' : reviewRating === 3 ? 'مقبول 🆗' : reviewRating === 2 ? 'ضعيف 👎' : 'سيئ جداً ❌'}
+                            </p>
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="review-comment">تعليقك (اختياري)</Label>
+                            <Textarea id="review-comment" placeholder="أخبرنا عن تجربتك مع هذه العيادة..." value={reviewComment} onChange={(e) => setReviewComment(e.target.value)} rows={3} />
+                        </div>
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setReviewOpen(false)} disabled={reviewLoading} className="flex-1">إلغاء</Button>
+                        <Button className="flex-1 gradient-primary text-white" onClick={handleSubmitReview} disabled={reviewLoading}>
+                            {reviewLoading ? <><Loader2 className="h-4 w-4 ml-2 animate-spin" />جاري الحفظ...</> : 'حفظ التقييم'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
+
 
 
 
