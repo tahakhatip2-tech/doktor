@@ -12,6 +12,7 @@ import Plans from "./pages/Plans";
 import QueueDisplay from "./pages/QueueDisplay";
 import UnifiedAuth from "./pages/UnifiedAuth";
 import { ScrollToTop } from "./components/ScrollToTop";
+import PWAInstallBanner from "./components/PWAInstallBanner";
 
 // Patient Portal Pages
 import PatientLayout from "./pages/patient/PatientLayout";
@@ -39,6 +40,7 @@ const App = () => (
                 <Sonner />
                 <HashRouter>
                     <ScrollToTop />
+                                        <PWAInstallBanner />
                     <Routes>
                         <Route path="/" element={<Index />} />
 

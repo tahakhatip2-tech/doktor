@@ -24,32 +24,67 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'robots.txt', 'hakeem-logo.png'],
+      devOptions: {
+        enabled: true, // Enable PWA in development for testing
+      },
+      workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: { cacheName: 'google-fonts-cache' },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: { cacheName: 'gstatic-fonts-cache' },
+          },
+        ],
+      },
       manifest: {
-        name: 'Hakeem Jordan - Clinic System',
-        short_name: 'Hakeem Jordan',
-        description: 'First Self-Operating AI Clinic Management System',
-        theme_color: '#ffffff',
+        name: 'Doctor Jo | نظام إدارة العيادات',
+        short_name: 'Doctor Jo',
+        description: 'منصة Doctor Jo - نظام إدارة عيادات ذكي بالذكاء الاصطناعي',
+        theme_color: '#2563eb',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
+        lang: 'ar',
+        dir: 'rtl',
         scope: '/',
         start_url: '/',
+        id: 'doktor-jo-pwa',
+        categories: ['health', 'medical', 'productivity'],
         icons: [
           {
             src: 'hakeem-logo.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
             src: 'hakeem-logo.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any'
           },
           {
-            src: 'hakeem-logo.png', // Using the logo as maskable for now
+            src: 'hakeem-logo.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'maskable'
+          }
+        ],
+        screenshots: [
+          {
+            src: 'family-health-hero.png',
+            sizes: '600x338',
+            type: 'image/png',
+            form_factor: 'wide',
+            label: 'Doctor Jo Dashboard'
           }
         ]
       }
