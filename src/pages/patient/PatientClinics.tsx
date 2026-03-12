@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, MapPin, Phone, Clock, Search, Calendar, MessageCircle, Star } from 'lucide-react';
+import { Building2, MapPin, Phone, Clock, Search, Calendar, MessageCircle, Star, Share2, Eye, Facebook, Instagram, Twitter } from 'lucide-react';
 import axios from 'axios';
 
 import { BASE_URL } from '@/lib/api';
@@ -59,12 +59,31 @@ export default function PatientClinics() {
         }
     };
 
-    const handleWhatsApp = (e: React.MouseEvent, clinic: any) => {
+    const handleShare = async (e: React.MouseEvent, clinic: any) => {
         e.stopPropagation();
-        const phone = clinic.clinic_phone || clinic.phone;
-        if (phone) {
-            const formattedPhone = phone.replace(/\D/g, '');
-            window.open(`https://wa.me/${formattedPhone}`, '_blank');
+        
+        const clinicName = clinic.clinic_name || clinic.name;
+        const clinicPhone = clinic.clinic_phone || clinic.phone;
+        const shareText = `هل تبحث عن عيادة متخصصة؟ 🏥\nأنصحك بعيادة الدكتورة/الدكتور ${clinicName} عبر منصة Doctor Jo المميزة.\n\n📍 العنوان: ${clinic.clinic_address || 'متوفر على التطبيق'}\n📞 للتواصل والحجز: ${clinicPhone || 'حمل التطبيق'}\n\n🌟 احجز الآن بسهولة عبر بوابة Doctor Jo!`;
+        const shareUrl = window.location.origin + `/patient/clinics/${clinic.id}`;
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: `عيادة ${clinicName}`,
+                    text: shareText,
+                    url: shareUrl,
+                });
+            } catch (error) {
+                console.log('Error sharing:', error);
+            }
+        } else {
+            // Fallback for desktop/unsupported browsers (Copy to clipboard)
+            navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+            toast({
+                title: 'تم النسخ',
+                description: 'تم نسخ معلومات العيادة للمشاركة.',
+            });
         }
     };
 
@@ -210,11 +229,20 @@ export default function PatientClinics() {
                                     </button>
 
                                     <button
-                                        onClick={(e) => handleWhatsApp(e, clinic)}
-                                        className="flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-white text-green-600 border border-green-200 hover:bg-green-50 shadow-sm"
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/patient/clinics/${clinic.id}`); }}
+                                        className="flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 shadow-sm"
+                                        title="التفاصيل"
                                     >
-                                        <MessageCircle className="h-3.5 w-3.5" />
-                                        تواصل
+                                        <Eye className="h-3.5 w-3.5" />
+                                        تفاصيل
+                                    </button>
+
+                                    <button
+                                        onClick={(e) => handleShare(e, clinic)}
+                                        className="flex-[0.5] flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-purple-50 text-purple-600 border border-purple-200 hover:bg-purple-100 shadow-sm"
+                                        title="مشاركة"
+                                    >
+                                        <Share2 className="h-3.5 w-3.5" />
                                     </button>
                                 </div>
                             </Card>
