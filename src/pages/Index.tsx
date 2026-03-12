@@ -24,6 +24,7 @@ import { ClinicProvider } from "@/context/ClinicContext";
 import ClinicSettings from "@/components/ClinicSettings";
 import { ClinicStats } from "@/components/ClinicStats";
 import OffersManager from "@/components/OffersManager";
+import FinancialAnalytics from "./doctor/FinancialAnalytics";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PatientCardSkeleton } from "@/components/skeletons/PatientCardSkeleton";
 import HeroSection from "@/components/HeroSection";
@@ -45,7 +46,8 @@ import {
     LineChart,
     Sparkles,
     Download,
-    Tag
+    Tag,
+    Wallet
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BottomNav } from "@/components/BottomNav";
@@ -228,7 +230,8 @@ const Index = () => {
                                                     activeTab === 'templates' ? "تحكم في الرسائل الجاهزة والردود الآلية لتوفير وقتك" :
                                                         activeTab === 'clinic-settings' ? "تعديل بيانات العيادة وشعارها بما يتناسب مع هويتك" :
                                                             activeTab === 'offers' ? "إدارة وتوزيع عروضك وتخفيضاتك الطبية" :
-                                                                activeTab === 'bot-stats' ? "تحليل دقيق لتفاعلات المرضى مع المساعد الذكي الخاص بك" : "إدارة طبية متكاملة"
+                                                                activeTab === 'finance' ? "متابعة دقيقة لكل كشفياتك وإيصالاتك المالية" :
+                                                                    activeTab === 'bot-stats' ? "تحليل دقيق لتفاعلات المرضى مع المساعد الذكي الخاص بك" : "إدارة طبية متكاملة"
                                     }
                                     icon={
                                         activeTab === 'dashboard' ? LayoutDashboard :
@@ -237,7 +240,8 @@ const Index = () => {
                                                     activeTab === 'templates' ? FileText :
                                                         activeTab === 'clinic-settings' ? Settings :
                                                             activeTab === 'offers' ? Tag :
-                                                                activeTab === 'bot-stats' ? LineChart : Sparkles
+                                                                activeTab === 'finance' ? Wallet :
+                                                                    activeTab === 'bot-stats' ? LineChart : Sparkles
                                     }
                                 />
                             )}
@@ -672,6 +676,8 @@ const Index = () => {
                             {activeTab === 'bot-stats' && <ClinicStats />}
 
                             {activeTab === 'offers' && <OffersManager />}
+
+                            {activeTab === 'finance' && <FinancialAnalytics />}
 
                             {activeTab === 'internal-chat' && (
                                 <div className="-mx-4 md:-mx-10 -mt-0">
