@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, MapPin, Phone, Clock, Search, Calendar, MessageCircle } from 'lucide-react';
+import { Building2, MapPin, Phone, Clock, Search, Calendar, MessageCircle, Star } from 'lucide-react';
 import axios from 'axios';
 
 import { BASE_URL } from '@/lib/api';
@@ -174,12 +174,22 @@ export default function PatientClinics() {
                                                 )}
                                             </div>
                                         )}
-                                        {(clinic.clinic_phone || clinic.phone) && (
-                                            <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
-                                                <Phone className="h-4 w-4 text-green-500 flex-shrink-0" />
-                                                <span dir="ltr">{clinic.clinic_phone || clinic.phone}</span>
-                                            </div>
-                                        )}
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            {(clinic.clinic_phone || clinic.phone) && (
+                                                <div className="flex items-center gap-2 text-sm text-slate-600 font-medium min-w-0">
+                                                    <Phone className="h-4 w-4 text-green-500 flex-shrink-0" />
+                                                    <span dir="ltr" className="truncate">{clinic.clinic_phone || clinic.phone}</span>
+                                                </div>
+                                            )}
+                                            {/* التقييم */}
+                                            {(clinic.totalReviews > 0) && (
+                                                <div className="flex items-center gap-1 bg-yellow-50 text-yellow-700 px-2.5 py-0.5 rounded-full text-xs font-bold border border-yellow-200 shadow-sm mr-auto">
+                                                    <Star className="h-3.5 w-3.5 fill-yellow-500 text-yellow-500" />
+                                                    <span>{clinic.avgRating}</span>
+                                                    <span className="text-yellow-600/80 mr-0.5">({clinic.totalReviews})</span>
+                                                </div>
+                                            )}
+                                        </div>
                                         {clinic.working_hours && (
                                             <div className="flex items-center gap-2 text-sm text-slate-600 font-medium">
                                                 <Clock className="h-4 w-4 text-orange-400 flex-shrink-0" />

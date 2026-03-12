@@ -189,6 +189,9 @@ export class PatientService {
                     },
                     select: { key: true, value: true },
                 },
+                clinicReviews: {
+                    select: { rating: true },
+                },
             },
             orderBy: { name: 'asc' },
         });
@@ -199,9 +202,18 @@ export class PatientService {
                 const settingsMap: Record<string, string> = {};
                 u.settings.forEach((s) => { settingsMap[s.key] = s.value; });
                 const resolvedClinicName = settingsMap['clinic_name'] || u.clinic_name;
+
+                // حساب متوسط التقييم وعدد التقييمات
+                const totalReviews = u.clinicReviews?.length || 0;
+                const sumRating = totalReviews > 0 ? u.clinicReviews!.reduce((acc, curr) => acc + curr.rating, 0) : 0;
+                const avgRating = totalReviews > 0 ? +(sumRating / totalReviews).toFixed(1) : 0;
+
                 return {
                     ...u,
                     settings: undefined,
+                    clinicReviews: undefined,
+                    avgRating,
+                    totalReviews,
                     clinic_name: resolvedClinicName,
                     clinic_specialty: settingsMap['clinic_specialty'] || u.clinic_specialty,
                     clinic_logo: settingsMap['clinic_logo'] || null,
