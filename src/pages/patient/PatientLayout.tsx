@@ -194,35 +194,54 @@ export default function PatientLayout() {
             {/* Footer */}
             <Footer />
 
-            {/* 💎 Replica Navigation Bar (Mobile) */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-                <nav className="bg-[#F1F5F9] border-t border-gray-200 flex items-center justify-around h-[84px] px-2 pb-safe">
+            {/* 💎 Ultra Modern Navigation Bar (Mobile) */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60]">
+                <nav className="bg-white/95 backdrop-blur-2xl border-t border-slate-100 shadow-[0_-15px_40px_-15px_rgba(0,0,0,0.05)] flex items-center justify-around h-[84px] px-2 pb-safe mb-0">
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname === item.path;
+                        const isActive = location.pathname.startsWith(item.path) && (item.path !== '/patient' || location.pathname === '/patient' || location.pathname === '/patient/dashboard');
+                        
+                        // Exact match for dashboard to avoid matching all routes
+                        const isTrulyActive = item.path === '/patient/dashboard' 
+                            ? location.pathname === '/patient/dashboard' 
+                            : location.pathname.includes(item.path);
+
                         return (
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className="relative flex flex-col items-center justify-center flex-1 h-full pt-2 group"
+                                className="relative flex flex-col items-center justify-center flex-1 h-full group tap-highlight-transparent"
                             >
                                 <div className={cn(
-                                    "flex items-center justify-center w-[58px] h-[58px] rounded-[22px] transition-all duration-300 relative",
-                                    isActive
-                                        ? "bg-gradient-to-tr from-blue-600 to-orange-500 shadow-md transform -translate-y-1"
-                                        : "text-blue-500/80"
+                                    "flex flex-col items-center justify-center transition-all duration-500 ease-out",
+                                    isTrulyActive ? "transform -translate-y-3" : "hover:-translate-y-1"
                                 )}>
-                                    <Icon className={cn("h-7 w-7 transition-colors", isActive ? "text-white" : "group-hover:text-blue-600")} />
+                                    {/* Icon Container */}
+                                    <div className={cn(
+                                        "relative flex items-center justify-center w-[54px] h-[54px] rounded-2xl transition-all duration-300",
+                                        isTrulyActive 
+                                            ? "bg-gradient-to-tr from-blue-600 via-blue-700 to-blue-500 shadow-[0_10px_20px_-8px_rgba(37,99,235,0.6)] border border-blue-400/20" 
+                                            : "bg-transparent text-slate-400"
+                                    )}>
+                                        <Icon className={cn(
+                                            "h-[22px] w-[22px] transition-all duration-300", 
+                                            isTrulyActive ? "text-white" : "group-hover:text-blue-500"
+                                        )} strokeWidth={isTrulyActive ? 2.5 : 2} />
+                                        
+                                        {/* Orange Accent Dot */}
+                                        {isTrulyActive && (
+                                            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full border-2 border-white shadow-sm ring-1 ring-orange-500/20" />
+                                        )}
+                                    </div>
+
+                                    {/* Label */}
+                                    <span className={cn(
+                                        "absolute -bottom-6 text-[11px] font-bold whitespace-nowrap transition-all duration-300",
+                                        isTrulyActive ? "text-blue-800 opacity-100" : "text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-blue-400"
+                                    )}>
+                                        {item.label}
+                                    </span>
                                 </div>
-                                <span className={cn(
-                                    "text-[10px] font-bold mt-1 transition-colors",
-                                    isActive ? "text-blue-700" : "text-blue-300"
-                                )}>
-                                    {item.label}
-                                </span>
-                                {isActive && (
-                                    <div className="absolute top-0 w-8 h-1 bg-orange-500 rounded-b-full hidden" />
-                                )}
                             </Link>
                         );
                     })}
