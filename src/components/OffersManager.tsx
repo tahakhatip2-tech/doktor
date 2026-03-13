@@ -103,16 +103,16 @@ export default function OffersManager() {
     return (
         <div className="space-y-6" dir="rtl">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex-1 min-w-0">
-                    <h2 className="text-xl md:text-2xl font-black flex items-center gap-2 truncate">
-                        <Tag className="h-5 w-5 md:h-6 md:w-6 text-orange-500 shrink-0" />
-                        <span className="truncate">إدارة عروضي</span>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h2 className="text-2xl font-black flex items-center gap-2">
+                        <Tag className="h-6 w-6 text-orange-500" />
+                        إدارة عروضي
                     </h2>
-                    <p className="text-muted-foreground text-[10px] md:text-sm mt-0.5 md:mt-1 truncate">انشر عروضك وخصوماتك ليراها مرضاؤك</p>
+                    <p className="text-muted-foreground text-sm mt-1">انشر عروضك وخصوماتك ليراها مرضاؤك</p>
                 </div>
                 <Button
-                    className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg hover:shadow-orange-300/40 gap-2 shrink-0 py-1.5 md:py-2 px-4 md:px-6 h-auto md:h-10 text-xs md:text-sm"
+                    className="bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg hover:shadow-orange-300/40 gap-2"
                     onClick={() => setShowForm(!showForm)}
                 >
                     {showForm ? <X className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
@@ -123,14 +123,14 @@ export default function OffersManager() {
             {/* Create Form */}
             {showForm && (
                 <Card className="border-orange-200 shadow-lg bg-gradient-to-br from-orange-50/50 to-white">
-                    <CardContent className="p-4 md:pt-6 space-y-3 md:space-y-4">
-                        <div className="flex items-center gap-2 md:gap-3">
-                            <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow">
-                                <Building2 className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                    <CardContent className="pt-6 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shadow">
+                                <Building2 className="h-5 w-5 text-white" />
                             </div>
-                            <div className="min-w-0">
-                                <p className="font-bold text-xs md:text-sm truncate">{user?.clinic_name || user?.name}</p>
-                                <p className="text-[10px] md:text-xs text-muted-foreground truncate">{user?.clinic_specialty}</p>
+                            <div>
+                                <p className="font-bold text-sm">{user?.clinic_name || user?.name}</p>
+                                <p className="text-xs text-muted-foreground">{user?.clinic_specialty}</p>
                             </div>
                         </div>
 
@@ -138,14 +138,14 @@ export default function OffersManager() {
                             placeholder="عنوان العرض... (مثال: خصم 20% على جلسة الليزر)"
                             value={title}
                             onChange={e => setTitle(e.target.value)}
-                            className="font-semibold text-sm md:text-base border-orange-200 focus:border-orange-400 h-9 md:h-10"
+                            className="font-semibold text-base border-orange-200 focus:border-orange-400"
                         />
                         <Textarea
                             placeholder="تفاصيل العرض... أخبر مرضاءك بكل التفاصيل"
                             value={content}
                             onChange={e => setContent(e.target.value)}
-                            rows={3}
-                            className="text-xs md:text-sm border-orange-200 focus:border-orange-400 resize-none"
+                            rows={4}
+                            className="border-orange-200 focus:border-orange-400 resize-none"
                         />
 
                         {/* Image Preview */}
@@ -187,17 +187,17 @@ export default function OffersManager() {
                             </div>
                         )}
 
-                        <div className="flex flex-wrap items-center gap-2 pt-1 md:pt-2">
+                        <div className="flex items-center gap-2 pt-2">
                             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-                            <Button variant="outline" size="sm" className="h-8 md:h-9 text-[10px] md:text-xs gap-1 border-orange-200 text-orange-600 hover:bg-orange-50"
+                            <Button variant="outline" size="sm" className="gap-1 border-orange-200 text-orange-600 hover:bg-orange-50"
                                 onClick={() => fileRef.current?.click()}>
-                                <ImageIcon className="h-3.5 w-3.5 md:h-4 md:w-4" /> إضافة صورة
+                                <ImageIcon className="h-4 w-4" /> إضافة صورة
                             </Button>
                             <div className="flex-1" />
-                            <Button className="h-8 md:h-9 text-[10px] md:text-xs bg-gradient-to-r from-orange-500 to-orange-600 text-white gap-2 shadow-sm"
+                            <Button className="bg-gradient-to-r from-orange-500 to-orange-600 text-white gap-2"
                                 onClick={handleSubmit} disabled={saving}>
-                                <Sparkles className="h-3.5 w-3.5 md:h-4 md:w-4" />
-                                {saving ? 'جاري...' : 'نشر العرض'}
+                                <Sparkles className="h-4 w-4" />
+                                {saving ? 'جاري النشر...' : 'نشر العرض'}
                             </Button>
                         </div>
                     </CardContent>
@@ -221,41 +221,41 @@ export default function OffersManager() {
                         <Card key={offer.id} className="overflow-hidden border-border/50 hover:shadow-md transition-shadow">
                             <CardContent className="p-5">
                                 <div className="flex items-start justify-between mb-3">
-                                    <div className="flex items-center gap-2 md:gap-3">
-                                        <div className="h-8 w-8 md:h-10 md:w-10 rounded-full bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center shrink-0">
-                                            <Building2 className="h-4 w-4 md:h-5 md:w-5 text-white" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary to-orange-500 flex items-center justify-center">
+                                            <Building2 className="h-5 w-5 text-white" />
                                         </div>
-                                        <div className="min-w-0">
-                                            <p className="font-bold text-xs md:text-sm truncate">{user?.clinic_name || user?.name}</p>
-                                            <p className="text-[10px] md:text-xs text-muted-foreground flex items-center gap-1 truncate">
-                                                <Clock className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                                        <div>
+                                            <p className="font-bold text-sm">{user?.clinic_name || user?.name}</p>
+                                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                                <Clock className="h-3 w-3" />
                                                 {format(new Date(offer.createdAt), 'PPpp', { locale: ar })}
                                             </p>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-1.5 md:gap-2">
+                                    <div className="flex items-center gap-2">
                                         {offer.isPermanent ? (
-                                            <Badge className="bg-green-100 text-green-700 border-0 gap-1 text-[9px] md:text-xs px-1.5 md:px-2">
-                                                <Infinity className="h-2.5 w-2.5 md:h-3 md:w-3" /> دائم
+                                            <Badge className="bg-green-100 text-green-700 border-0 gap-1 text-xs">
+                                                <Infinity className="h-3 w-3" /> دائم
                                             </Badge>
                                         ) : (
-                                            <Badge className="bg-orange-100 text-orange-700 border-0 gap-1 text-[9px] md:text-xs px-1.5 md:px-2">
-                                                <Calendar className="h-2.5 w-2.5 md:h-3 md:w-3" />
+                                            <Badge className="bg-orange-100 text-orange-700 border-0 gap-1 text-xs">
+                                                <Calendar className="h-3 w-3" />
                                                 حتى {offer.endDate ? format(new Date(offer.endDate), 'PP', { locale: ar }) : '–'}
                                             </Badge>
                                         )}
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 md:h-8 md:w-8 text-destructive hover:bg-destructive/10"
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10"
                                             onClick={() => handleDelete(offer.id)}>
-                                            <Trash2 className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                                            <Trash2 className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
 
-                                <h3 className="font-bold text-sm md:text-base mb-1 truncate">{offer.title}</h3>
-                                <p className="text-[11px] md:text-sm text-muted-foreground leading-relaxed line-clamp-2">{offer.content}</p>
+                                <h3 className="font-bold text-base mb-1">{offer.title}</h3>
+                                <p className="text-sm text-muted-foreground leading-relaxed">{offer.content}</p>
 
                                 {offer.image && (
-                                    <img src={offer.image} alt="offer" className="mt-3 w-full h-32 md:h-40 object-cover rounded-xl" />
+                                    <img src={offer.image} alt="offer" className="mt-3 w-full h-40 object-cover rounded-xl" />
                                 )}
 
                                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/40">

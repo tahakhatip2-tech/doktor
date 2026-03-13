@@ -133,7 +133,7 @@ export function HeroSection({
                                     width: { duration: 1.2, ease: "easeOut" },
                                     opacity: { duration: 0.3 }
                                 }}
-                                className="text-2xl md:text-5xl font-black tracking-tight leading-none text-slate-900 drop-shadow-sm whitespace-nowrap overflow-hidden pr-2 py-1"
+                                className="text-3xl md:text-5xl font-black tracking-tight leading-none text-slate-900 drop-shadow-sm whitespace-nowrap overflow-hidden pr-2 py-1"
                             >
                                 {doctorName}
                             </motion.h1>
@@ -156,7 +156,7 @@ export function HeroSection({
                                 initial={{ width: 0 }}
                                 animate={{ width: "auto" }}
                                 transition={{ duration: 1.2, ease: "easeOut" }}
-                                className="text-2xl md:text-5xl font-black text-slate-900 tracking-tight leading-none italic uppercase whitespace-nowrap"
+                                className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none italic uppercase whitespace-nowrap"
                             >
                                 {doctorName}
                             </motion.span>
@@ -209,15 +209,15 @@ export function HeroSection({
 
             {/* PAGE TITLE STRIP */}
             <div className="relative z-20 w-full border-t border-slate-100 bg-slate-50/80 backdrop-blur-sm">
-                <div className="px-4 py-2.5 md:px-12 flex items-center justify-between gap-2 md:gap-0">
-                    <div className="flex items-center gap-2.5 md:gap-5 min-w-0">
-                        <div className="h-5 md:h-8 w-1 md:w-1.5 rounded-full bg-gradient-to-b from-blue-600 to-orange-500 shadow-sm shrink-0" />
-                        <div className="flex flex-col min-w-0">
+                <div className="px-4 py-4 md:px-12 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-0">
+                    <div className="flex items-center gap-5 w-full md:w-auto">
+                        <div className="h-8 w-1.5 rounded-full bg-gradient-to-b from-blue-600 to-orange-500 shadow-sm" />
+                        <div className="flex flex-col">
                             <motion.h2
                                 key={pageTitle}
                                 initial={{ opacity: 0, x: -10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="text-[10px] md:text-xl font-black text-slate-900 uppercase tracking-wider leading-none truncate max-w-[150px] md:max-w-none"
+                                className="text-sm md:text-xl font-black text-slate-900 uppercase tracking-wider leading-none"
                             >
                                 {pageTitle === 'الرؤية الوطنية' ? 'رؤيتنا' : pageTitle}
                             </motion.h2>
