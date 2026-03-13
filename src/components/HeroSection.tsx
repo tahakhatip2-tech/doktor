@@ -12,6 +12,7 @@ interface HeroSectionProps {
     icon?: LucideIcon;
     className?: string;
     stats?: any[];
+    backgroundImage?: string;
     children?: React.ReactNode;
 }
 
@@ -22,6 +23,7 @@ export function HeroSection({
     icon: Icon = Sparkles,
     className,
     stats,
+    backgroundImage,
     children
 }: HeroSectionProps) {
     const { settings } = useClinicContext();
@@ -69,6 +71,23 @@ export function HeroSection({
 
             {/* Background Texture Layering */}
             <div className="absolute inset-0 z-0">
+                {/* Hero Illustration Background */}
+                {backgroundImage && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 1.1 }}
+                        animate={{ opacity: 0.15, scale: 1 }}
+                        transition={{ duration: 1.5 }}
+                        className="absolute inset-y-0 left-0 w-1/2 md:w-2/3 pointer-events-none overflow-hidden"
+                    >
+                        <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
+                        <img
+                            src={backgroundImage}
+                            alt="Background"
+                            className="h-full w-full object-cover object-left-top opacity-80 mix-blend-multiply"
+                        />
+                    </motion.div>
+                )}
+
                 {/* Subtle Dots Pattern */}
                 <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-multiply bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]" />
                 

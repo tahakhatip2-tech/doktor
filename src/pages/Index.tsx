@@ -243,6 +243,7 @@ const Index = () => {
                                                                 activeTab === 'finance' ? Wallet :
                                                                     activeTab === 'bot-stats' ? LineChart : Sparkles
                                     }
+                                    backgroundImage={activeTab === 'dashboard' ? "/hero-doctor.png" : undefined}
                                 />
                             )}
 
