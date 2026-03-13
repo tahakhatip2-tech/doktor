@@ -82,100 +82,229 @@ export default function PatientLayout() {
     return (
         <div className="min-h-screen bg-[#F8FAFC]">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-white/70 backdrop-blur-md shadow-sm transition-all duration-300">
+            <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-white/70 backdrop-blur-3xl shadow-sm transition-all duration-300">
                 <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6 mx-auto max-w-7xl">
-                    {/* Left: Branding */}
-                    <Link to="/patient/dashboard" className="flex items-center gap-2 outline-none group">
-                        <div className="relative flex-shrink-0">
-                            <div className="absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-orange-500 rounded-full blur-md opacity-20 group-hover:opacity-40 transition duration-500" />
-                            <div className="relative h-11 w-11 rounded-full p-0.5 border-2 border-white bg-white shadow-xl flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
+                    
+                    {/* 📱 Mobile Layout (lg:hidden) */}
+                    <div className="flex lg:hidden items-center justify-between w-full gap-2 min-w-0" dir="rtl">
+                        {/* Right Side: Quick Actions & Profile Dropdown Row */}
+                        <div className="flex items-center gap-1.5 sm:gap-3">
+                            {/* Profile & Menu Dropdown */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="relative group outline-none active:scale-95 transition-all duration-300">
+                                        <div className="relative">
+                                            <div className="absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full blur-md opacity-20 group-hover:opacity-40 transition duration-500" />
+                                            <div className="relative h-11 w-11 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white overflow-hidden shadow-xl border-2 border-white/50">
+                                                <span className="font-bold text-lg">{patient?.fullName?.charAt(0) || 'م'}</span>
+                                            </div>
+                                            {/* Hamburger/Menu Badge */}
+                                            <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-white rounded-full flex flex-col items-center justify-center gap-0.5 border-2 border-blue-50 shadow-lg group-hover:scale-110 transition-transform">
+                                                <div className="w-2.5 h-[1.5px] bg-blue-600 rounded-full"></div>
+                                                <div className="w-1.5 h-[1.5px] bg-blue-600 rounded-full"></div>
+                                                <div className="w-2.5 h-[1.5px] bg-blue-600 rounded-full"></div>
+
+                                                {/* Green Status Dot (Glow) */}
+                                                <div className="absolute -top-0.5 -left-0.5 h-2 w-2">
+                                                    <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20"></div>
+                                                    <div className="relative h-2 w-2 bg-green-500 rounded-full border border-white"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </button>
+                                </DropdownMenuTrigger>
+
+                                <DropdownMenuContent
+                                    align="end"
+                                    className="w-[calc(100vw-2rem)] sm:w-80 mt-4 p-2.5 rounded-[2rem] border-blue-200/50 bg-white/95 backdrop-blur-2xl shadow-[0_20px_60px_rgba(37,99,235,0.2)] animate-in fade-in zoom-in-95"
+                                    sideOffset={8}
+                                >
+                                    {/* Patient Branding Section */}
+                                    <div className="flex flex-col items-center p-6 bg-gradient-to-b from-blue-50/50 to-transparent mb-2 rounded-t-[2rem] border-b border-blue-100/20">
+                                        <div className="relative group mb-3">
+                                            <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-orange-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                                            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-2xl font-black shadow-lg">
+                                                {patient?.fullName?.charAt(0) || 'م'}
+                                            </div>
+                                        </div>
+                                        <h2 className="text-xl font-black tracking-tighter text-blue-900">
+                                            {patient?.fullName}
+                                        </h2>
+                                        <p className="text-[10px] font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent opacity-80 mt-1" dir="ltr">
+                                            {patient?.phone}
+                                        </p>
+                                    </div>
+
+                                    {/* Quick Actions */}
+                                    <div className="grid grid-cols-2 gap-2 mb-2 p-1">
+                                        <DropdownMenuItem
+                                            onClick={() => navigate('/patient/profile')}
+                                            className="flex flex-col items-center justify-center p-3 rounded-2xl border border-blue-100 bg-blue-50/50 text-blue-900 hover:bg-blue-100 cursor-pointer"
+                                        >
+                                            <User className="h-5 w-5 text-blue-600 mb-1" />
+                                            <span className="text-[10px] font-black">حسابي</span>
+                                        </DropdownMenuItem>
+
+                                        <DropdownMenuItem
+                                            onClick={signOut}
+                                            className="flex flex-col items-center justify-center p-3 rounded-2xl border border-red-100 bg-red-50/50 text-red-900 hover:bg-red-100 cursor-pointer"
+                                        >
+                                            <LogOut className="h-5 w-5 text-red-600 mb-1" />
+                                            <span className="text-[10px] font-black">تسجيل الخروج</span>
+                                        </DropdownMenuItem>
+                                    </div>
+                                    
+                                    {/* Signature */}
+                                    <div className="mt-2 pt-3 border-t border-blue-100/30 text-center">
+                                        <p className="text-[8px] font-bold text-blue-600/30 uppercase tracking-[0.3em]">
+                                            Powered by Al-Khatib
+                                        </p>
+                                    </div>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+
+                            {/* Mobile Notification Bell */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate('/patient/notifications')}
+                                className="h-11 w-11 rounded-full bg-blue-50/80 border border-blue-200/50 text-blue-600 shadow-sm active:scale-90 relative"
+                            >
+                                <Bell className="h-5 w-5" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-blue-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </Button>
+
+                            {/* Static Language Toggle */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-11 w-11 rounded-full bg-blue-50/80 border border-blue-200/50 text-blue-600 shadow-sm active:scale-90"
+                            >
+                                <Languages className="h-5 w-5" />
+                            </Button>
+                        </div>
+
+                        {/* Left Side: Doctor Jo Branding (Mobile) */}
+                        <div className="flex items-center gap-2 min-w-0 flex-1 justify-end">
+                            <div className="flex flex-col items-end leading-none min-w-0">
+                                <h1 className="text-xs font-black tracking-tight bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500 bg-clip-text text-transparent truncate w-full text-right">
+                                    DOCTOR JO
+                                </h1>
+                                <p className="text-[7px] font-bold uppercase tracking-wider bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent truncate w-full text-right">Patient Portal</p>
+                            </div>
+                            <div className="h-9 w-9 relative flex-shrink-0">
+                                <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-orange-500 rounded-2xl blur opacity-30"></div>
                                 <img
                                     src="/hakeem-logo.png"
-                                    alt="Doctor Jo"
-                                    className="h-full w-full object-contain"
+                                    alt="Doctor Jo Logo"
+                                    className="relative h-full w-full object-contain rounded-xl"
                                     onError={(e) => {
                                         (e.target as HTMLImageElement).src = '/logo.png';
                                     }}
                                 />
                             </div>
                         </div>
-                        <div className="flex flex-col items-start leading-none mr-1.5" dir="ltr">
-                            <h1 className="text-xl font-black tracking-tighter bg-gradient-to-r from-blue-700 via-blue-800 to-orange-600 bg-clip-text text-transparent">
-                                DOCTOR JO
-                            </h1>
-                            <p className="text-[7px] font-bold uppercase tracking-wider text-blue-900/60 text-left">Clinic Management System</p>
+                    </div>
+
+                    {/* 💻 Desktop Layout (hidden lg:flex) */}
+                    <div className="hidden lg:flex items-center justify-between w-full">
+                        {/* Desktop Left: Branding */}
+                        <Link to="/patient/dashboard" className="flex items-center gap-2 outline-none group">
+                            <div className="relative flex-shrink-0">
+                                <div className="absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-orange-500 rounded-full blur-md opacity-20 group-hover:opacity-40 transition duration-500" />
+                                <div className="relative h-11 w-11 rounded-full p-0.5 border-2 border-white bg-white shadow-xl flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:scale-105">
+                                    <img
+                                        src="/hakeem-logo.png"
+                                        alt="Doctor Jo"
+                                        className="h-full w-full object-contain"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = '/logo.png';
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-col items-start leading-none mr-1.5" dir="ltr">
+                                <h1 className="text-xl font-black tracking-tighter bg-gradient-to-r from-blue-700 via-blue-800 to-orange-600 bg-clip-text text-transparent">
+                                    DOCTOR JO
+                                </h1>
+                                <p className="text-[7px] font-bold uppercase tracking-wider text-blue-900/60 text-left">Clinic Management System</p>
+                            </div>
+                        </Link>
+
+                        {/* Desktop Navigation */}
+                        <nav className="flex items-center gap-1 bg-muted/30 p-1 rounded-2xl border border-border/50">
+                            {navItems.map((item) => {
+                                const Icon = item.icon;
+                                const isActive = location.pathname === item.path;
+                                return (
+                                    <Link key={item.path} to={item.path}>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className={cn(
+                                                'relative rounded-xl h-9 px-4 font-bold text-xs transition-all duration-300',
+                                                isActive
+                                                    ? 'bg-white text-blue-700 shadow-sm border border-border/50'
+                                                    : 'text-muted-foreground hover:text-blue-600'
+                                            )}
+                                        >
+                                            <Icon className={cn("h-4 w-4 ml-2", isActive ? "text-orange-500" : "text-muted-foreground")} />
+                                            {item.label}
+                                        </Button>
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* Desktop Right: Actions */}
+                        <div className="flex items-center gap-2" dir="rtl">
+                            {/* Notifications */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate('/patient/notifications')}
+                                className="h-10 w-10 rounded-full bg-blue-50 text-blue-700 relative active:scale-95"
+                            >
+                                <Bell className="h-5 w-5" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-pulse">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </Button>
+
+                            {/* Profile Menu */}
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <button className="relative h-10 w-10 rounded-full border-2 border-blue-100 p-0.5 active:scale-95 transition-transform overflow-hidden">
+                                        <Avatar className="h-full w-full">
+                                            <AvatarFallback className="bg-blue-700 text-white font-bold text-xs">
+                                                {patient.fullName?.charAt(0) || 'م'}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 mt-2 p-2 rounded-2xl shadow-2xl border-blue-50 pb-2">
+                                    <DropdownMenuLabel className="px-3 py-2">
+                                        <p className="text-sm font-black text-blue-900">{patient.fullName}</p>
+                                        <p className="text-[10px] text-blue-600 font-bold" dir="ltr">{patient.phone}</p>
+                                    </DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => navigate('/patient/profile')} className="rounded-xl py-2 cursor-pointer font-bold text-sm">
+                                        <User className="ml-3 h-4 w-4 text-blue-600" />
+                                        الملف الشخصي
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={signOut} className="rounded-xl py-2 cursor-pointer text-red-600 font-bold text-sm mt-1">
+                                        <LogOut className="ml-3 h-4 w-4 text-red-600" />
+                                        تسجيل الخروج
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                    </Link>
-
-                    {/* Desktop Navigation */}
-                    <nav className="hidden lg:flex items-center gap-1 bg-muted/30 p-1 rounded-2xl border border-border/50">
-                        {navItems.map((item) => {
-                            const Icon = item.icon;
-                            const isActive = location.pathname === item.path;
-                            return (
-                                <Link key={item.path} to={item.path}>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className={cn(
-                                            'relative rounded-xl h-9 px-4 font-bold text-xs transition-all duration-300',
-                                            isActive
-                                                ? 'bg-white text-blue-700 shadow-sm border border-border/50'
-                                                : 'text-muted-foreground hover:text-blue-600'
-                                        )}
-                                    >
-                                        <Icon className={cn("h-4 w-4 ml-2", isActive ? "text-orange-500" : "text-muted-foreground")} />
-                                        {item.label}
-                                    </Button>
-                                </Link>
-                            );
-                        })}
-                    </nav>
-
-                    {/* Right: Actions */}
-                    <div className="flex items-center gap-2" dir="rtl">
-                        {/* Notifications */}
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => navigate('/patient/notifications')}
-                            className="h-10 w-10 rounded-full bg-blue-50 text-blue-700 relative active:scale-95"
-                        >
-                            <Bell className="h-5 w-5" />
-                            {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-pulse">
-                                    {unreadCount}
-                                </span>
-                            )}
-                        </Button>
-
-                        {/* Profile Menu */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="relative h-10 w-10 rounded-full border-2 border-blue-100 p-0.5 active:scale-95 transition-transform overflow-hidden">
-                                    <Avatar className="h-full w-full">
-                                        <AvatarFallback className="bg-blue-700 text-white font-bold text-xs">
-                                            {patient.fullName?.charAt(0) || 'م'}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 mt-2 p-2 rounded-2xl shadow-2xl border-blue-50">
-                                <DropdownMenuLabel className="px-3 py-2">
-                                    <p className="text-sm font-black text-blue-900">{patient.fullName}</p>
-                                    <p className="text-[10px] text-blue-600 font-bold" dir="ltr">{patient.phone}</p>
-                                </DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => navigate('/patient/profile')} className="rounded-xl py-2 cursor-pointer font-bold text-sm">
-                                    <User className="ml-3 h-4 w-4 text-blue-600" />
-                                    الملف الشخصي
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={signOut} className="rounded-xl py-2 cursor-pointer text-red-600 font-bold text-sm mt-1">
-                                    <LogOut className="ml-3 h-4 w-4 text-red-600" />
-                                    تسجيل الخروج
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
                     </div>
                 </div>
             </header>
@@ -194,14 +323,11 @@ export default function PatientLayout() {
             {/* Footer */}
             <Footer />
 
-            {/* 💎 Ultra Modern Navigation Bar (Mobile) */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-[60]">
-                <nav className="bg-white/95 backdrop-blur-2xl border-t border-slate-100 shadow-[0_-15px_40px_-15px_rgba(0,0,0,0.05)] flex items-center justify-around h-[84px] px-2 pb-safe mb-0">
+            {/* 💎 Mobile Navigation Bar (Matched to Doctor Portal) */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
+                <nav className="h-16 bg-white/[0.08] dark:bg-black/40 backdrop-blur-[40px] border-none border-t border-white/20 rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.2)] flex justify-around items-center px-2 pb-safe mb-0">
                     {navItems.map((item) => {
                         const Icon = item.icon;
-                        const isActive = location.pathname.startsWith(item.path) && (item.path !== '/patient' || location.pathname === '/patient' || location.pathname === '/patient/dashboard');
-                        
-                        // Exact match for dashboard to avoid matching all routes
                         const isTrulyActive = item.path === '/patient/dashboard' 
                             ? location.pathname === '/patient/dashboard' 
                             : location.pathname.includes(item.path);
@@ -210,38 +336,35 @@ export default function PatientLayout() {
                             <Link
                                 key={item.path}
                                 to={item.path}
-                                className="relative flex flex-col items-center justify-center flex-1 h-full group tap-highlight-transparent"
+                                className={cn(
+                                    "flex flex-col items-center justify-center gap-0.5 transition-all duration-300 relative p-2 min-w-[60px]",
+                                    isTrulyActive ? "scale-105" : "opacity-70 hover:opacity-100"
+                                )}
                             >
+                                {/* Icon with background */}
                                 <div className={cn(
-                                    "flex flex-col items-center justify-center transition-all duration-500 ease-out",
-                                    isTrulyActive ? "transform -translate-y-3" : "hover:-translate-y-1"
+                                    "relative p-2 rounded-xl transition-all duration-300",
+                                    isTrulyActive
+                                        ? "bg-gradient-to-tr from-blue-600 to-orange-500 shadow-lg shadow-blue-600/30"
+                                        : "bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20"
                                 )}>
-                                    {/* Icon Container */}
-                                    <div className={cn(
-                                        "relative flex items-center justify-center w-[54px] h-[54px] rounded-2xl transition-all duration-300",
-                                        isTrulyActive 
-                                            ? "bg-gradient-to-tr from-blue-600 via-blue-700 to-blue-500 shadow-[0_10px_20px_-8px_rgba(37,99,235,0.6)] border border-blue-400/20" 
-                                            : "bg-transparent text-slate-400"
-                                    )}>
-                                        <Icon className={cn(
-                                            "h-[22px] w-[22px] transition-all duration-300", 
-                                            isTrulyActive ? "text-white" : "group-hover:text-blue-500"
-                                        )} strokeWidth={isTrulyActive ? 2.5 : 2} />
-                                        
-                                        {/* Orange Accent Dot */}
-                                        {isTrulyActive && (
-                                            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full border-2 border-white shadow-sm ring-1 ring-orange-500/20" />
+                                    <Icon
+                                        className={cn(
+                                            "h-5 w-5 transition-all duration-300 stroke-[2]",
+                                            isTrulyActive ? "text-white" : "text-blue-600 dark:text-blue-400"
                                         )}
-                                    </div>
-
-                                    {/* Label */}
-                                    <span className={cn(
-                                        "absolute -bottom-6 text-[11px] font-bold whitespace-nowrap transition-all duration-300",
-                                        isTrulyActive ? "text-blue-800 opacity-100" : "text-slate-400 opacity-0 group-hover:opacity-100 group-hover:text-blue-400"
-                                    )}>
-                                        {item.label}
-                                    </span>
+                                    />
                                 </div>
+
+                                {/* Label */}
+                                <span className={cn(
+                                    "text-[9px] font-bold transition-all duration-300",
+                                    isTrulyActive
+                                        ? "text-blue-600 dark:text-blue-400"
+                                        : "text-blue-400/70 dark:text-blue-400/50"
+                                )}>
+                                    {item.label}
+                                </span>
                             </Link>
                         );
                     })}
