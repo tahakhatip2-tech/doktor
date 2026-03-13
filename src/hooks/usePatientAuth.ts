@@ -13,6 +13,7 @@ interface PatientUser {
     dateOfBirth?: string;
     gender?: string;
     medicalHistory?: string;
+    avatar?: string;
 }
 
 interface PatientAuthState {

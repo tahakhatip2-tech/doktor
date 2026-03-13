@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Switch } from '@/components/ui/switch';
@@ -37,7 +37,7 @@ interface Message {
 
 interface Conversation {
     id: number;
-    patient: { id: number; fullName: string; phone: string };
+    patient: { id: number; fullName: string; phone: string; avatar?: string };
     messages: Message[];
     updatedAt: string;
 }
@@ -203,9 +203,9 @@ export default function InternalChat() {
     );
 
     const getBubbleStyle = (type: Message['senderType']) => {
-        if (type === 'DOCTOR') return 'bg-primary text-white rounded-2xl rounded-tr-sm ml-auto';
+        if (type === 'DOCTOR') return 'bg-primary text-white rounded-2xl rounded-tl-sm';
         if (type === 'BOT') return 'bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl rounded-tl-sm';
-        return 'bg-card border border-border rounded-2xl rounded-tl-sm';
+        return 'bg-card border border-border rounded-2xl rounded-tr-sm';
     };
 
     return (
@@ -332,6 +332,9 @@ export default function InternalChat() {
                             <ArrowRight className="h-5 w-5" />
                         </Button>
                         <Avatar className="h-9 w-9">
+                            {selectedConv.patient?.avatar && (
+                                <AvatarImage src={selectedConv.patient.avatar} alt={selectedConv.patient.fullName} />
+                            )}
                             <AvatarFallback className="gradient-primary text-white font-bold text-sm">
                                 {selectedConv.patient?.fullName?.[0] || 'م'}
                             </AvatarFallback>
@@ -354,7 +357,7 @@ export default function InternalChat() {
                                     key={msg.id}
                                     className={cn(
                                         'flex gap-2 max-w-[75%]',
-                                        msg.senderType === 'DOCTOR' ? 'flex-row-reverse mr-0 ml-auto' : 'flex-row'
+                                        (msg.senderType === 'DOCTOR' || msg.senderType === 'BOT') ? 'flex-row-reverse mr-auto ml-0' : 'flex-row ml-auto mr-0'
                                     )}
                                 >
                                     <div className={cn(

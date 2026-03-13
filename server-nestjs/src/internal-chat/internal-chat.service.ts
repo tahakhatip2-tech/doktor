@@ -78,7 +78,7 @@ export class InternalChatService {
         return this.prisma.internalConversation.findMany({
             where: { clinicId },
             include: {
-                patient: { select: { id: true, fullName: true, phone: true } },
+                patient: { select: { id: true, fullName: true, phone: true, avatar: true } },
                 messages: {
                     orderBy: { createdAt: 'desc' },
                     take: 1, // آخر رسالة فقط للعرض في القائمة
@@ -111,7 +111,7 @@ export class InternalChatService {
             where: { id: conversationId },
             include: {
                 clinic: { select: this.clinicSelect },
-                patient: { select: { id: true, fullName: true, phone: true } },
+                patient: { select: { id: true, fullName: true, phone: true, avatar: true } },
                 messages: { orderBy: { createdAt: 'asc' } },
             },
         });

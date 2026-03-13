@@ -169,13 +169,16 @@ export default function PatientChat() {
     const firstLetter = clinicDisplayName.charAt(0);
 
     const getBubbleStyle = (type: Message['senderType']) => {
-        if (type === 'PATIENT') return 'bg-gradient-to-l from-blue-600 to-blue-500 text-white rounded-2xl rounded-tr-sm ml-auto shadow-sm';
-        if (type === 'BOT') return 'bg-orange-50 border border-orange-200 text-orange-900 rounded-2xl rounded-tl-sm shadow-sm';
-        return 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tl-sm shadow-sm';
+        if (type === 'PATIENT') return 'bg-gradient-to-l from-blue-600 to-blue-500 text-white rounded-2xl rounded-tl-sm shadow-sm';
+        if (type === 'BOT') return 'bg-orange-50 border border-orange-200 text-orange-900 rounded-2xl rounded-tr-sm shadow-sm';
+        return 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-tr-sm shadow-sm';
     };
 
     const getSenderIcon = (type: Message['senderType']) => {
         if (type === 'PATIENT') {
+            if (patient?.avatar) {
+                return <img src={patient.avatar} alt="Patient" className="h-full w-full object-cover rounded-xl" />;
+            }
             const initial = patient?.fullName?.charAt(0) || 'م';
             return <span className="font-bold text-sm text-blue-600">{initial}</span>;
         }
@@ -254,7 +257,7 @@ export default function PatientChat() {
                             key={msg.id}
                             className={cn(
                                 'flex gap-2 max-w-[80%]',
-                                msg.senderType === 'PATIENT' ? 'flex-row-reverse mr-0 ml-auto' : 'flex-row'
+                                msg.senderType === 'PATIENT' ? 'flex-row-reverse mr-auto ml-0' : 'flex-row ml-auto mr-0'
                             )}
                         >
                             <div className={cn(
