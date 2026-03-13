@@ -363,7 +363,7 @@ export default function InternalChat() {
                                     )}>
                                         {msg.senderType === 'DOCTOR' ? <Building2 className="h-4 w-4 text-primary" />
                                             : msg.senderType === 'BOT' ? <Bot className="h-4 w-4 text-amber-600" />
-                                                : <User className="h-4 w-4 text-muted-foreground" />}
+                                                : <span className="font-bold text-sm text-foreground">{selectedConv.patient?.fullName?.[0] || 'م'}</span>}
                                     </div>
                                     <div className="flex flex-col gap-1">
                                         <div className={cn('px-4 py-3 text-sm leading-relaxed shadow-sm', getBubbleStyle(msg.senderType))}>

@@ -175,7 +175,10 @@ export default function PatientChat() {
     };
 
     const getSenderIcon = (type: Message['senderType']) => {
-        if (type === 'PATIENT') return <User className="h-4 w-4" />;
+        if (type === 'PATIENT') {
+            const initial = patient?.fullName?.charAt(0) || 'م';
+            return <span className="font-bold text-sm text-blue-600">{initial}</span>;
+        }
         if (type === 'BOT') return <Bot className="h-4 w-4 text-orange-600" />;
         return doctorImage ? (
             <img src={doctorImage} alt="Dr" className="h-full w-full object-cover rounded-xl" />
