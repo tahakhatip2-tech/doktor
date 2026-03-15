@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Check, Upload, Loader2, Sparkles, Phone, ShieldCheck, FileText } from "lucide-react";
@@ -87,7 +87,7 @@ const Plans = () => {
             {/* Background Image with Overlay */}
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 resize-bg-animation"
-                style={{ backgroundImage: 'url(/auth-bg-pro.png?v=6)' }}
+                style={{ backgroundImage: 'url(/doktor-jo-auth-v2.png)' }}
             >
                 {/* Overlay Removed */}
             </div>
