@@ -21,7 +21,7 @@ export default function PatientHero({
     children,
     className,
     badgeText,
-    imageSrc = '/family-health-hero.png', // The newly generated 3D image
+    imageSrc = '/doktor-jo-auth-v2.png', // The newly generated 3D image
     showBackButton = false,
 }: PatientHeroProps) {
     const navigate = useNavigate();
