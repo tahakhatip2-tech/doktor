@@ -11,7 +11,7 @@ import { z } from "zod";
 import axios from 'axios';
 import { motion, AnimatePresence } from "framer-motion";
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 // ─── Validation Schemas ─────────────────────────────────────────────────────
 const loginSchema = z.object({
@@ -143,6 +143,8 @@ const UnifiedAuth = () => {
                 const response = await axios.post(`${API_URL}/patient/auth/login`, {
                     email,
                     password,
+                }, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
 
                 localStorage.setItem('patient_token', response.data.token);
@@ -166,6 +168,8 @@ const UnifiedAuth = () => {
                     password,
                     fullName,
                     phone,
+                }, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
 
                 localStorage.setItem('patient_token', response.data.token);

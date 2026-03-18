@@ -24,36 +24,7 @@ async function bootstrap() {
   }));
 
   app.enableCors({
-    origin: (origin, callback) => {
-      // Allow requests with no origin (mobile apps, Postman, curl, etc.)
-      if (!origin) return callback(null, true);
-
-      // Always allow: localhost dev
-      if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
-        return callback(null, true);
-      }
-
-      // Always allow: all Vercel preview/production deployments
-      if (origin.endsWith('.vercel.app')) return callback(null, true);
-
-      // Always allow: ngrok tunnels for development/demo
-      if (
-        origin.includes('ngrok-free.app') ||
-        origin.includes('ngrok.io') ||
-        origin.includes('ngrok-free.dev')
-      ) {
-        return callback(null, true);
-      }
-
-      // In development: allow everything
-      if (process.env.NODE_ENV !== 'production') {
-        return callback(null, true);
-      }
-
-      // Production: block unknown origins
-      console.error(`[CORS] ❌ Blocked origin: ${origin}`);
-      callback(new Error(`CORS: Origin not allowed: ${origin}`), false);
-    },
+    origin: true, // السماح بجميع النطاقات في بيئة التطوير
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: 'Content-Type, Accept, Authorization, ngrok-skip-browser-warning, bypass-tunnel-reminder, Bypass-Tunnel-Reminder, X-Requested-With, sentry-trace, baggage, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform',
     credentials: true,

@@ -10,7 +10,7 @@ import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import PatientHero from '@/components/patient/PatientHero';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || '/api';
 
 export default function PatientDashboard() {
     const [loading, setLoading] = useState(true);

@@ -1,5 +1,5 @@
 // Use current origin for API calls to work seamlessly with proxying and ngrok
-let baseApiUrl = import.meta.env.VITE_API_URL || '/api';
+let baseApiUrl = import.meta.env.VITE_API_URL || 'https://tsunamic-unshameable-maricruz.ngrok-free.dev/api';
 // Ensure absolute URLs (like ngrok) also get the /api suffix if missing
 if (baseApiUrl.startsWith('http') && !baseApiUrl.endsWith('/api')) {
     baseApiUrl = baseApiUrl.endsWith('/') ? `${baseApiUrl}api` : `${baseApiUrl}/api`;
