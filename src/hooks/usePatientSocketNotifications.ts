@@ -8,17 +8,15 @@ import { usePatientAuth } from './usePatientAuth';
  * يتصل تلقائياً عند تسجيل دخول المريض
  * يستمع لحدث 'patient_notification' ويعرض Toast فورياً
  */
-export function usePatientSocketNotifications(onNewNotification?: () => void) {
+export function usePatientSocketNotifications(onNewNotification?: () => void, onNewMessage?: () => void) {
     const { patient, token } = usePatientAuth(false);
     const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        // اتصل فقط إذا كان المريض مسجل الدخول
         if (!patient || !token || socketRef.current) return;
 
-        // تحديد URL الخادم
         let socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-        socketUrl = socketUrl.replace(/\/api$/, ''); // إزالة /api
+        socketUrl = socketUrl.replace(/\/api$/, '');
 
         console.log('[PatientSocket] Connecting to:', socketUrl, 'Patient:', patient.id);
 
@@ -28,7 +26,7 @@ export function usePatientSocketNotifications(onNewNotification?: () => void) {
                 type: 'patient',
             },
             auth: { token },
-            transports: ['polling', 'websocket'], // البدء بـ polling للمزيد من الاستقرار مع ngrok
+            transports: ['polling', 'websocket'],
             extraHeaders: {
                 'ngrok-skip-browser-warning': 'true',
                 'bypass-tunnel-reminder': 'true'
@@ -45,23 +43,34 @@ export function usePatientSocketNotifications(onNewNotification?: () => void) {
             console.warn('[PatientSocket] Connection error:', err.message);
         });
 
-        // الاستماع لإشعارات المريض
+        // الاستماع لإشعارات المريض العامة
         socket.on('patient_notification', (notification: any) => {
             console.log('[PatientSocket] New notification:', notification);
             showPatientToast(notification);
-
-            // تشغيل صوت الإشعار
             playNotificationSound();
+            if (onNewNotification) onNewNotification();
+        });
 
-            // استدعاء callback لتحديث قائمة الإشعارات
-            if (onNewNotification) {
-                onNewNotification();
+        // ── رسائل الدردشة الداخلية للمريض ──
+        socket.on('internal_message', (payload: any) => {
+            console.log('[PatientSocket] New internal message:', payload);
+            const content = payload?.message?.content;
+            const senderType = payload?.message?.senderType;
+            // عرض toast فقط إذا كانت الرسالة من الطبيب أو البوت
+            if (senderType !== 'PATIENT') {
+                toast.info('رسالة جديدة من العيادة', {
+                    description: content ? content.substring(0, 80) : 'لديك رسالة جديدة',
+                    duration: 6000,
+                    position: 'bottom-right',
+                    icon: '💬',
+                });
+                playNotificationSound();
             }
+            if (onNewMessage) onNewMessage();
         });
 
         socketRef.current = socket;
 
-        // تنظيف عند إلغاء التثبيت
         return () => {
             if (socketRef.current) {
                 console.log('[PatientSocket] Disconnecting...');
@@ -69,7 +78,7 @@ export function usePatientSocketNotifications(onNewNotification?: () => void) {
                 socketRef.current = null;
             }
         };
-    }, [patient, token, onNewNotification]);
+    }, [patient, token, onNewNotification, onNewMessage]);
 }
 
 function showPatientToast(notification: any) {

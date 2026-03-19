@@ -9,7 +9,7 @@ import { toast } from 'sonner';
  * Automatically connects when user is logged in
  * Listens for 'notification' events and updates React Query cache + shows Toast
  */
-export function useSocketNotifications() {
+export function useSocketNotifications(onNewMessage?: () => void) {
     const { user } = useAuth();
     const queryClient = useQueryClient();
     const socketRef = useRef<Socket | null>(null);
@@ -76,6 +76,21 @@ export function useSocketNotifications() {
             queryClient.invalidateQueries({ queryKey: ['notifications-unread-count'] });
         });
 
+        // ── رسائل الدردشة الداخلية للطبيب ──
+        socket.on('internal_message', (payload: any) => {
+            console.log('[Doctor Socket] New internal message:', payload);
+            toast.info('رسالة جديدة من مريض', {
+                description: payload?.message?.content
+                    ? payload.message.content.substring(0, 80)
+                    : 'لديك رسالة جديدة في الدردشة',
+                duration: 6000,
+                position: 'bottom-left',
+                icon: '💬',
+            });
+            playNotificationSound();
+            if (onNewMessage) onNewMessage();
+        });
+
         socketRef.current = socket;
 
         // Cleanup on unmount or user logout
@@ -86,7 +101,7 @@ export function useSocketNotifications() {
                 socketRef.current = null;
             }
         };
-    }, [user, queryClient]);
+    }, [user, queryClient, onNewMessage]);
 }
 
 function showNotificationToast(notification: any) {

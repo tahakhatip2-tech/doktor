@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { usePatientAuth } from '@/hooks/usePatientAuth';
 import { usePatientSocketNotifications } from '@/hooks/usePatientSocketNotifications';
+import { usePatientUnreadMessages } from '@/hooks/useUnreadMessages';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -38,11 +39,15 @@ export default function PatientLayout() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // Real-time notifications for patient via Socket.io
-    usePatientSocketNotifications(() => {
-        // Re-fetch unread count when a new notification arrives
-        fetchUnreadCount();
-    });
+    const { unreadCount: msgCount, setUnreadCount: setMsgCount, lastConversationId, refetch: refetchMsgs } = usePatientUnreadMessages();
+
+    // Real-time notifications + رسائل الدردشة للمريض عبر Socket.io
+    usePatientSocketNotifications(
+        () => { fetchUnreadCount(); },
+        useCallback(() => {
+            setMsgCount(prev => prev + 1);
+        }, [setMsgCount])
+    );
 
     useEffect(() => {
         if (token) {
@@ -178,14 +183,25 @@ export default function PatientLayout() {
                                 )}
                             </Button>
 
-                            {/* Messages Button (Replaced Language Toggle) */}
+                            {/* Mobile Messages Button with Badge */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => navigate('/patient/messages')}
-                                className="h-11 w-11 rounded-full bg-blue-50/80 border border-blue-200/50 text-blue-600 shadow-sm active:scale-90"
+                                onClick={() => {
+                                    if (lastConversationId) {
+                                        navigate(`/patient/chat/${lastConversationId}`);
+                                    } else {
+                                        navigate('/patient/messages');
+                                    }
+                                }}
+                                className="h-11 w-11 rounded-full bg-blue-50/80 border border-blue-200/50 text-blue-600 shadow-sm active:scale-90 relative"
                             >
                                 <MessageCircle className="h-5 w-5" />
+                                {msgCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-green-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce">
+                                        {msgCount > 9 ? '9+' : msgCount}
+                                    </span>
+                                )}
                             </Button>
                         </div>
 
@@ -263,14 +279,25 @@ export default function PatientLayout() {
 
                         {/* Desktop Right: Actions */}
                         <div className="flex items-center gap-2" dir="rtl">
-                            {/* Messages */}
+                            {/* Desktop: Messages Button with Badge */}
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => navigate('/patient/messages')}
+                                onClick={() => {
+                                    if (lastConversationId) {
+                                        navigate(`/patient/chat/${lastConversationId}`);
+                                    } else {
+                                        navigate('/patient/messages');
+                                    }
+                                }}
                                 className="h-10 w-10 rounded-full bg-blue-50 text-blue-700 relative active:scale-95"
                             >
                                 <MessageCircle className="h-5 w-5" />
+                                {msgCount > 0 && (
+                                    <span className="absolute top-0 right-0 h-5 w-5 bg-green-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                                        {msgCount > 9 ? '9+' : msgCount}
+                                    </span>
+                                )}
                             </Button>
 
                             {/* Notifications */}

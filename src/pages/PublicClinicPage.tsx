@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -11,8 +11,7 @@ import { BASE_URL } from '@/lib/api';
 import { buildClinicShareUrl } from '@/lib/slug';
 import { useToast } from '@/hooks/use-toast';
 
-// Import the full clinic detail component (reuse for logged-in patients)
-import PatientClinicDetail from '@/pages/patient/PatientClinicDetail';
+import Footer from '@/components/Footer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -25,25 +24,9 @@ export default function PublicClinicPage() {
     const patientToken = localStorage.getItem('patient_token');
     const isLoggedIn = Boolean(patientToken);
 
-    // ── If patient is logged in → render the full PatientClinicDetail ──
-    // Reuses the existing component with all booking functionality.
-    // No extra data fetching, no duplicate UI. Completely DRY.
+    // Instead of rendering a custom stripped-down page, seamlessly integrate them to the Patient Portal Layout.
     if (isLoggedIn) {
-        return (
-            <div className="min-h-screen bg-[#F8FAFC]" dir="rtl">
-                <div className="w-full h-1 bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500" />
-                <div className="container px-4 sm:px-8 py-4 sm:py-6 mx-auto max-w-7xl pb-10">
-                    <button
-                        onClick={() => navigate('/patient/clinics')}
-                        className="mb-4 flex items-center gap-2 text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors"
-                    >
-                        <span className="text-lg">→</span>
-                        العودة إلى العيادات
-                    </button>
-                    <PatientClinicDetail />
-                </div>
-            </div>
-        );
+        return <Navigate to={`/patient/clinics/${id}`} replace />;
     }
 
     // ── Public (non-logged-in) view ────────────────────────────────────
@@ -274,6 +257,7 @@ function PublicClinicView({ id, toast }: { id?: string; toast: any }) {
                     <p className="text-xs text-slate-400">مدعوم من منصة <span className="font-black text-blue-600">Doctor Jo</span> لإدارة العيادات</p>
                 </div>
             </main>
+            <Footer />
         </div>
     );
 }

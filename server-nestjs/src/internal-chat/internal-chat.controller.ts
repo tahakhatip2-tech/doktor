@@ -89,4 +89,9 @@ export class InternalChatPatientController {
     markAsRead(@Param('id', ParseIntPipe) id: number) {
         return this.chatService.markAsRead(id, 'patient');
     }
+
+    @Get('unread-count')
+    getUnreadCount(@Request() req) {
+        return this.chatService.getUnreadCountForPatient(req.user.id);
+    }
 }

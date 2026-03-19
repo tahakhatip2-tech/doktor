@@ -15,12 +15,13 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2 } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import PatientHero from '@/components/patient/PatientHero';
 import { buildAppointmentUrl } from '@/lib/slug';
+import { BASE_URL } from '@/lib/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -143,27 +144,35 @@ export default function PatientAppointments() {
                                         {/* ── Header ───────────────── */}
                                         <div className="flex items-start justify-between p-5 pb-4">
                                             <div className="flex items-center gap-4">
-                                                <div className="relative">
+                                                <div className="relative flex-shrink-0">
                                                     <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                                    <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10 flex items-center justify-center">
-                                                        <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white text-blue-800 font-bold text-lg">
-                                                            {appointment.user?.name?.[0] || 'د'}
+                                                    <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
+                                                        <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white">
+                                                            {(appointment.user?.clinic_logo || appointment.user?.avatar) ? (
+                                                                <img
+                                                                    src={(appointment.user.clinic_logo || appointment.user.avatar).startsWith('http') ? (appointment.user.clinic_logo || appointment.user.avatar) : `${BASE_URL}${(appointment.user.clinic_logo || appointment.user.avatar).startsWith('/') ? '' : '/'}${appointment.user.clinic_logo || appointment.user.avatar}`}
+                                                                    alt={appointment.user?.clinic_name || appointment.user?.name}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <span className="font-black text-xl text-blue-800">
+                                                                    {(appointment.user?.clinic_name || appointment.user?.name || 'ع').charAt(0)}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
                                                 </div>
                                                 
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    <div className="flex items-center gap-2">
-                                                        <p className="font-extrabold text-base text-slate-900 truncate">
-                                                            {appointment.user?.name || appointment.user?.clinic_name}
-                                                        </p>
-                                                    </div>
+                                                    <p className="font-extrabold text-base text-slate-900 truncate">
+                                                        {appointment.user?.clinic_name || appointment.user?.name}
+                                                    </p>
                                                     
-                                                    <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                                                        <p className="text-xs text-orange-600 font-bold flex items-center gap-1.5 truncate bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100">
-                                                            <span>{appointment.user?.clinic_specialty || 'عيادة طبية'}</span>
+                                                    {appointment.user?.clinic_specialty && (
+                                                        <p className="text-xs text-orange-600 font-bold mt-1 bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100 truncate">
+                                                            {appointment.user.clinic_specialty}
                                                         </p>
-                                                    </div>
+                                                    )}
                                                 </div>
                                             </div>
                                             

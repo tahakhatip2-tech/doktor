@@ -22,6 +22,7 @@ import { cn } from '@/lib/utils';
 import { format, startOfDay, isSameDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { BASE_URL } from '@/lib/api';
+import PatientHero from '@/components/patient/PatientHero';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -226,142 +227,75 @@ export default function PatientClinicDetail() {
     if (!clinic) return null;
 
     return (
-        <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
+        <div className="space-y-6 animate-fade-in w-full pb-20">
 
-            {/* â”€â”€ زر الرجوع â”€â”€ */}
-            <Button
-                variant="ghost"
-                onClick={() => navigate('/patient/clinics')}
-                className="flex items-center gap-2 text-muted-foreground hover:text-foreground"
+            {/* ── Hero Section العيادة ── */}
+            <PatientHero
+                title={clinic.clinic_name || clinic.name}
+                subtitle={`الدكتور: ${clinic.name}`}
+                badgeText={clinic.clinic_specialty || "العيادة"}
+                imageSrc={(clinic.clinic_logo || clinic.avatar)?.startsWith('http') ? (clinic.clinic_logo || clinic.avatar) : `${BASE_URL}${(clinic.clinic_logo || clinic.avatar)?.startsWith('/') ? '' : '/'}${clinic.clinic_logo || clinic.avatar}`}
+                showBackButton={true}
             >
-                <ArrowRight className="h-4 w-4" />
-                العودة إلى العيادات
-            </Button>
-
-            {/* â”€â”€ بطاقة معلومات العيادة â”€â”€ */}
-            <Card className="shadow-card overflow-hidden">
-                <div className="h-3 gradient-primary" />
-                <CardHeader className="pb-4">
-                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
-                        {/* 1. Doctor Profile */}
-                        <div className="flex items-center gap-4 bg-muted/20 p-4 rounded-xl border border-border/40 flex-1">
-                            <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex items-center justify-center flex-shrink-0 border-2 border-primary/20 shadow-sm">
-                                {clinic.avatar ? (
-                                    <img
-                                        src={clinic.avatar.startsWith('http') ? clinic.avatar : `${BASE_URL}${clinic.avatar.startsWith('/') ? '' : '/'}${clinic.avatar}`}
-                                        alt={clinic.name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <User className="h-8 w-8 text-muted-foreground" />
-                                )}
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-muted-foreground mb-1">الدكتور</p>
-                                <CardTitle className="text-2xl leading-none">{clinic.name}</CardTitle>
-                            </div>
+                {/* 3. Actions / Info Box on top of Hero padding */}
+                <div className="mt-8 flex flex-col md:flex-row gap-4 items-center max-w-2xl bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/20">
+                    {clinic.clinic_address && (
+                        <div className="flex items-center gap-2 text-white/90 text-sm">
+                            <MapPin className="h-4 w-4 text-orange-400" />
+                            <span className="truncate">{clinic.clinic_address}</span>
                         </div>
-
-                        {/* 2. Clinic Profile */}
-                        <div className="flex items-center gap-4 bg-primary/5 p-4 rounded-xl border border-primary/10 flex-1">
-                            <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center shadow-glow flex-shrink-0 text-white overflow-hidden">
-                                {clinic.clinic_logo ? (
-                                    <img
-                                        src={clinic.clinic_logo.startsWith('http') ? clinic.clinic_logo : `${BASE_URL}${clinic.clinic_logo.startsWith('/') ? '' : '/'}${clinic.clinic_logo}`}
-                                        alt={clinic.clinic_name}
-                                        className="w-full h-full object-cover"
-                                    />
-                                ) : (
-                                    <Building2 className="h-8 w-8" />
-                                )}
-                            </div>
-                            <div>
-                                <CardTitle className="text-xl mb-1">{clinic.clinic_name || clinic.name}</CardTitle>
-                                {clinic.clinic_specialty && (
-                                    <Badge variant="secondary" className="font-medium">{clinic.clinic_specialty}</Badge>
-                                )}
-                                {clinic.clinic_description && (
-                                    <p className="text-xs text-muted-foreground mt-1">{clinic.clinic_description}</p>
-                                )}
-                            </div>
+                    )}
+                    {clinic.working_hours && (
+                        <div className="flex items-center gap-2 text-white/90 text-sm">
+                            <Clock className="h-4 w-4 text-orange-400" />
+                            <span className="truncate">{clinic.working_hours}</span>
                         </div>
+                    )}
+                    {clinic.location_url && (
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="bg-blue-500 hover:bg-blue-600 text-white border-0 transition-colors gap-2 rounded-xl h-10 flex-1 md:flex-none"
+                            onClick={() => window.open(clinic.location_url, '_blank')}
+                        >
+                            <MapPin className="h-4 w-4" />
+                            الموقع
+                        </Button>
+                    )}
 
-                        {/* 3. Actions */}
-                        <div className="flex lg:flex-col items-center justify-center gap-3">
-                            {/* ✅ زر واتساب — يبقى كما هو للتواصل الخارجي */}
-                            <Button
-                                variant="outline"
-                                size="sm"
-                                className="hover:bg-green-500 hover:text-white transition-colors gap-2 flex-1 lg:w-full"
-                                onClick={() => {
-                                    const phone = (clinic.clinic_phone || clinic.phone)?.replace(/\D/g, '');
-                                    if (phone) window.open(`https://wa.me/${phone}`, '_blank');
-                                }}
-                            >
-                                <MessageCircle className="h-4 w-4" />
-                                واتساب
-                            </Button>
+                    <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0 mr-auto w-full md:w-auto">
+                        {/* ✅ زر واتساب — يبقى كما هو للتواصل الخارجي */}
+                        <Button
+                            variant="secondary"
+                            size="sm"
+                            className="bg-green-500 hover:bg-green-600 text-white border-0 transition-colors gap-2 rounded-xl h-10 flex-1 md:flex-none"
+                            onClick={() => {
+                                const phone = (clinic.clinic_phone || clinic.phone)?.replace(/\D/g, '');
+                                if (phone) window.open(`https://wa.me/${phone}`, '_blank');
+                            }}
+                        >
+                            <MessageCircle className="h-4 w-4" />
+                            واتساب
+                        </Button>
 
-                            {/* ✅ رابط الخريطة */}
-                            {clinic.location_url && (
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="hover:bg-blue-500 hover:text-white transition-colors gap-2 flex-1 lg:w-full"
-                                    onClick={() => window.open(clinic.location_url, '_blank')}
-                                >
-                                    <MapPin className="h-4 w-4" />
-                                    الموقع
-                                </Button>
-                            )}
-
-                            {/* ✅ زر مراسلة داخلية جديد — يفتح شات المريض */}
-                            <Button
-                                size="sm"
-                                className="gap-2 gradient-primary text-white shadow-glow flex-1 lg:w-full"
-                                onClick={() => navigate(`/patient/chat/${clinic.id}`)}
-                            >
-                                <MessageCircle className="h-4 w-4" />
-                                مراسلة
-                            </Button>
-                        </div>
+                        {/* ✅ زر مراسلة داخلية جديد — يفتح شات المريض */}
+                        <Button
+                            size="sm"
+                            className="gap-2 bg-white text-blue-900 hover:bg-blue-50 transition-colors rounded-xl h-10 flex-1 md:flex-none shadow-lg"
+                            onClick={() => navigate(`/patient/chat/${clinic.id}`)}
+                        >
+                            <MessageCircle className="h-4 w-4 text-blue-600" />
+                            مراسلة
+                        </Button>
                     </div>
-                </CardHeader>
-                <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {clinic.clinic_address && (
-                            <div className="flex items-start gap-3 p-3 bg-muted/40 rounded-lg">
-                                <MapPin className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">العنوان</p>
-                                    <p className="text-sm font-medium">{clinic.clinic_address}</p>
-                                </div>
-                            </div>
-                        )}
-                        {(clinic.clinic_phone || clinic.phone) && (
-                            <div className="flex items-start gap-3 p-3 bg-muted/40 rounded-lg">
-                                <Phone className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">الهاتف</p>
-                                    <p className="text-sm font-medium" dir="ltr">{clinic.clinic_phone || clinic.phone}</p>
-                                </div>
-                            </div>
-                        )}
-                        {clinic.working_hours && (
-                            <div className="flex items-start gap-3 p-3 bg-muted/40 rounded-lg">
-                                <Clock className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
-                                <div>
-                                    <p className="text-xs text-muted-foreground mb-0.5">ساعات العمل</p>
-                                    <p className="text-sm font-medium">{clinic.working_hours}</p>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </CardContent>
-            </Card>
+                </div>
+            </PatientHero>
+
+            {/* ── Container for the rest of the content ── */}
+            <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-6">
 
             {/* â”€â”€ قسم الحجز â”€â”€ */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full -mt-16 relative z-20">
 
                 {/* التقويم */}
                 <Card className="shadow-card">
@@ -715,10 +649,7 @@ export default function PatientClinicDetail() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+            </div>
         </div>
     );
 }
-
-
-
-

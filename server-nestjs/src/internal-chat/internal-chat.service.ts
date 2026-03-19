@@ -427,4 +427,15 @@ export class InternalChatService {
             },
         });
     }
+
+    // ─── عدد الرسائل غير المقروءة للمريض ────────────────────────────────────
+    async getUnreadCountForPatient(patientId: number): Promise<number> {
+        return this.prisma.internalMessage.count({
+            where: {
+                conversation: { patientId },
+                senderType: { in: [InternalSenderType.DOCTOR, InternalSenderType.BOT] },
+                isRead: false,
+            },
+        });
+    }
 }

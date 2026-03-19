@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useClinicContext } from '@/context/ClinicContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -44,6 +44,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { whatsappApi, appointmentsApi, BASE_URL } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { useDoctorUnreadMessages } from '@/hooks/useUnreadMessages';
 
 interface HeaderProps {
     onNavigate?: (path: string) => void;
@@ -58,8 +59,13 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
-    // Enable Real-Time Socket Notifications
-    useSocketNotifications();
+    // ── رسائل الدردشة الداخلية ──
+    const { unreadCount: msgCount, setUnreadCount: setMsgCount, refetch: refetchMsgs } = useDoctorUnreadMessages();
+
+    // Enable Real-Time Socket Notifications (مع callback لتحديث badge الرسائل)
+    useSocketNotifications(useCallback(() => {
+        setMsgCount(prev => prev + 1);
+    }, [setMsgCount]));
 
     const { settings } = useClinicContext();
     const [stats, setStats] = useState<any>(null);
@@ -382,7 +388,26 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        {/* Static Language Toggle */}
+                        {/* Mobile Messages Button with Badge */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-11 w-11 rounded-full bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 shadow-sm active:scale-90 relative"
+                            onClick={() => {
+                                navigate('/');
+                                if (onTabChange) onTabChange('internal-chat');
+                            }}
+                        >
+                            <MessageCircle className="h-5 w-5" />
+                            {msgCount > 0 && (
+                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-green-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-blue-950 shadow-md animate-bounce">
+                                    {msgCount > 9 ? '9+' : msgCount}
+                                </span>
+                            )}
+                        </Button>
+
+                        {/* Languages Toggle */}
+
                         <Button
                             variant="ghost"
                             size="icon"
@@ -530,6 +555,24 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                         </DropdownMenu>
 
                         <div className="h-8 w-[1px] bg-border/50" />
+
+                        {/* Desktop: Messages Button with Badge */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="rounded-full h-10 w-10 hover:bg-muted/30 relative transition-all"
+                            onClick={() => {
+                                navigate('/');
+                                if (onTabChange) onTabChange('internal-chat');
+                            }}
+                        >
+                            <MessageCircle className="h-5 w-5 text-primary" />
+                            {msgCount > 0 && (
+                                <span className="absolute top-0 right-0 h-5 w-5 bg-green-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-background shadow-md">
+                                    {msgCount > 9 ? '9+' : msgCount}
+                                </span>
+                            )}
+                        </Button>
 
                         <Button
                             variant="ghost"
