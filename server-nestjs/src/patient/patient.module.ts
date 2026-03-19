@@ -10,6 +10,8 @@ import { PatientNotificationController } from './patient-notification.controller
 import { PatientNotificationService } from './patient-notification.service';
 import { PatientReviewsController } from './patient-reviews.controller';
 import { PatientReviewsService } from './patient-reviews.service';
+import { PublicClinicController } from './public-clinic.controller';
+
 import { PrismaModule } from '../prisma/prisma.module';
 import { AppointmentsModule } from '../appointments/appointments.module';
 import { WhatsAppModule } from '../whatsapp/whatsapp.module';
@@ -35,6 +37,7 @@ import { AiService } from '../whatsapp/ai.service';
         PatientAppointmentController,
         PatientNotificationController,
         PatientReviewsController,
+        PublicClinicController,
     ],
     providers: [
         PatientService,

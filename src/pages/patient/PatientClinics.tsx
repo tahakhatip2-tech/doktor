@@ -11,6 +11,7 @@ import axios from 'axios';
 
 import { BASE_URL } from '@/lib/api';
 import PatientHero from '@/components/patient/PatientHero';
+import { buildClinicShareUrl, generateSlug } from '@/lib/slug';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -63,29 +64,36 @@ export default function PatientClinics() {
         e.stopPropagation();
         
         const clinicName = clinic.clinic_name || clinic.name;
-        const clinicPhone = clinic.clinic_phone || clinic.phone;
-        const shareText = `هل تبحث عن عيادة متخصصة؟ 🏥\nأنصحك بعيادة الدكتورة/الدكتور ${clinicName} عبر منصة Doctor Jo المميزة.\n\n📍 العنوان: ${clinic.clinic_address || 'متوفر على التطبيق'}\n📞 للتواصل والحجز: ${clinicPhone || 'حمل التطبيق'}\n\n🌟 احجز الآن بسهولة عبر بوابة Doctor Jo!`;
-        const shareUrl = window.location.origin + `/patient/clinics/${clinic.id}`;
+        // Build a public shareable slug URL (no login required)
+        const shareUrl = buildClinicShareUrl(clinic.id, clinicName);
+        const shareText = `🏥 ${clinicName}${
+            clinic.clinic_specialty ? `\n📋 ${clinic.clinic_specialty}` : ''
+        }${
+            clinic.clinic_address ? `\n📍 ${clinic.clinic_address}` : ''
+        }${
+            (clinic.clinic_phone || clinic.phone) ? `\n📞 ${clinic.clinic_phone || clinic.phone}` : ''
+        }\n\n🌟 احجز موعدك عبر Doctor Jo!`;
 
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: `عيادة ${clinicName}`,
+                    title: clinicName,
                     text: shareText,
                     url: shareUrl,
                 });
             } catch (error) {
-                console.log('Error sharing:', error);
+                console.log('Share cancelled:', error);
             }
         } else {
-            // Fallback for desktop/unsupported browsers (Copy to clipboard)
-            navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+            // Fallback: copy the clean public URL to clipboard
+            navigator.clipboard.writeText(shareUrl);
             toast({
-                title: 'تم النسخ',
-                description: 'تم نسخ معلومات العيادة للمشاركة.',
+                title: '✅ تم نسخ الرابط',
+                description: 'يمكنك الآن مشاركة رابط العيادة مع أي شخص دون الحاجة لتسجيل دخول.',
             });
         }
     };
+
 
     return (
         <div className="space-y-6 animate-fade-in pb-8">
@@ -128,7 +136,7 @@ export default function PatientClinics() {
                             <Card
                                 key={clinic.id}
                                 className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col h-full"
-                                onClick={() => navigate(`/patient/clinics/${clinic.id}`)}
+                                onClick={() => navigate(`/clinic/${clinic.id}/${generateSlug(clinic.clinic_name || clinic.name || 'clinic')}`)}
                             >
                                 <div className="flex-1">
                                     {/* ── Header (Avatar, Doctor, Clinic) ───────────────── */}
@@ -221,7 +229,7 @@ export default function PatientClinics() {
                                 {/* ── Bottom Action Bar ───────────────────────────────── */}
                                 <div className="flex items-center gap-1.5 px-3 py-3 bg-slate-50 border-t border-slate-200 mt-auto">
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); navigate(`/patient/clinics/${clinic.id}`); }}
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(clinic.clinic_name || clinic.name || 'clinic')}`); }}
                                         className="flex-[2] flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
                                     >
                                         <Calendar className="h-3.5 w-3.5" />
@@ -229,7 +237,7 @@ export default function PatientClinics() {
                                     </button>
 
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); navigate(`/patient/clinics/${clinic.id}`); }}
+                                        onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(clinic.clinic_name || clinic.name || 'clinic')}`); }}
                                         className="flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-white text-slate-700 border border-slate-200 hover:bg-slate-100 shadow-sm"
                                         title="التفاصيل"
                                     >

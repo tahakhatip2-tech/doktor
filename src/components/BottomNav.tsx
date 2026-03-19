@@ -1,17 +1,12 @@
-﻿import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import {
     Home,
     Users,
     Plus,
-    User,
     Settings,
     MessagesSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
 import AddAppointmentDialog from "@/components/AddAppointmentDialog";
 
 interface BottomNavProps {
@@ -21,7 +16,6 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavProps) {
-    const navigate = useNavigate();
     const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
 
     const navItems = [
@@ -34,67 +28,74 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
 
     return (
         <>
-            <Card className="md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/[0.08] dark:bg-black/40 backdrop-blur-[40px] border-none border-t border-white/20 rounded-none z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.2)] flex justify-around items-center px-2">
-                {navItems.map((item) => {
-                    const isActive = activeTab === item.id;
+            {/* 💎 Unified Mobile Navigation Bar - Doctor Portal */}
+            <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
+                <nav className="h-[72px] bg-white/95 dark:bg-black/90 backdrop-blur-3xl border-t-2 border-orange-500 shadow-[0_-15px_60px_rgba(0,0,0,0.1)] flex justify-between items-center px-1 pb-1">
+                    {navItems.map((item, index) => {
+                        const Icon = item.icon;
+                        const isActive = activeTab === item.id;
+                        const isMain = index === 2; // "Add" button center focus
 
-                    if (item.isSpecial) {
                         return (
-                            <div key={item.id} className="flex items-center justify-center">
-                                <Button
-                                    size="icon"
-                                    className="h-12 w-12 rounded-xl bg-gradient-to-tr from-blue-600 via-blue-500 to-orange-500 shadow-lg shadow-blue-600/30 border border-white/20 hover:scale-105 hover:shadow-orange-500/30 transition-all duration-300 flex items-center justify-center group"
-                                    onClick={() => setIsAddPatientOpen(true)}
-                                >
-                                    <Plus className="h-6 w-6 text-white group-hover:rotate-90 transition-transform duration-300" />
-                                </Button>
-                            </div>
-                        );
-                    }
-
-                    return (
-                        <button
-                            key={item.id}
-                            onClick={() => {
-                                if (item.isAction && item.action) {
-                                    item.action();
-                                } else {
-                                    setActiveTab(item.id);
-                                }
-                            }}
-                            className={cn(
-                                "flex flex-col items-center justify-center gap-0.5 transition-all duration-300 relative p-2 min-w-[60px]",
-                                isActive ? "scale-105" : "opacity-70 hover:opacity-100"
-                            )}
-                        >
-                            {/* Icon with background */}
-                            <div className={cn(
-                                "relative p-2 rounded-xl transition-all duration-300",
-                                isActive
-                                    ? "bg-gradient-to-tr from-blue-600 to-orange-500 shadow-lg shadow-blue-600/30"
-                                    : "bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20"
-                            )}>
-                                <item.icon
-                                    className={cn(
-                                        "h-5 w-5 transition-all duration-300 stroke-[2]",
-                                        isActive ? "text-white" : "text-blue-600 dark:text-blue-400"
+                            <button
+                                key={item.id}
+                                onClick={() => {
+                                    if (item.isSpecial) {
+                                        setIsAddPatientOpen(true);
+                                    } else {
+                                        setActiveTab(item.id);
+                                    }
+                                }}
+                                className={cn(
+                                    "flex flex-1 flex-col items-center justify-center transition-all duration-300 relative min-w-0 pointer-events-auto",
+                                    isMain ? "-mt-8" : "mt-2",
+                                    isActive ? "scale-105" : "opacity-80 hover:opacity-100"
+                                )}
+                            >
+                                {/* Icon Container - Compressed & Unified Style */}
+                                <div className={cn(
+                                    "relative transition-all duration-500 flex items-center justify-center",
+                                    isMain 
+                                        ? "h-14 w-14 rounded-full bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)] border-4 border-white dark:border-zinc-900 active:scale-95"
+                                        : "p-2 rounded-xl transition-all duration-300",
+                                    !isMain && isActive && "bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50 shadow-sm"
+                                )}>
+                                    {isMain && (
+                                        <div className="absolute inset-0 rounded-full bg-orange-400 animate-ping opacity-20" />
                                     )}
-                                />
-                            </div>
+                                    <Icon
+                                        className={cn(
+                                            "transition-all duration-300 stroke-[2.5]",
+                                            isMain 
+                                                ? "h-7 w-7 text-white" 
+                                                : isActive ? "h-5 w-5 text-orange-600" : "h-4.5 w-4.5 text-blue-700/70"
+                                        )}
+                                    />
+                                </div>
 
-                            {/* Label */}
-                            <span className={cn(
-                                "text-[9px] font-bold transition-all duration-300",
-                                isActive
-                                    ? "text-blue-600 dark:text-blue-400"
-                                    : "text-blue-400/70 dark:text-blue-400/50"
-                            )}>
-                                {item.label}
-                            </span>
-                        </button>
-                    );
-                })}
-            </Card>
+                                {/* Label - Micro-Typography */}
+                                {!isMain ? (
+                                    <span className={cn(
+                                        "text-[8px] sm:text-[9px] font-black mt-0.5 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-0.5",
+                                        isActive ? "text-orange-600" : "text-blue-900/60"
+                                    )}>
+                                        {item.label}
+                                    </span>
+                                ) : (
+                                    <span className="text-[9px] font-extrabold mt-0.5 text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full shadow-sm">
+                                        {item.label}
+                                    </span>
+                                )}
+
+                                {/* Selection Dot */}
+                                {!isMain && isActive && (
+                                    <div className="absolute -bottom-0.5 h-1 w-1 bg-orange-600 rounded-full" />
+                                )}
+                            </button>
+                        );
+                    })}
+                </nav>
+            </div>
 
             <AddAppointmentDialog
                 open={isAddPatientOpen}

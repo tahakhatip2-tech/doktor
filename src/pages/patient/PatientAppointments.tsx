@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -15,16 +15,18 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, FileText, X, Loader2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import PatientHero from '@/components/patient/PatientHero';
+import { buildAppointmentUrl } from '@/lib/slug';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export default function PatientAppointments() {
     const { toast } = useToast();
+    const navigate = useNavigate();
     const [loading, setLoading] = useState(true);
     const [appointments, setAppointments] = useState<any[]>([]);
     const [selectedTab, setSelectedTab] = useState('all');
@@ -203,17 +205,35 @@ export default function PatientAppointments() {
                                         </div>
 
                                         {/* ── Bottom Action Bar ───────────────────────────────── */}
-                                        {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
-                                            <div className="flex items-center gap-1.5 px-3 py-3 bg-slate-50 border-t border-slate-200">
+                                        <div className="flex items-center gap-1.5 px-3 py-3 bg-slate-50 border-t border-slate-200">
+                                            {/* 👁️ View Detail button — always visible */}
+                                            <button
+                                                onClick={() => navigate(
+                                                    buildAppointmentUrl(
+                                                        appointment.id,
+                                                        appointment.user?.name || appointment.user?.clinic_name || 'doctor',
+                                                        appointment.appointmentDate
+                                                    )
+                                                )}
+                                                className="flex-[2] flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                                                title="عرض التفاصيل"
+                                            >
+                                                <Eye className="h-3.5 w-3.5" />
+                                                عرض التفاصيل
+                                            </button>
+
+                                            {/* Cancel button — only for pending/confirmed */}
+                                            {(appointment.status === 'pending' || appointment.status === 'confirmed') && (
                                                 <button
                                                     onClick={() => { setSelectedAppointment(appointment); setCancelDialogOpen(true); }}
-                                                    className="flex-[1] flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-white text-red-600 border border-red-200 hover:bg-red-50 shadow-sm max-w-[150px]"
+                                                    className="flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 bg-white text-red-600 border border-red-200 hover:bg-red-50 shadow-sm"
                                                 >
                                                     <X className="h-3.5 w-3.5" />
-                                                    إلغاء الموعد
+                                                    إلغاء
                                                 </button>
-                                            </div>
-                                        )}
+                                            )}
+                                        </div>
+
                                     </Card>
                                 ))}
                             </div>

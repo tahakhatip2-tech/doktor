@@ -9,6 +9,7 @@ import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import PatientHero from '@/components/patient/PatientHero';
+import { cn } from '@/lib/utils';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -84,188 +85,173 @@ export default function PatientDashboard() {
                 </div>
             </PatientHero>
 
-            {/* Quick Actions */}
-            <div className="px-4 sm:px-0 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Link to="/patient/clinics">
-                    <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500"></div>
-                        <CardContent className="p-6 flex items-center gap-4">
-                            <div className="p-3 rounded-lg bg-orange-50 group-hover:bg-orange-500 transition-colors border border-orange-100 group-hover:border-orange-500 shadow-sm">
-                                <Building2 className="h-6 w-6 text-orange-600 group-hover:text-white transition-colors" />
-                            </div>
-                            <div>
-                                <h3 className="font-extrabold text-slate-900">تصفح العيادات</h3>
-                                <p className="text-sm font-medium text-slate-500">ابحث عن عيادة</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </Link>
-
-                <Link to="/patient/appointments">
-                    <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500"></div>
-                        <CardContent className="p-6 flex items-center gap-4">
-                            <div className="p-3 rounded-lg bg-blue-50 group-hover:bg-blue-600 transition-colors border border-blue-100 group-hover:border-blue-600 shadow-sm">
-                                <Calendar className="h-6 w-6 text-blue-600 group-hover:text-white transition-colors" />
-                            </div>
-                            <div>
-                                <h3 className="font-extrabold text-slate-900">مواعيدي</h3>
-                                <p className="text-sm font-medium text-slate-500">إدارة المواعيد</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </Link>
-
-                <Link to="/patient/medical-records">
-                    <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
-                        <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500"></div>
-                        <CardContent className="p-6 flex items-center gap-4">
-                            <div className="p-3 rounded-lg bg-green-50 group-hover:bg-green-600 transition-colors border border-green-100 group-hover:border-green-600 shadow-sm">
-                                <FileText className="h-6 w-6 text-green-600 group-hover:text-white transition-colors" />
-                            </div>
-                            <div>
-                                <h3 className="font-extrabold text-slate-900">السجلات الطبية</h3>
-                                <p className="text-sm font-medium text-slate-500">عرض السجلات</p>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </Link>
-            </div>
-
-            <div className="px-4 sm:px-0 grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="px-4 sm:px-0 grid grid-cols-1 lg:grid-cols-2 gap-4 -mt-4 relative z-20">
                 {/* Upcoming Appointments */}
-                <Card className="relative rounded-md border border-slate-200 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-600 to-orange-500"></div>
-                    <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                        <div>
-                            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                                <span className="bg-blue-100 p-1.5 rounded-md">
-                                    <Calendar className="h-5 w-5 text-blue-600" />
-                                </span>
-                                المواعيد القادمة
-                            </h3>
-                            <p className="text-xs font-bold text-slate-500 mt-1">مواعيدك الطبية المجدولة قريباً</p>
+                <Card className="relative rounded-2xl border-none bg-white shadow-[0_10px_40px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_50px_rgba(37,99,235,0.08)] transition-all duration-500 overflow-hidden group/card">
+                    {/* Top Accent Gradient */}
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500 opacity-90 group-hover/card:opacity-100 transition-opacity"></div>
+                    
+                    <div className="p-3 sm:p-4 border-b border-blue-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-blue-50/30 to-transparent">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-blue-50 rounded-lg text-blue-600 shadow-sm border border-blue-100/50">
+                                <Calendar className="h-5 w-5" />
+                            </div>
+                            <h3 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">المواعيد القادمة</h3>
                         </div>
-                        <Link to="/patient/appointments">
-                            <Button variant="outline" size="sm" className="font-bold text-xs border-orange-200 text-orange-600 hover:bg-orange-50 hover:text-orange-700">
+                        <Link to="/patient/appointments" className="shrink-0">
+                            <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
                                 عرض الكل
                             </Button>
                         </Link>
                     </div>
-                    <CardContent>
+
+                    <CardContent className="p-3 sm:p-4">
                         {loading ? (
                             <div className="space-y-3">
                                 {[1, 2, 3].map((i) => (
-                                    <Skeleton key={i} className="h-20 w-full" />
+                                    <Skeleton key={i} className="h-24 w-full rounded-xl" />
                                 ))}
                             </div>
                         ) : upcomingAppointments.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <Calendar className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                                <p>لا توجد مواعيد قادمة</p>
+                            <div className="text-center py-6 flex flex-col items-center justify-center">
+                                <div className="h-14 w-14 rounded-full bg-blue-50 flex items-center justify-center mb-3 border border-blue-100">
+                                    <Calendar className="h-6 w-6 text-blue-300" />
+                                </div>
+                                <h4 className="text-sm font-bold text-slate-700 mb-1">لا توجد مواعيد قادمة</h4>
                                 <Link to="/patient/clinics">
-                                    <Button className="mt-4" variant="outline">
-                                        <Plus className="h-4 w-4 ml-2" />
-                                        احجز موعد جديد
+                                    <Button size="sm" className="rounded-xl mt-3 px-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md font-bold text-[10px]">
+                                        <Plus className="h-3 w-3 ml-1" />
+                                        احجز موعد
                                     </Button>
                                 </Link>
                             </div>
                         ) : (
-                            <div className="space-y-4">
+                            <div className="space-y-3">
                                 {upcomingAppointments.map((appointment) => (
                                     <div
                                         key={appointment.id}
-                                        className="relative rounded-md border border-orange-500 bg-white p-4 hover:shadow-lg transition-all duration-300 overflow-hidden group"
+                                        className="relative rounded-xl border border-blue-100/50 bg-white p-3 sm:p-4 hover:border-blue-300 hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all duration-300 group/item flex flex-col gap-3"
                                     >
-                                        <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-orange-500 to-blue-600"></div>
-                                        <div className="flex items-start justify-between mb-3 pr-2">
+                                        <div className="flex items-start justify-between gap-1">
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="font-extrabold text-slate-900 truncate">
+                                                <h4 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover/item:text-blue-600 transition-colors truncate">
                                                     {appointment.user?.clinic_name || appointment.user?.name}
                                                 </h4>
-                                                <p className="text-xs text-orange-600 font-bold bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100 mt-1">
+                                                <div className="inline-flex items-center mt-1 px-2 py-0.5 rounded-md bg-orange-50 text-orange-600 text-[9px] font-bold border border-orange-100">
                                                     {appointment.user?.clinic_specialty || 'عيادة طبية'}
-                                                </p>
+                                                </div>
                                             </div>
-                                            <div className="flex-shrink-0 pt-0.5">
+                                            <div className="shrink-0 scale-75 origin-top-left -mt-1 -ml-2 sm:scale-90">
                                                 {getStatusBadge(appointment.status)}
                                             </div>
                                         </div>
-                                        <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600 font-medium bg-slate-50 p-2 rounded-md border border-slate-100 pr-2">
-                                            <div className="flex items-center gap-1.5">
-                                                <Calendar className="h-3.5 w-3.5 text-blue-500 flex-shrink-0" />
-                                                <span>{format(new Date(appointment.appointmentDate), 'PPP', { locale: ar })}</span>
+                                        
+                                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 bg-slate-50/80 p-2 sm:p-2.5 rounded-lg border border-slate-100/50">
+                                            <div className="flex items-center gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start">
+                                                <div className="p-1 bg-blue-100/50 rounded flex items-center justify-center">
+                                                    <Calendar className="h-3 w-3 text-blue-600" />
+                                                </div>
+                                                <span className="text-[10px] sm:text-xs font-bold text-slate-700 truncate">{format(new Date(appointment.appointmentDate), 'PPP', { locale: ar })}</span>
                                             </div>
-                                            <div className="flex items-center gap-1.5">
-                                                <Clock className="h-3.5 w-3.5 text-orange-500 flex-shrink-0" />
-                                                <span dir="ltr">{format(new Date(appointment.appointmentDate), 'p', { locale: ar })}</span>
+                                            <div className="w-px h-3 bg-slate-200 hidden sm:block"></div>
+                                            <div className="flex items-center gap-1.5 flex-1 sm:flex-none justify-center sm:justify-start border-r border-slate-200 sm:border-0">
+                                                <div className="p-1 bg-orange-100/50 rounded flex items-center justify-center">
+                                                    <Clock className="h-3 w-3 text-orange-600" />
+                                                </div>
+                                                <span dir="ltr" className="text-[10px] sm:text-xs font-bold text-slate-700 truncate">{format(new Date(appointment.appointmentDate), 'p', { locale: ar })}</span>
                                             </div>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         )}
+                        {upcomingAppointments.length > 0 && (
+                            <Link to="/patient/appointments" className="sm:hidden block mt-3">
+                                <Button variant="outline" size="sm" className="w-full rounded-xl border-blue-200 text-blue-600 font-bold text-[11px] hover:bg-blue-50">
+                                    عرض كل المواعيد
+                                </Button>
+                            </Link>
+                        )}
                     </CardContent>
                 </Card>
 
                 {/* Recent Notifications */}
-                <Card className="relative rounded-md border border-slate-200 bg-white shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden">
-                    <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-blue-600"></div>
-                    <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                        <div>
-                            <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                                <span className="bg-orange-100 p-1.5 rounded-md">
-                                    <Bell className="h-5 w-5 text-orange-600" />
-                                </span>
-                                الإشعارات الأخيرة
-                            </h3>
-                            <p className="text-xs font-bold text-slate-500 mt-1">آخر التحديثات والتنبيهات</p>
+                <Card className="relative rounded-2xl border-none bg-white shadow-[0_10px_40px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_50px_rgba(249,115,22,0.08)] transition-all duration-500 overflow-hidden group/card lg:mt-0">
+                    {/* Top Accent Gradient */}
+                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-orange-400 to-blue-500 opacity-90 group-hover/card:opacity-100 transition-opacity"></div>
+                    
+                    <div className="p-3 sm:p-4 border-b border-orange-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-orange-50/30 to-transparent">
+                        <div className="flex items-center gap-2">
+                            <div className="p-2 bg-orange-50 rounded-lg text-orange-600 shadow-sm border border-orange-100/50">
+                                <Bell className="h-5 w-5" />
+                            </div>
+                            <h3 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">آخر الإشعارات</h3>
                         </div>
-                        <Link to="/patient/notifications">
-                            <Button variant="outline" size="sm" className="font-bold text-xs border-blue-200 text-blue-600 hover:bg-blue-50 hover:text-blue-700">
+                        <Link to="/patient/notifications" className="shrink-0">
+                            <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-orange-600 hover:bg-orange-50 hover:text-orange-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
                                 عرض الكل
                             </Button>
                         </Link>
                     </div>
-                    <CardContent>
+
+                    <CardContent className="p-3 sm:p-4">
                         {loading ? (
                             <div className="space-y-3">
                                 {[1, 2, 3].map((i) => (
-                                    <Skeleton key={i} className="h-16 w-full" />
+                                    <Skeleton key={i} className="h-16 w-full rounded-xl" />
                                 ))}
                             </div>
                         ) : notifications.length === 0 ? (
-                            <div className="text-center py-8 text-muted-foreground">
-                                <Bell className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                                <p>لا توجد إشعارات</p>
+                            <div className="text-center py-6 flex flex-col items-center justify-center">
+                                <div className="h-14 w-14 rounded-full bg-slate-50 flex items-center justify-center mb-3 border border-slate-100">
+                                    <Bell className="h-6 w-6 text-slate-300" />
+                                </div>
+                                <h4 className="text-sm font-bold text-slate-700 mb-1">لا توجد إشعارات</h4>
                             </div>
                         ) : (
                             <div className="space-y-3">
                                 {notifications.map((notification) => (
                                     <div
                                         key={notification.id}
-                                        className={`relative p-4 border rounded-lg transition-all ${!notification.isRead ? 'border-orange-500 bg-orange-50 shadow-sm' : 'border-slate-200 bg-white hover:border-blue-300'}`}
+                                        className={cn(
+                                            "relative p-3 sm:p-4 rounded-xl border transition-all duration-300 group/notif flex items-start gap-2 sm:gap-3",
+                                            !notification.isRead 
+                                                ? "bg-gradient-to-l from-orange-50/80 to-transparent border-orange-200 shadow-sm" 
+                                                : "bg-white border-slate-100 hover:border-slate-300 hover:shadow-sm"
+                                        )}
                                     >
                                         {!notification.isRead && (
-                                            <div className="absolute top-0 right-0 w-1 h-full bg-orange-500 rounded-r-lg"></div>
+                                            <div className="absolute top-0 right-0 w-1.5 h-full bg-orange-500 rounded-r-xl"></div>
                                         )}
-                                        <div className="flex items-start justify-between">
-                                            <div className="flex-1 pr-1">
-                                                <h4 className="font-extrabold text-sm text-slate-800">{notification.title}</h4>
-                                                <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-                                                    {notification.message}
-                                                </p>
+                                        
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-1 mb-1">
+                                                <h4 className="font-extrabold text-[13px] sm:text-sm text-slate-900 group-hover/notif:text-orange-600 transition-colors truncate">
+                                                    {notification.title}
+                                                </h4>
+                                                {!notification.isRead && (
+                                                    <span className="shrink-0 flex h-2 w-2 rounded-full bg-orange-500 shadow-[0_0_8px_rgba(249,115,22,0.6)] animate-pulse" />
+                                                )}
                                             </div>
-                                            {!notification.isRead && (
-                                                <div className="h-2 w-2 rounded-full bg-orange-600 flex-shrink-0 mt-1.5 shadow-[0_0_8px_rgba(234,88,12,0.6)] animate-pulse" />
-                                            )}
+                                            <p className="text-[11px] sm:text-xs font-medium text-slate-600 leading-snug mb-2 line-clamp-2">
+                                                {notification.message}
+                                            </p>
+                                            <div className="flex items-center justify-end border-t border-slate-100 pt-2">
+                                                <span className="text-[9px] sm:text-[10px] font-bold text-slate-400">
+                                                    {format(new Date(notification.createdAt), 'PPp', { locale: ar })}
+                                                </span>
+                                            </div>
                                         </div>
-                                        <p className="text-xs font-bold text-slate-400 mt-3 pt-3 border-t border-slate-200/50">
-                                            {format(new Date(notification.createdAt), 'PPp', { locale: ar })}
-                                        </p>
                                     </div>
                                 ))}
                             </div>
+                        )}
+                        {notifications.length > 0 && (
+                            <Link to="/patient/notifications" className="sm:hidden block mt-3">
+                                <Button variant="outline" size="sm" className="w-full rounded-xl border-orange-200 text-orange-600 font-bold text-[11px] hover:bg-orange-50">
+                                    كل الإشعارات
+                                </Button>
+                            </Link>
                         )}
                     </CardContent>
                 </Card>

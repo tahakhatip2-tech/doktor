@@ -27,6 +27,8 @@ import PatientMessages from "./pages/patient/PatientMessages";
 import PatientProfile from "./pages/patient/PatientProfile";
 import PatientOffers from "./pages/patient/PatientOffers";
 import InternalChat from "./pages/InternalChat";
+import PublicClinicPage from "./pages/PublicClinicPage";
+import AppointmentDetail from "./pages/patient/AppointmentDetail";
 
 import { ClinicProvider } from "./context/ClinicContext";
 
@@ -55,6 +57,10 @@ const App = () => (
                         <Route path="/queue" element={<QueueDisplay />} />
                         <Route path="/internal-chat" element={<InternalChat />} />
 
+                        {/* ─── Public Shareable Clinic Page (No Auth) ─── */}
+                        <Route path="/clinic/:id" element={<PublicClinicPage />} />
+                        <Route path="/clinic/:id/:slug" element={<PublicClinicPage />} />
+
                         {/* â”€â”€â”€ Patient Portal Routes â”€â”€â”€ */}
                         {/* Redirect legacy patient auth routes to UnifiedAuth */}
                         <Route path="/patient/login" element={<Navigate to="/unified-auth" replace />} />
@@ -66,6 +72,8 @@ const App = () => (
                             <Route path="clinics" element={<PatientClinics />} />
                             <Route path="clinics/:id" element={<PatientClinicDetail />} />
                             <Route path="appointments" element={<PatientAppointments />} />
+                            <Route path="appointments/:id" element={<AppointmentDetail />} />
+                            <Route path="appointments/:id/:slug" element={<AppointmentDetail />} />
                             <Route path="notifications" element={<PatientNotifications />} />
                             <Route path="medical-records" element={<PatientMedicalRecords />} />
                             <Route path="messages" element={<PatientMessages />} />

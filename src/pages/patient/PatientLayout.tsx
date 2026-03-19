@@ -62,11 +62,11 @@ export default function PatientLayout() {
     };
 
     const navItems = [
-        { path: '/patient/dashboard', label: 'الرئيسية', icon: Home },
         { path: '/patient/appointments', label: 'مواعيدي', icon: Calendar },
-        { path: '/patient/offers', label: 'العروض', icon: Tag },
         { path: '/patient/clinics', label: 'العيادات', icon: Building2 },
-        { path: '/patient/messages', label: 'رسائلي', icon: MessageCircle },
+        { path: '/patient/dashboard', label: 'الرئيسية', icon: Home }, // المركزية
+        { path: '/patient/offers', label: 'العروض', icon: Tag },
+        { path: '/patient/medical-records', label: 'السجلات', icon: FileText },
     ];
 
     if (loading) {
@@ -178,13 +178,14 @@ export default function PatientLayout() {
                                 )}
                             </Button>
 
-                            {/* Static Language Toggle */}
+                            {/* Messages Button (Replaced Language Toggle) */}
                             <Button
                                 variant="ghost"
                                 size="icon"
+                                onClick={() => navigate('/patient/messages')}
                                 className="h-11 w-11 rounded-full bg-blue-50/80 border border-blue-200/50 text-blue-600 shadow-sm active:scale-90"
                             >
-                                <Languages className="h-5 w-5" />
+                                <MessageCircle className="h-5 w-5" />
                             </Button>
                         </div>
 
@@ -262,6 +263,16 @@ export default function PatientLayout() {
 
                         {/* Desktop Right: Actions */}
                         <div className="flex items-center gap-2" dir="rtl">
+                            {/* Messages */}
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => navigate('/patient/messages')}
+                                className="h-10 w-10 rounded-full bg-blue-50 text-blue-700 relative active:scale-95"
+                            >
+                                <MessageCircle className="h-5 w-5" />
+                            </Button>
+
                             {/* Notifications */}
                             <Button
                                 variant="ghost"
@@ -323,48 +334,66 @@ export default function PatientLayout() {
             {/* Footer */}
             <Footer />
 
-            {/* 💎 Mobile Navigation Bar (Matched to Doctor Portal) */}
+            {/* 💎 Mobile Navigation Bar - Compressed & Optimized for Small Screens */}
             <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
-                <nav className="h-16 bg-white/[0.08] dark:bg-black/40 backdrop-blur-[40px] border-none border-t border-white/20 rounded-none shadow-[0_-10px_40px_rgba(0,0,0,0.2)] flex justify-around items-center px-2 pb-safe mb-0">
-                    {navItems.map((item) => {
+                <nav className="h-[72px] bg-white/95 dark:bg-black/90 backdrop-blur-3xl border-t-2 border-orange-500 shadow-[0_-15px_60px_rgba(0,0,0,0.1)] flex justify-between items-center px-1 pb-1">
+                    {navItems.map((item, index) => {
                         const Icon = item.icon;
                         const isTrulyActive = item.path === '/patient/dashboard' 
                             ? location.pathname === '/patient/dashboard' 
                             : location.pathname.includes(item.path);
+                        
+                        const isMain = index === 2; // "Home" icon center focus
 
                         return (
                             <Link
                                 key={item.path}
                                 to={item.path}
                                 className={cn(
-                                    "flex flex-col items-center justify-center gap-0.5 transition-all duration-300 relative p-2 min-w-[60px]",
-                                    isTrulyActive ? "scale-105" : "opacity-70 hover:opacity-100"
+                                    "flex flex-1 flex-col items-center justify-center transition-all duration-300 relative min-w-0",
+                                    isMain ? "-mt-8" : "mt-2",
+                                    isTrulyActive ? "scale-105" : "opacity-80 hover:opacity-100"
                                 )}
                             >
-                                {/* Icon with background */}
+                                {/* Icon Container - Compressed */}
                                 <div className={cn(
-                                    "relative p-2 rounded-xl transition-all duration-300",
-                                    isTrulyActive
-                                        ? "bg-gradient-to-tr from-blue-600 to-orange-500 shadow-lg shadow-blue-600/30"
-                                        : "bg-transparent hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                                    "relative transition-all duration-500 flex items-center justify-center",
+                                    isMain 
+                                        ? "h-14 w-14 rounded-full bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)] border-4 border-white dark:border-zinc-900 active:scale-95"
+                                        : "p-2 rounded-xl transition-all duration-300",
+                                    !isMain && isTrulyActive && "bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50 shadow-sm"
                                 )}>
+                                    {isMain && (
+                                        <div className="absolute inset-0 rounded-full bg-orange-400 animate-ping opacity-20" />
+                                    )}
                                     <Icon
                                         className={cn(
-                                            "h-5 w-5 transition-all duration-300 stroke-[2]",
-                                            isTrulyActive ? "text-white" : "text-blue-600 dark:text-blue-400"
+                                            "transition-all duration-300 stroke-[2.5]",
+                                            isMain 
+                                                ? "h-7 w-7 text-white" 
+                                                : isTrulyActive ? "h-5 w-5 text-orange-600" : "h-4.5 w-4.5 text-blue-700/70"
                                         )}
                                     />
                                 </div>
 
-                                {/* Label */}
-                                <span className={cn(
-                                    "text-[9px] font-bold transition-all duration-300",
-                                    isTrulyActive
-                                        ? "text-blue-600 dark:text-blue-400"
-                                        : "text-blue-400/70 dark:text-blue-400/50"
-                                )}>
-                                    {item.label}
-                                </span>
+                                {/* Label - Micro-Typography for better fit */}
+                                {!isMain ? (
+                                    <span className={cn(
+                                        "text-[8px] sm:text-[9px] font-black mt-0.5 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-0.5",
+                                        isTrulyActive ? "text-orange-600" : "text-blue-900/60"
+                                    )}>
+                                        {item.label}
+                                    </span>
+                                ) : (
+                                    <span className="text-[9px] font-extrabold mt-0.5 text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full shadow-sm">
+                                        {item.label}
+                                    </span>
+                                )}
+
+                                {/* Dot Indicator */}
+                                {!isMain && isTrulyActive && (
+                                    <div className="absolute -bottom-0.5 h-1 w-1 bg-orange-600 rounded-full" />
+                                )}
                             </Link>
                         );
                     })}
