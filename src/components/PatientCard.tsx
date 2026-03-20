@@ -36,12 +36,11 @@ export const PatientCard = ({
 
     return (
         <div className="px-3">
-            <Card className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group p-3 flex flex-col gap-2">
-                <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10"></div>
+            <Card className="relative rounded-2xl border border-blue-100 hover:border-orange-500 bg-white shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 overflow-hidden group p-3 flex flex-col gap-2">
                 <div className="flex flex-col gap-2 h-full relative z-20">
                     {/* Header: Icon + Name + Delete */}
                     <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-lg bg-blue-50 group-hover:bg-blue-600 transition-colors border border-blue-100 group-hover:border-blue-600 shadow-sm flex items-center justify-center shrink-0">
+                        <div className="h-10 w-10 rounded-xl bg-blue-50 group-hover:bg-orange-500 transition-colors border border-blue-100 group-hover:border-orange-500 shadow-sm flex items-center justify-center shrink-0">
                             <User className="h-4 w-4 text-blue-600 group-hover:text-white transition-colors" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -64,7 +63,7 @@ export const PatientCard = ({
 
                     {/* Phone Row */}
                     {hasPhone ? (
-                        <div className="flex items-center gap-2 px-2 py-1.5 rounded-md bg-slate-50 border border-slate-100">
+                        <div className="flex items-center gap-2 px-2 py-1.5 rounded-xl bg-white border border-blue-50 group-hover:border-orange-100 transition-colors">
                             <Phone className="h-3 w-3 text-blue-500 shrink-0" />
                             <span className="text-xs font-bold text-slate-700 flex-1 truncate" dir="ltr">{phone?.replace(/@.*/, '')}</span>
                             <Button variant="ghost" size="icon" className="h-5 w-5 hover:text-blue-600 rounded-sm" onClick={copyToClipboard}>
@@ -72,7 +71,7 @@ export const PatientCard = ({
                             </Button>
                         </div>
                     ) : (
-                        <div className="text-[10px] font-bold text-slate-400 text-center py-1 bg-slate-50 rounded-md">
+                        <div className="text-[10px] font-bold text-slate-400 text-center py-1 bg-slate-50 rounded-xl border border-blue-50">
                             لا يوجد رقم
                         </div>
                     )}
@@ -90,7 +89,7 @@ export const PatientCard = ({
                         {hasPhone && (
                             <Button
                                 variant="outline"
-                                className="flex-1 gap-1.5 h-7 text-[10px] font-bold rounded-sm border-blue-200 hover:bg-blue-50 hover:text-blue-700 text-blue-600"
+                                className="flex-1 gap-1.5 h-8 text-[10px] font-bold rounded-xl border-blue-200 hover:bg-orange-50 hover:text-orange-600 text-blue-600 hover:border-orange-200"
                                 onClick={() => {
                                     if (onOpenChat) onOpenChat(phone, name);
                                     else window.open(`https://wa.me/${phone.replace(/\D/g, '')}`, '_blank');
@@ -103,7 +102,7 @@ export const PatientCard = ({
 
                         <Button
                             variant="default"
-                            className="flex-1 gap-1.5 h-7 text-[10px] font-bold rounded-sm bg-orange-500 hover:bg-orange-600 text-white"
+                            className="flex-1 gap-1.5 h-8 text-[10px] font-bold rounded-xl bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
                             onClick={onViewDetails}
                         >
                             <Eye className="h-3 w-3" />

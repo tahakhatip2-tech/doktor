@@ -28,7 +28,7 @@ export default function PatientHero({
     const navigate = useNavigate();
 
     return (
-        <div className={cn("relative w-full overflow-hidden shadow-2xl mb-4 md:mb-6 group rounded-none", className)}>
+        <div className={cn("relative w-full overflow-hidden shadow-2xl mb-4 md:mb-6 group rounded-none border border-white/5", className)}>
             {/* Background Image & Overlays */}
             <div className="absolute inset-0">
                 <motion.img
@@ -56,7 +56,7 @@ export default function PatientHero({
             <div className="absolute -bottom-12 -right-12 w-64 md:w-96 h-64 md:h-96 bg-orange-400 rounded-full mix-blend-screen filter blur-[100px] opacity-15 animate-pulse" style={{ animationDelay: '2s' }}></div>
 
             {/* Content Container - 30% height of screen */}
-            <div className="relative z-10 w-full px-5 py-4 md:px-12 md:py-8 flex flex-col md:flex-row items-center md:items-center justify-between gap-4 md:gap-8 h-[30vh] min-h-[200px] md:min-h-[250px]">
+            <div className="relative z-10 w-full px-5 py-3 md:px-10 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-8 h-[22vh] min-h-[160px] md:min-h-[180px]">
 
                 {/* Back Button - Compact & Glassy */}
                 {showBackButton && (
@@ -64,7 +64,7 @@ export default function PatientHero({
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => navigate('/patient/dashboard')}
-                        className="absolute top-3 right-4 md:top-6 md:right-8 z-50 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-full backdrop-blur-xl border border-white/10 shadow-2xl transition-all font-bold text-[9px] md:text-xs"
+                        className="absolute top-2 right-4 md:top-4 md:right-6 z-50 flex items-center gap-1.5 bg-white/10 hover:bg-white/20 text-white px-3 py-1 rounded-full backdrop-blur-xl border border-white/10 shadow-2xl transition-all font-bold text-[9px] md:text-xs"
                     >
                         <ArrowRight className="w-2.5 h-2.5 md:w-3.5 h-3.5" />
                         <Home className="w-2.5 h-2.5 md:w-3.5 h-3.5" />
@@ -87,10 +87,10 @@ export default function PatientHero({
                         </motion.div>
                     )}
 
-                    <h1 className="text-xl sm:text-2xl md:text-5xl lg:text-6xl font-black text-white leading-tight md:leading-[1.1] tracking-tight drop-shadow-2xl">
+                    <h1 className="text-xl sm:text-2xl md:text-4xl font-black text-white leading-tight tracking-tight drop-shadow-2xl">
                         {title}
                         <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 drop-shadow-sm">
+                        <span className="block text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600 drop-shadow-sm text-lg sm:text-xl md:text-3xl mt-1">
                             {subtitle}
                         </span>
                     </h1>
@@ -112,7 +112,7 @@ export default function PatientHero({
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="w-full md:w-auto flex flex-col justify-center items-center md:items-end z-20 shrink-0 transform scale-[0.85] md:scale-100"
+                        className="w-full md:w-auto flex flex-col justify-center items-center md:items-end z-20 shrink-0"
                     >
                         {children}
                     </motion.div>
@@ -120,7 +120,7 @@ export default function PatientHero({
             </div>
 
             {/* Premium Bottom Glow Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 h-16 md:h-24 bg-gradient-to-t from-background via-background/40 to-transparent z-[1] pointer-events-none" />
+            <div className="absolute bottom-0 left-0 right-0 h-12 md:h-16 bg-gradient-to-t from-background via-background/20 to-transparent z-[1] pointer-events-none" />
             
             {/* Light Sweep Animation */}
             <div className="light-sweep opacity-10 pointer-events-none" />

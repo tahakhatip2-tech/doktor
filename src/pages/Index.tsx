@@ -216,7 +216,7 @@ const Index = () => {
                                 <HeroSection
                                     doctorName={user?.name ? `د. ${user.name}` : 'د. حكيم'}
                                     pageTitle={
-                                        activeTab === 'dashboard' ? "لوحة التحكم الرئيسية" :
+                                        activeTab === 'dashboard' ? "موجز عمل اليوم" :
                                             activeTab === 'contacts' ? "إدارة المرضى والمراجعات" :
                                                 activeTab === 'appointments' ? "جدول المواعيد والزيارات" :
                                                     activeTab === 'templates' ? "قوالب الردود التلقائية" :
@@ -258,17 +258,17 @@ const Index = () => {
                                             transition: { staggerChildren: 0.12, delayChildren: 0.2 }
                                         }
                                     }}
-                                    className="space-y-8 md:space-y-12 pb-12"
+                                    className="space-y-3 md:space-y-12 pb-24"
                                 >
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6">
                                         <motion.div
                                             variants={{
-                                                hidden: { y: 30, opacity: 0, scale: 0.95 },
+                                                hidden: { y: 40, opacity: 0, scale: 0.5 },
                                                 visible: {
                                                     y: 0,
                                                     opacity: 1,
                                                     scale: 1,
-                                                    transition: { type: "spring", stiffness: 100, damping: 20 }
+                                                    transition: { type: "spring", stiffness: 250, damping: 20, mass: 0.8 }
                                                 }
                                             }}
                                         >
@@ -283,12 +283,12 @@ const Index = () => {
                                         </motion.div>
                                         <motion.div
                                             variants={{
-                                                hidden: { y: 30, opacity: 0, scale: 0.95 },
+                                                hidden: { y: 40, opacity: 0, scale: 0.5 },
                                                 visible: {
                                                     y: 0,
                                                     opacity: 1,
                                                     scale: 1,
-                                                    transition: { type: "spring", stiffness: 100, damping: 20 }
+                                                    transition: { type: "spring", stiffness: 250, damping: 20, mass: 0.8 }
                                                 }
                                             }}
                                         >
@@ -303,12 +303,12 @@ const Index = () => {
                                         </motion.div>
                                         <motion.div
                                             variants={{
-                                                hidden: { y: 30, opacity: 0, scale: 0.95 },
+                                                hidden: { y: 40, opacity: 0, scale: 0.5 },
                                                 visible: {
                                                     y: 0,
                                                     opacity: 1,
                                                     scale: 1,
-                                                    transition: { type: "spring", stiffness: 100, damping: 20 }
+                                                    transition: { type: "spring", stiffness: 250, damping: 20, mass: 0.8 }
                                                 }
                                             }}
                                         >
@@ -323,12 +323,12 @@ const Index = () => {
                                         </motion.div>
                                         <motion.div
                                             variants={{
-                                                hidden: { y: 30, opacity: 0, scale: 0.95 },
+                                                hidden: { y: 40, opacity: 0, scale: 0.5 },
                                                 visible: {
                                                     y: 0,
                                                     opacity: 1,
                                                     scale: 1,
-                                                    transition: { type: "spring", stiffness: 100, damping: 20 }
+                                                    transition: { type: "spring", stiffness: 250, damping: 20, mass: 0.8 }
                                                 }
                                             }}
                                         >
@@ -344,10 +344,10 @@ const Index = () => {
                                     </div>
 
                                     {/* Professional Divider */}
-                                    <div className="w-full flex items-center justify-center gap-4 my-6 opacity-80">
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
-                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
+                                    <div className="w-full flex items-center justify-center gap-4 my-8 opacity-60">
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
+                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
                                     </div>
 
                                     <AutoReplyToggle
@@ -355,10 +355,10 @@ const Index = () => {
                                     />
 
                                     {/* Professional Divider */}
-                                    <div className="w-full flex items-center justify-center gap-4 my-6 opacity-80">
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
-                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
+                                    <div className="w-full flex items-center justify-center gap-4 my-8 opacity-60">
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
+                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
                                     </div>
 
                                     <UpcomingAppointments
@@ -376,10 +376,10 @@ const Index = () => {
                                     />
 
                                     {/* Professional Divider */}
-                                    <div className="w-full flex items-center justify-center gap-4 my-6 opacity-80">
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
-                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
+                                    <div className="w-full flex items-center justify-center gap-4 my-8 opacity-60">
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
+                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
                                     </div>
 
                                     <motion.div
@@ -397,28 +397,28 @@ const Index = () => {
                                                 visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } }
                                             }}
                                             whileHover={{ y: -5, scale: 1.01 }}
-                                            className="p-4 border border-white/10 bg-white/[0.08] backdrop-blur-[80px] shadow-2xl hover:shadow-primary/20 transition-all duration-700 cursor-pointer group relative overflow-hidden rounded-none mx-2 md:mx-4"
+                                            className="p-4 md:p-6 bg-white shadow-sm hover:shadow-md border border-blue-100 hover:border-orange-500 rounded-2xl transition-all duration-500 cursor-pointer group relative overflow-hidden mx-1 md:mx-2"
                                             onClick={() => setActiveTab('whatsapp-bot')}
                                         >
                                             <div className="">
                                                 {/* Light Sweep */}
-                                                <div className="light-sweep opacity-30" />
+                                                <div className="light-sweep opacity-10" />
 
                                                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                                                     <div className="flex items-center gap-5">
-                                                        <div className="h-14 w-14 md:h-16 md:w-16 bg-primary/10 text-primary border border-primary/20 flex items-center justify-center transition-all duration-700 group-hover:bg-primary group-hover:text-white shadow-[0_0_20px_rgba(var(--primary),0.1)] group-hover:shadow-primary/30 rounded-2xl group-hover:rotate-6">
+                                                        <div className="h-14 w-14 md:h-16 md:w-16 bg-blue-50 text-blue-600 border border-blue-100/50 flex items-center justify-center transition-all duration-500 group-hover:bg-orange-500 group-hover:text-white shadow-sm rounded-2xl group-hover:rotate-6">
                                                             <MessageCircle className="h-7 w-7 md:h-8 md:w-8" strokeWidth={1.5} />
                                                         </div>
                                                         <div className="flex flex-col gap-1 text-right md:text-right">
-                                                            <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tighter italic uppercase leading-none group-hover:text-primary transition-colors">إدارة المحادثات</h3>
+                                                            <h3 className="text-xl md:text-2xl font-black text-blue-950 tracking-tighter italic uppercase leading-none group-hover:text-orange-500 transition-colors">إدارة المحادثات</h3>
                                                             <div className="flex flex-col">
-                                                                <span className="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Live Support Center</span>
-                                                                <span className="text-[8px] md:text-[9px] text-primary/60 font-black uppercase tracking-widest opacity-80 mt-0.5">SYST_CHAT_CENTRE</span>
+                                                                <span className="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">Live Support Center</span>
+                                                                <span className="text-[8px] md:text-[9px] text-blue-400/60 font-black uppercase tracking-widest opacity-80 mt-0.5">SYST_CHAT_CENTRE</span>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="h-8 w-8 rounded-full border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all transform group-hover:scale-110 shadow-lg shadow-primary/5">
+                                                    <div className="h-8 w-8 rounded-full border border-blue-100 flex items-center justify-center text-blue-500 group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-all transform group-hover:scale-110 shadow-sm">
                                                         <ArrowRight className="h-4 w-4 animate-pulse" />
                                                     </div>
                                                 </div>
@@ -430,12 +430,12 @@ const Index = () => {
                                                     transition={{ duration: 1, delay: 0.8 }}
                                                     className="absolute bottom-0 left-0 flex opacity-40 group-hover:opacity-100 transition-opacity duration-1000"
                                                 >
-                                                    <div className="h-[3px] w-2/5 bg-primary shadow-[0_0_20px_rgba(var(--primary),0.6)]" />
-                                                    <div className="h-[3px] flex-1 bg-white/5" />
+                                                    <div className="h-[3px] w-2/5 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
+                                                    <div className="h-[3px] flex-1 bg-blue-100" />
                                                 </motion.div>
 
                                                 {/* Top Shine */}
-                                                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                                                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-600/10 to-transparent" />
                                             </div>
                                         </motion.div>
 
@@ -445,28 +445,28 @@ const Index = () => {
                                                 visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } }
                                             }}
                                             whileHover={{ y: -5, scale: 1.01 }}
-                                            className="p-4 border border-white/10 bg-white/[0.08] backdrop-blur-[80px] shadow-2xl hover:shadow-primary/20 transition-all duration-700 cursor-pointer group relative overflow-hidden rounded-none mx-2 md:mx-4"
+                                            className="p-4 md:p-6 bg-white shadow-sm hover:shadow-md border border-blue-100 hover:border-orange-500 rounded-2xl transition-all duration-500 cursor-pointer group relative overflow-hidden mx-1 md:mx-2"
                                             onClick={() => setActiveTab('appointments')}
                                         >
                                             <div className="">
                                                 {/* Light Sweep */}
-                                                <div className="light-sweep opacity-30" />
+                                                <div className="light-sweep opacity-10" />
 
                                                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
                                                     <div className="flex items-center gap-5">
-                                                        <div className="h-14 w-14 md:h-16 md:w-16 bg-primary/10 text-primary border border-primary/20 flex items-center justify-center transition-all duration-700 group-hover:bg-primary group-hover:text-white shadow-[0_0_20px_rgba(var(--primary),0.1)] group-hover:shadow-primary/30 rounded-2xl group-hover:-rotate-6">
+                                                        <div className="h-14 w-14 md:h-16 md:w-16 bg-blue-50 text-blue-600 border border-blue-100/50 flex items-center justify-center transition-all duration-500 group-hover:bg-orange-500 group-hover:text-white shadow-sm rounded-2xl group-hover:-rotate-6">
                                                             <Calendar className="h-7 w-7 md:h-8 md:w-8" strokeWidth={1.5} />
                                                         </div>
                                                         <div className="flex flex-col gap-1 text-right md:text-right">
-                                                            <h3 className="text-xl md:text-2xl font-black text-foreground tracking-tighter italic uppercase leading-none group-hover:text-primary transition-colors">عرض الواجهات</h3>
+                                                            <h3 className="text-xl md:text-2xl font-black text-blue-950 tracking-tighter italic uppercase leading-none group-hover:text-orange-500 transition-colors">عرض الواجهات</h3>
                                                             <div className="flex flex-col">
-                                                                <span className="text-[9px] md:text-[10px] text-muted-foreground uppercase tracking-[0.2em] font-bold">Show Navigation Panel</span>
-                                                                <span className="text-[8px] md:text-[9px] text-primary/60 font-black uppercase tracking-widest opacity-80 mt-0.5">SYST_UI_VIEWS</span>
+                                                                <span className="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">Show Navigation Panel</span>
+                                                                <span className="text-[8px] md:text-[9px] text-blue-400/60 font-black uppercase tracking-widest opacity-80 mt-0.5">SYST_UI_VIEWS</span>
                                                             </div>
                                                         </div>
                                                     </div>
 
-                                                    <div className="h-8 w-8 rounded-full border border-primary/20 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all transform group-hover:scale-110 shadow-lg shadow-primary/5">
+                                                    <div className="h-8 w-8 rounded-full border border-blue-100 flex items-center justify-center text-blue-500 group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 transition-all transform group-hover:scale-110 shadow-sm">
                                                         <ArrowRight className="h-4 w-4 animate-pulse" />
                                                     </div>
                                                 </div>
@@ -478,12 +478,12 @@ const Index = () => {
                                                     transition={{ duration: 1, delay: 1 }}
                                                     className="absolute bottom-0 left-0 flex opacity-40 group-hover:opacity-100 transition-opacity duration-1000"
                                                 >
-                                                    <div className="h-[3px] w-2/5 bg-primary shadow-[0_0_20px_rgba(var(--primary),0.6)]" />
-                                                    <div className="h-[3px] flex-1 bg-white/5" />
+                                                    <div className="h-[3px] w-2/5 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.6)]" />
+                                                    <div className="h-[3px] flex-1 bg-blue-100" />
                                                 </motion.div>
 
                                                 {/* Top Shine */}
-                                                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                                                <div className="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-blue-600/10 to-transparent" />
                                             </div>
                                         </motion.div>
                                     </motion.div>
@@ -515,57 +515,55 @@ const Index = () => {
                                     {/* Control Bar & Search Section */}
                                     <div className="mb-8 space-y-4">
                                         {/* Blue Glass Control Bar */}
-                                        <Card className="p-2 bg-blue-600/5 border border-blue-500/10 backdrop-blur-md rounded-none shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+                                        <Card className="p-3 md:p-4 bg-white border border-blue-100 rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-4 transition-all hover:shadow-md hover:border-orange-500 group">
 
-                                            <div className="flex items-center gap-2 w-full md:w-auto px-2">
-                                                <div className="h-8 px-4 flex items-center justify-center bg-blue-500/10 text-blue-500 text-[10px] font-black uppercase tracking-wider border border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]">
+                                            <div className="flex items-center w-full md:w-auto">
+                                                <div className="h-10 px-6 flex items-center justify-center bg-blue-50 rounded-xl text-blue-600 text-xs font-black uppercase tracking-wider border border-blue-100 group-hover:bg-orange-50 group-hover:text-orange-500 group-hover:border-orange-200 transition-colors shadow-sm">
                                                     إجمالي المرضى: {(contacts || []).length}
                                                 </div>
                                             </div>
 
-                                            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 px-2 justify-end">
+                                            <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-1 md:pb-0 justify-end">
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="h-8 gap-2 rounded-none font-bold text-xs uppercase tracking-wide bg-white/5 hover:bg-white/10 text-foreground/80 hover:text-primary border border-white/5 hover:border-white/10 transition-all"
+                                                    className="h-10 gap-2 rounded-xl font-bold text-xs bg-white text-blue-600 border border-blue-100 shadow-sm hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all"
                                                     onClick={() => syncContacts.mutate()}
                                                 >
-                                                    <RefreshCw className={cn("h-3 w-3", syncContacts.isPending && "animate-spin")} />
+                                                    <RefreshCw className={cn("h-4 w-4 transition-transform", syncContacts.isPending && "animate-spin")} />
                                                     <span>مزامنة</span>
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
-                                                    className="h-8 gap-2 rounded-none font-bold text-xs uppercase tracking-wide bg-white/5 hover:bg-white/10 text-foreground/80 hover:text-primary border border-white/5 hover:border-white/10 transition-all"
+                                                    className="h-10 gap-2 rounded-xl font-bold text-xs bg-white text-blue-600 border border-blue-100 shadow-sm hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all"
                                                     onClick={exportContacts}
                                                 >
-                                                    <Download className="h-3 w-3" />
+                                                    <Download className="h-4 w-4" />
                                                     <span>تصدير</span>
                                                 </Button>
                                             </div>
                                         </Card>
 
-                                        {/* Search Input - Sharp & Professional */}
-                                        <div className="relative group max-w-2xl mx-auto">
-                                            <div className="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none group-focus-within:text-primary transition-colors z-10">
-                                                <Search className="h-4 w-4 text-muted-foreground/50 transition-colors group-focus-within:text-primary" />
+                                        {/* Search Input - Clean & Professional */}
+                                        <div className="relative group max-w-2xl mx-auto shadow-sm hover:shadow-md transition-shadow duration-300 rounded-2xl">
+                                            <div className="absolute inset-y-0 right-4 flex items-center pointer-events-none group-focus-within:text-orange-500 transition-colors z-10">
+                                                <Search className="h-5 w-5 text-blue-400 transition-colors group-focus-within:text-orange-500" />
                                             </div>
                                             <Input
-                                                className="w-full h-12 pr-12 rounded-none border-x-0 border-t-0 border-b border-border/50 bg-transparent shadow-none focus-visible:ring-0 focus-visible:border-primary/50 transition-all text-sm font-medium placeholder:text-muted-foreground/30 text-center focus:text-right hover:bg-blue-500/[0.02] focus:bg-blue-500/[0.02]"
+                                                className="w-full h-14 pr-12 rounded-2xl border border-blue-100 bg-white focus-visible:ring-0 focus-visible:border-orange-500 transition-all text-sm font-medium placeholder:text-slate-400 hover:border-orange-300"
                                                 placeholder="ابحث عن مريض بالاسم أو رقم الهاتف..."
                                                 value={patientSearchTerm}
                                                 onChange={(e) => setPatientSearchTerm(e.target.value)}
                                             />
-                                            {/* Bottom Active Line Animation */}
-                                            <div className="absolute bottom-0 left-0 w-0 h-[1px] bg-primary group-focus-within:w-full transition-all duration-700 mx-auto right-0" />
                                         </div>
                                     </div>
 
                                     {/* Professional Divider */}
-                                    <div className="w-full flex items-center justify-center gap-4 my-6 opacity-80">
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
-                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.8)]" />
-                                        <div className="h-px bg-gradient-to-r from-transparent via-orange-500 to-transparent flex-1" />
+                                    <div className="w-full flex items-center justify-center gap-4 my-8 opacity-60">
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
+                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
                                     </div>
 
                                     {contactsLoading ? (

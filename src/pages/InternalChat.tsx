@@ -58,6 +58,11 @@ export default function InternalChat() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const socketRef = useRef<Socket | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+    const selectedConvIdRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        selectedConvIdRef.current = selectedConv ? selectedConv.id : null;
+    }, [selectedConv]);
 
     // ── تحميل قائمة المحادثات ────────────────────────────────────────────────
     const loadConversations = useCallback(async () => {
@@ -139,17 +144,18 @@ export default function InternalChat() {
         socket.on('connect', () => console.log('[DoctorChat] Socket connected'));
 
         socket.on('internal_message', (payload: { conversationId: number; message: Message }) => {
-            // إذا المحادثة مفتوحة — أضف الرسالة
-            setSelectedConv(prev => {
-                if (prev?.id === payload.conversationId) {
-                    setMessages(msgs => [...msgs, payload.message]);
-                    // تمييز كمقروء
-                    apiFetch(`/internal-chat/conversations/${payload.conversationId}/read`, { method: 'PATCH' }).catch(() => { });
-                }
-                return prev;
-            });
+            // تحديث الرسائل إذا كانت هي المحادثة المفتوحة حالياً
+            if (selectedConvIdRef.current === payload.conversationId) {
+                setMessages(msgs => {
+                    // منع تكرار نفس الرسالة
+                    if (msgs.find(m => m.id === payload.message.id)) return msgs;
+                    return [...msgs, payload.message];
+                });
+                // تمييز كمقروء
+                apiFetch(`/internal-chat/conversations/${payload.conversationId}/read`, { method: 'PATCH' }).catch(() => { });
+            }
 
-            // تحديث قائمة المحادثات
+            // تحديث قائمة المحادثات الجانبية
             setConversations(prev =>
                 prev.map(c =>
                     c.id === payload.conversationId

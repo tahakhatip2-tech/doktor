@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { motion } from 'framer-motion';
 import { usePatientAuth } from '@/hooks/usePatientAuth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -150,19 +151,29 @@ export default function PatientMedicalRecords() {
                 </div>
 
                 {/* Summary Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <motion.div 
+                    initial="hidden" animate="visible" 
+                    variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
+                    className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+                >
                     {Object.entries(recordTypeMap).map(([key, val]) => {
                         const Icon = val.icon;
                         const count = records.filter(r => r.recordType === key).length;
                         return (
-                            <Card key={key} className="text-center p-4">
-                                <Icon className="h-6 w-6 mx-auto mb-2 text-primary" />
-                                <p className="text-lg font-bold">{count}</p>
-                                <p className="text-xs text-muted-foreground">{val.label}</p>
-                            </Card>
+                            <motion.div key={key} variants={{ hidden: { y: 20, opacity: 0, scale: 0.8 }, visible: { y: 0, opacity: 1, scale: 1, transition: { type: "spring", stiffness: 250, damping: 20 } } }}>
+                                <Card className="p-3 bg-white shadow-sm hover:shadow-md border border-blue-100 hover:border-orange-500 rounded-2xl transition-all duration-300 group cursor-pointer flex flex-col items-center justify-center gap-2">
+                                    <div className="h-10 w-10 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center group-hover:bg-orange-500 group-hover:border-orange-500 transition-all duration-300 group-hover:-rotate-6 shadow-sm">
+                                        <Icon className="h-5 w-5 text-blue-600 group-hover:text-white transition-colors" />
+                                    </div>
+                                    <div className="text-center">
+                                        <p className="text-xl md:text-2xl font-black text-blue-950 font-display leading-none">{count}</p>
+                                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 mt-1 truncate">{val.label}</p>
+                                    </div>
+                                </Card>
+                            </motion.div>
                         );
                     })}
-                </div>
+                </motion.div>
 
                 {/* Records List */}
                 {filtered.length === 0 ? (
@@ -176,7 +187,11 @@ export default function PatientMedicalRecords() {
                         </div>
                     </div>
                 ) : (
-                    <div className="space-y-3">
+                    <motion.div 
+                        initial="hidden" animate="visible" 
+                        variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1, delayChildren: 0.2 } } }}
+                        className="space-y-3"
+                    >
                         {filtered.map((record) => {
                             const typeInfo = recordTypeMap[record.recordType] || recordTypeMap['prescription'];
                             const statusInfo = statusMap[record.appointment?.status] || { label: record.appointment?.status, color: 'bg-gray-100 text-gray-700' };
@@ -188,14 +203,15 @@ export default function PatientMedicalRecords() {
                             const advice = adviceState[record.id];
 
                             return (
-                                <Card key={record.id} className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
+                                <motion.div key={record.id} variants={{ hidden: { y: 20, opacity: 0, scale: 0.95 }, visible: { y: 0, opacity: 1, scale: 1, transition: { type: "spring", stiffness: 200, damping: 20 } } }}>
+                                    <Card className="relative rounded-2xl border border-blue-100 hover:border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
                                     <button className="w-full text-right" onClick={() => setExpandedId(isExpanded ? null : record.id)}>
                                         <div className="flex items-start justify-between p-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="relative">
-                                                    <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                                    <div className="relative h-12 w-12 rounded-full bg-white p-0.5 z-10 flex items-center justify-center">
-                                                        <div className={`h-full w-full rounded-full flex items-center justify-center overflow-hidden border border-white ${typeInfo.color}`}>
+                                                    <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-xl blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                                    <div className="relative h-12 w-12 rounded-xl bg-white p-0.5 z-10 flex items-center justify-center">
+                                                        <div className={`h-full w-full rounded-[10px] flex items-center justify-center overflow-hidden border border-white ${typeInfo.color}`}>
                                                             <Icon className="h-5 w-5" />
                                                         </div>
                                                     </div>
@@ -206,7 +222,7 @@ export default function PatientMedicalRecords() {
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm ${typeInfo.color}`}>{typeInfo.label}</span>
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm ${statusInfo.color}`}>{statusInfo.label}</span>
                                                     </div>
-                                                    <h4 className="font-extrabold text-base text-slate-900 truncate">
+                                                    <h4 className="font-extrabold text-base text-blue-950 truncate">
                                                         {record.appointment?.doctor?.clinic_name || 'عيادة طبية'}
                                                     </h4>
                                                     
@@ -308,10 +324,11 @@ export default function PatientMedicalRecords() {
                                             )}
                                         </CardContent>
                                     )}
-                                </Card>
+                                    </Card>
+                                </motion.div>
                             );
                         })}
-                    </div>
+                    </motion.div>
                 )}
             </div>
         </div >

@@ -177,7 +177,7 @@ export default function PatientLayout() {
                             >
                                 <Bell className="h-5 w-5" />
                                 {unreadCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-blue-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce">
+                                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-orange-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce">
                                         {unreadCount}
                                     </span>
                                 )}
@@ -187,18 +187,12 @@ export default function PatientLayout() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => {
-                                    if (lastConversationId) {
-                                        navigate(`/patient/chat/${lastConversationId}`);
-                                    } else {
-                                        navigate('/patient/messages');
-                                    }
-                                }}
+                                onClick={() => navigate('/patient/messages')}
                                 className="h-11 w-11 rounded-full bg-blue-50/80 border border-blue-200/50 text-blue-600 shadow-sm active:scale-90 relative"
                             >
                                 <MessageCircle className="h-5 w-5" />
                                 {msgCount > 0 && (
-                                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-green-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce">
+                                    <span className="absolute -top-1 -right-1 h-5 w-5 bg-orange-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md animate-bounce">
                                         {msgCount > 9 ? '9+' : msgCount}
                                     </span>
                                 )}
@@ -283,18 +277,12 @@ export default function PatientLayout() {
                             <Button
                                 variant="ghost"
                                 size="icon"
-                                onClick={() => {
-                                    if (lastConversationId) {
-                                        navigate(`/patient/chat/${lastConversationId}`);
-                                    } else {
-                                        navigate('/patient/messages');
-                                    }
-                                }}
+                                onClick={() => navigate('/patient/messages')}
                                 className="h-10 w-10 rounded-full bg-blue-50 text-blue-700 relative active:scale-95"
                             >
                                 <MessageCircle className="h-5 w-5" />
                                 {msgCount > 0 && (
-                                    <span className="absolute top-0 right-0 h-5 w-5 bg-green-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md">
+                                    <span className="absolute top-0 right-0 h-5 w-5 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white shadow-md">
                                         {msgCount > 9 ? '9+' : msgCount}
                                     </span>
                                 )}

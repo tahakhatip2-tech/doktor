@@ -236,17 +236,29 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     </DropdownMenuItem>
                                 </div>
 
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="w-full h-10 gap-3 rounded-2xl text-blue-600/60 font-black text-[11px] hover:bg-blue-50/50"
-                                    onClick={toggleTheme}
-                                >
-                                    <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
-                                        {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                                    </div>
-                                    {theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}
-                                </Button>
+                                <div className="grid grid-cols-2 gap-2 mt-2">
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full h-10 gap-2 rounded-2xl text-blue-600/60 font-black text-[10px] hover:bg-blue-50/50"
+                                        onClick={toggleTheme}
+                                    >
+                                        <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                                            {theme === 'dark' ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+                                        </div>
+                                        {theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="w-full h-10 gap-2 rounded-2xl text-blue-600/60 font-black text-[10px] hover:bg-blue-50/50"
+                                    >
+                                        <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
+                                            <Languages className="h-3 w-3" />
+                                        </div>
+                                        تغيير اللغة
+                                    </Button>
+                                </div>
 
                                 {/* Signature */}
                                 <div className="mt-4 pt-4 border-t border-blue-100/30 dark:border-blue-900/30 text-center">
@@ -267,7 +279,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                 >
                                     <Bell className="h-5 w-5" />
                                     {unreadCount > 0 && (
-                                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-blue-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-blue-950 shadow-md animate-bounce">
+                                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-orange-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-blue-950 shadow-md animate-bounce">
                                             {unreadCount}
                                         </span>
                                     )}
@@ -400,21 +412,12 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                         >
                             <MessageCircle className="h-5 w-5" />
                             {msgCount > 0 && (
-                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-green-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-blue-950 shadow-md animate-bounce">
+                                <span className="absolute -top-1 -right-1 h-5 w-5 bg-orange-600 text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-blue-950 shadow-md animate-bounce">
                                     {msgCount > 9 ? '9+' : msgCount}
                                 </span>
                             )}
                         </Button>
 
-                        {/* Languages Toggle */}
-
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-11 w-11 rounded-full bg-blue-50/80 dark:bg-blue-900/20 border border-blue-200/50 dark:border-blue-800/50 text-blue-600 dark:text-blue-400 shadow-sm active:scale-90"
-                        >
-                            <Languages className="h-5 w-5" />
-                        </Button>
                     </div>
 
                     {/* Left Side: Doctor Jo Branding (Mobile) */}
@@ -568,7 +571,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                         >
                             <MessageCircle className="h-5 w-5 text-primary" />
                             {msgCount > 0 && (
-                                <span className="absolute top-0 right-0 h-5 w-5 bg-green-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-background shadow-md">
+                                <span className="absolute top-0 right-0 h-5 w-5 bg-orange-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white dark:border-background shadow-md">
                                     {msgCount > 9 ? '9+' : msgCount}
                                 </span>
                             )}
@@ -594,8 +597,8 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                     <Bell className="h-5 w-5 text-primary" />
                                     {unreadCount > 0 && (
                                         <span className="absolute top-2 right-2 flex h-2.5 w-2.5">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary border-2 border-background"></span>
+                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-500 opacity-75"></span>
+                                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-600 border-2 border-background"></span>
                                         </span>
                                     )}
                                 </Button>

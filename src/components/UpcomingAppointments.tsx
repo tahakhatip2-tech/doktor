@@ -46,13 +46,13 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
             transition={{ duration: 0.8 }}
             className="px-4"
         >
-            <Card className="p-4 md:p-6 relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
-                <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500 z-10"></div>
+            <Card className="p-4 md:p-6 relative rounded-2xl border border-blue-100 hover:border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
+                {/* Side indicator removed */}
                 
                 <div className="relative z-20">
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 md:mb-8 gap-4 sm:gap-0">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 md:h-12 md:w-12 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-600 group-hover:border-blue-600 shadow-sm transition-colors">
+                            <div className="h-10 w-10 md:h-12 md:w-12 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center group-hover:bg-orange-500 group-hover:border-orange-500 shadow-sm transition-all duration-300 group-hover:rotate-6">
                                 <Calendar className="h-5 w-5 md:h-6 md:w-6 text-blue-600 group-hover:text-white transition-colors" />
                             </div>
                             <div>
@@ -64,7 +64,7 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                             variant="outline"
                             size="sm"
                             onClick={onViewAll}
-                            className="h-8 md:h-9 px-4 font-bold text-blue-600 hover:bg-blue-50 hover:text-blue-700 border-blue-200 self-end sm:self-auto"
+                            className="h-8 md:h-9 px-4 font-bold text-blue-600 hover:bg-orange-500 hover:text-white hover:border-orange-500 border-blue-200 self-end sm:self-auto rounded-xl transition-all duration-300"
                         >
                             عرض الكل
                             <ChevronLeft className="h-4 w-4 mr-1" />
@@ -82,15 +82,15 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                                 key={appointment.id}
                                 variants={itemVariants}
                                 whileHover={{ scale: 1.01 }}
-                                className="group/item flex flex-col md:flex-row items-start md:items-center gap-4 p-3 md:p-4 bg-slate-50 border border-slate-100 rounded-md hover:border-blue-300 transition-all duration-300 cursor-pointer relative overflow-hidden"
+                                className="group/item flex flex-col md:flex-row items-start md:items-center gap-4 p-3 bg-white border border-blue-50 hover:border-orange-200 rounded-xl hover:shadow-md transition-all duration-300 cursor-pointer relative overflow-hidden"
                             >
-                                <div className="absolute top-0 right-0 w-1 h-full bg-slate-200 group-hover/item:bg-blue-500 transition-colors"></div>
+                                <div className="absolute top-0 right-0 w-1 h-full bg-blue-100 group-hover/item:bg-orange-500 transition-colors"></div>
 
                                 {/* Mobile Layout */}
                                 <div className="w-full flex md:hidden flex-col gap-3 pr-2">
                                     <div className="flex items-center gap-3 w-full">
-                                        <div className="h-10 w-10 bg-white border border-slate-200 rounded-md flex items-center justify-center shrink-0 shadow-sm">
-                                            <User className="h-5 w-5 text-slate-500 group-hover/item:text-blue-500 transition-colors" strokeWidth={2} />
+                                        <div className="h-10 w-10 bg-white border border-blue-100 rounded-xl flex items-center justify-center shrink-0 shadow-sm group-hover/item:border-orange-200 transition-colors">
+                                            <User className="h-5 w-5 text-blue-500 group-hover/item:text-orange-500 transition-colors" strokeWidth={2} />
                                         </div>
                                         <div className="flex flex-col gap-1 min-w-0 flex-1">
                                             <div className="flex items-center justify-between">
@@ -110,8 +110,8 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                                         </div>
                                     </div>
 
-                                    <div className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-700 bg-white py-2 border border-slate-200 rounded-md shadow-sm">
-                                        <Clock className="h-3.5 w-3.5 text-blue-500" strokeWidth={3} />
+                                    <div className="w-full flex items-center justify-center gap-2 text-xs font-bold text-slate-700 bg-white py-2 border border-blue-50 group-hover/item:border-orange-100 rounded-xl shadow-sm transition-colors">
+                                        <Clock className="h-3.5 w-3.5 text-blue-500 group-hover/item:text-orange-500 transition-colors" strokeWidth={3} />
                                         <span>{appointment.time}</span>
                                     </div>
                                 </div>
@@ -119,8 +119,8 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                                 {/* Desktop Layout */}
                                 <div className="hidden md:flex w-full items-center justify-between gap-4 pr-3">
                                     <div className="flex items-center gap-4 flex-1 min-w-0">
-                                        <div className="h-12 w-12 bg-white border border-slate-200 rounded-md flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover/item:scale-105">
-                                            <User className="h-6 w-6 text-slate-500 group-hover/item:text-blue-500 transition-colors" strokeWidth={2} />
+                                        <div className="h-12 w-12 bg-white border border-blue-100 rounded-xl flex items-center justify-center shrink-0 shadow-sm transition-transform group-hover/item:scale-105 group-hover/item:border-orange-200">
+                                            <User className="h-6 w-6 text-blue-500 group-hover/item:text-orange-500 transition-colors" strokeWidth={2} />
                                         </div>
                                         <div className="flex flex-col gap-1 min-w-0">
                                             <p className="font-extrabold text-lg text-slate-900 truncate block">
@@ -142,8 +142,8 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                                         </div>
                                     )}
 
-                                    <div className="flex items-center gap-2 text-sm font-black text-slate-800 bg-white px-4 py-2 border border-slate-200 rounded-md shadow-sm shrink-0">
-                                        <Clock className="h-4 w-4 text-blue-500" strokeWidth={3} />
+                                    <div className="flex items-center gap-2 text-sm font-black text-slate-800 bg-white px-4 py-2 border border-blue-50 group-hover/item:border-orange-100 rounded-xl shadow-sm shrink-0 transition-colors">
+                                        <Clock className="h-4 w-4 text-blue-500 group-hover/item:text-orange-500 transition-colors" strokeWidth={3} />
                                         <span>{appointment.time}</span>
                                     </div>
                                 </div>
@@ -151,7 +151,7 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                         ))}
 
                         {displayAppointments.length === 0 && (
-                            <div className="flex flex-col items-center justify-center py-16 border border-dashed border-slate-200 bg-slate-50 rounded-md">
+                            <div className="flex flex-col items-center justify-center py-16 border border-dashed border-blue-200 bg-blue-50 rounded-2xl">
                                 <Calendar className="h-16 w-16 text-slate-300 mb-4" />
                                 <p className="text-sm font-bold text-slate-500">لا توجد مواعيد قادمة مجدولة</p>
                             </div>

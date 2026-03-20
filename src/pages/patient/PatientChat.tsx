@@ -113,7 +113,10 @@ export default function PatientChat() {
 
         socket.on('internal_message', (payload: { conversationId: number; message: Message }) => {
             if (payload.conversationId === conversation.id) {
-                setMessages(prev => [...prev, payload.message]);
+                setMessages(prev => {
+                    if (prev.find(m => m.id === payload.message.id)) return prev;
+                    return [...prev, payload.message];
+                });
             }
         });
 
