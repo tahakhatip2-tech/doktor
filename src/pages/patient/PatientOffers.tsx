@@ -7,13 +7,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
     Tag, Heart, Share2, MessageCircle,
-    Building2, Calendar, Infinity, Clock,
+    Building2, Calendar, Infinity, Clock, Phone, Stethoscope
 } from 'lucide-react';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import PatientHero from '@/components/patient/PatientHero';
+import { BASE_URL } from '@/lib/api';
+
+const logoSrc = (url?: string) => {
+    if (!url) return null;
+    if (url.startsWith('http')) return url;
+    return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -35,6 +42,7 @@ interface Offer {
         avatar?: string;
         clinic_specialty: string;
         clinic_description?: string;
+        clinic_logo?: string;
         phone?: string;
     };
 }
@@ -127,41 +135,69 @@ export default function PatientOffers() {
                                     {/* ── Post Header ───────────────── */}
                                     <div className="flex items-start justify-between p-5 pb-4">
                                         <div className="flex items-center gap-4">
-                                            <div className="relative">
-                                                <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                                <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
-                                                    <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white">
-                                                        {offer.user.avatar
-                                                            ? <img src={offer.user.avatar} className="h-full w-full object-cover" />
-                                                            : <Building2 className="h-6 w-6 text-blue-800" />
-                                                        }
+                                            {/* AVATAR STACK: Doctor + Clinic Logo badge */}
+                                        <div className="relative flex-shrink-0">
+                                            {/* Glow ring */}
+                                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[5px] opacity-60" />
+                                            {/* Doctor avatar */}
+                                            <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
+                                                <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white shadow-sm">
+                                                    {offer.user.avatar
+                                                        ? <img src={logoSrc(offer.user.avatar) || ''} className="h-full w-full object-cover" alt="doctor" />
+                                                        : <Building2 className="h-6 w-6 text-blue-800" />
+                                                    }
+                                                </div>
+                                            </div>
+                                            {/* Clinic logo mini-badge */}
+                                            {offer.user.clinic_logo && (
+                                                <div className="absolute -bottom-1 -left-1 z-20 h-6 w-6 rounded-full border-2 border-white shadow-md overflow-hidden bg-white">
+                                                    <img src={logoSrc(offer.user.clinic_logo) || ''} alt="clinic" className="h-full w-full object-cover" />
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                                            {/* Line 1: Doctor Name & Badge */}
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-extrabold text-slate-900 text-[16px] truncate leading-none">
+                                                    {offer.user.name || 'طبيب'}
+                                                </p>
+                                                {offer.isPermanent && (
+                                                    <Badge className="bg-orange-100/80 text-orange-700 border-0 px-2 py-0 text-[10px] uppercase font-black tracking-wider rounded-sm shadow-sm">
+                                                        دائم
+                                                    </Badge>
+                                                )}
+                                            </div>
+
+                                            {/* Line 2: Clinic Logo + Clinic Name */}
+                                            <div className="flex items-center gap-1.5 py-0.5">
+                                                {offer.user.clinic_logo ? (
+                                                    <img src={logoSrc(offer.user.clinic_logo) || ''} alt="clinic" className="w-[18px] h-[18px] rounded-full object-cover border border-slate-200 shadow-sm" />
+                                                ) : (
+                                                    <div className="w-[18px] h-[18px] rounded-full bg-blue-100 flex items-center justify-center border border-blue-200 text-blue-600">
+                                                        <Building2 className="w-2.5 h-2.5" />
                                                     </div>
-                                                </div>
+                                                )}
+                                                <span className="text-[13px] font-bold text-blue-800 truncate">
+                                                    {offer.user.clinic_name || 'العيادة'}
+                                                </span>
                                             </div>
-                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-extrabold text-base text-slate-900 truncate">
-                                                        {offer.user.clinic_name || offer.user.name || 'العيادة'}
-                                                    </p>
-                                                    {offer.isPermanent && (
-                                                        <Badge className="bg-orange-100 text-orange-700 hover:bg-orange-200 border-0 px-2 py-0 text-[10px] uppercase font-bold tracking-wider rounded-md">
-                                                            دائم
-                                                        </Badge>
-                                                    )}
+
+                                            {/* Line 3: Specialty & Time Info */}
+                                            <div className="flex items-center flex-wrap gap-3">
+                                                <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-md">
+                                                    <Stethoscope className="h-[10px] w-[10px] text-orange-500" />
+                                                    <span className="text-[11px] font-bold text-slate-500 truncate max-w-[140px]">
+                                                        {offer.user.clinic_specialty || offer.user.clinic_description || 'تخصص عام'}
+                                                    </span>
                                                 </div>
-                                                
-                                                <div className="flex flex-wrap items-center gap-3 mt-1.5">
-                                                    <p className="text-xs text-slate-500 flex items-center gap-1.5 font-medium">
-                                                        <Clock className="h-3.5 w-3.5 text-blue-400" />
-                                                        {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
-                                                    </p>
-                                                    
-                                                    <p className="text-xs text-orange-600 font-bold flex items-center gap-1.5 truncate bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100">
-                                                        <Building2 className="h-3 w-3" />
-                                                        <span>{offer.user.clinic_description || offer.user.clinic_specialty || 'تخصص عام / غير محدد'}</span>
-                                                    </p>
-                                                </div>
+
+                                                <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium italic">
+                                                    <Clock className="h-3 w-3" />
+                                                    {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
+                                                </p>
                                             </div>
+                                        </div>
                                         </div>
                                         
                                         {/* Expiry Badge if not permanent */}
@@ -188,9 +224,9 @@ export default function PatientOffers() {
                                     {/* ── Image & Stats Container ─────────────────────── */}
                                     <div className="relative">
                                         {offer.image && (
-                                            <div className="w-full aspect-[4/3] sm:aspect-[16/9] bg-slate-100 relative">
+                                            <div className="w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-100 relative">
                                                 <img
-                                                    src={offer.image}
+                                                    src={logoSrc(offer.image) || ''}
                                                     alt={offer.title}
                                                     className="w-full h-full object-cover"
                                                     loading="lazy"

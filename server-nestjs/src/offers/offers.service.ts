@@ -24,14 +24,37 @@ export class OffersService {
 
     // ── الطبيب: جلب عروضه ─────────────────────────────────────────────
     async findMyOffers(userId: number) {
-        return this.prisma.offer.findMany({
+        const offers = await this.prisma.offer.findMany({
             where: { userId },
             orderBy: { createdAt: 'desc' },
             include: {
-                user: { select: { id: true, name: true, clinic_name: true, avatar: true, clinic_specialty: true } },
+                user: { 
+                    select: { 
+                        id: true, name: true, clinic_name: true, avatar: true, clinic_specialty: true,
+                        settings: {
+                            where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'doctor_name'] } },
+                            select: { key: true, value: true }
+                        }
+                    } 
+                },
                 likes: true,
                 _count: { select: { likes: true } },
             },
+        });
+
+        return offers.map(offer => {
+            const { settings, ...userData } = offer.user as any;
+            const settingsMap = Object.fromEntries((settings || []).map((s: any) => [s.key, s.value]));
+            return {
+                ...offer,
+                user: {
+                    ...userData,
+                    name: settingsMap['doctor_name'] || userData.name,
+                    clinic_name: settingsMap['clinic_name'] || userData.clinic_name,
+                    clinic_specialty: settingsMap['clinic_description'] || userData.clinic_specialty,
+                    clinic_logo: settingsMap['clinic_logo'] || null,
+                }
+            };
         });
     }
 
@@ -66,8 +89,8 @@ export class OffersService {
                         clinic_specialty: true, 
                         phone: true,
                         settings: {
-                            where: { key: 'clinic_description' },
-                            select: { value: true }
+                            where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'doctor_name'] } },
+                            select: { key: true, value: true }
                         }
                     } 
                 },
@@ -78,11 +101,16 @@ export class OffersService {
 
         return offers.map(offer => {
             const { settings, ...userData } = offer.user;
+            const settingsMap = Object.fromEntries((settings || []).map(s => [s.key, s.value]));
             return {
                 ...offer,
                 user: {
                     ...userData,
-                    clinic_description: settings?.[0]?.value || null,
+                    name: settingsMap['doctor_name'] || userData.name,
+                    clinic_name: settingsMap['clinic_name'] || userData.clinic_name,
+                    clinic_specialty: settingsMap['clinic_description'] || userData.clinic_specialty,
+                    clinic_description: settingsMap['clinic_description'] || userData.clinic_specialty || null,
+                    clinic_logo: settingsMap['clinic_logo'] || null,
                 },
                 likesCount: offer._count.likes,
                 isLikedByMe: patientId
