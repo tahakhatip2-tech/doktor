@@ -79,15 +79,28 @@ export function useSocketNotifications(onNewMessage?: () => void) {
         // ── رسائل الدردشة الداخلية للطبيب ──
         socket.on('internal_message', (payload: any) => {
             console.log('[Doctor Socket] New internal message:', payload);
-            toast.info('رسالة جديدة من مريض', {
-                description: payload?.message?.content
-                    ? payload.message.content.substring(0, 80)
-                    : 'لديك رسالة جديدة في الدردشة',
-                duration: 6000,
-                position: 'bottom-left',
-                icon: '💬',
-            });
-            playNotificationSound();
+            const senderType = payload?.message?.senderType;
+            
+            let title = 'رسالة جديدة من مريض';
+            let icon = '💬';
+
+            if (senderType === 'BOT') {
+                title = 'الموظف الذكي قام بالرد المتزامن';
+                icon = '🤖';
+            }
+
+            // لا تظهر إشعار إذا كانت الرسالة من الطبيب نفسه
+            if (senderType !== 'DOCTOR') {
+                toast.info(title, {
+                    description: payload?.message?.content
+                        ? payload.message.content.substring(0, 80)
+                        : 'لديك رسالة جديدة في الدردشة',
+                    duration: 6000,
+                    position: 'bottom-left',
+                    icon: icon,
+                });
+                playNotificationSound();
+            }
             if (onNewMessage) onNewMessage();
         });
 

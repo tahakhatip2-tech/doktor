@@ -4,13 +4,20 @@ import { Download, CheckCircle2, X, Smartphone } from 'lucide-react';
 
 export default function PWAInstallBanner() {
     const { isInstallable, isInstalled, install } = usePWAInstall();
-    const [dismissed, setDismissed] = useState(false);
+    // Default to what's in localStorage to remember if user closed it
+    const [dismissed, setDismissed] = useState(() => localStorage.getItem('pwa_dismissed') === 'true');
 
+    // Only hide if REALLY installed or permanently dismissed
     if (dismissed || isInstalled || !isInstallable) return null;
+
+    const handleDismiss = () => {
+        setDismissed(true);
+        localStorage.setItem('pwa_dismissed', 'true');
+    };
 
     return (
         <div
-            className="fixed bottom-20 inset-x-4 z-50 sm:bottom-6 sm:left-auto sm:right-6 sm:w-80 animate-fade-in"
+            className="fixed bottom-20 inset-x-4 z-[60] sm:bottom-6 sm:right-auto sm:left-6 sm:w-80 animate-fade-in"
             style={{ animation: 'slideUp 0.4s ease-out' }}
         >
             <div className="bg-white rounded-2xl shadow-2xl border border-blue-100 overflow-hidden">
@@ -36,7 +43,7 @@ export default function PWAInstallBanner() {
                             <div className="flex items-center justify-between">
                                 <h3 className="text-sm font-bold text-slate-900">Doctor Jo</h3>
                                 <button
-                                    onClick={() => setDismissed(true)}
+                                    onClick={handleDismiss}
                                     className="text-slate-400 hover:text-slate-600 transition-colors p-0.5 rounded-full hover:bg-slate-100"
                                     aria-label="إغلاق"
                                 >

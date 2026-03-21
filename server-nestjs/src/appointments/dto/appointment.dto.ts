@@ -190,6 +190,14 @@ export class SaveMedicalRecordDto {
     @IsOptional()
     @IsString()
     nationalId?: string;
+
+    @ApiPropertyOptional({
+        description: 'معرف الطبيب المعالج من العيادة',
+        example: 1,
+        type: 'number',
+    })
+    @IsOptional()
+    treatingDoctorId?: number;
 }
 
 export class AppointmentResponseDto {

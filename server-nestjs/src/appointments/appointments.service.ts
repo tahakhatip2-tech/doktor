@@ -484,6 +484,7 @@ export class AppointmentsService {
       nationalId,
       age,
       attachmentUrl,
+      treatingDoctorId,
     } = data;
 
     // ─── جلب بيانات الموعد الكاملة (الموثوقة 100%) ───────────────────────
@@ -523,7 +524,7 @@ export class AppointmentsService {
         where: { appointmentId },
       });
 
-      const recordData = {
+      const recordData: any = {
         diagnosis,
         treatment,
         age,
@@ -531,6 +532,7 @@ export class AppointmentsService {
         feeDetails,
         attachmentUrl,
         recordType: data.recordType || 'prescription',
+        ...(treatingDoctorId ? { treatingDoctorId: Number(treatingDoctorId) } : {}),
       };
 
       if (existing) {

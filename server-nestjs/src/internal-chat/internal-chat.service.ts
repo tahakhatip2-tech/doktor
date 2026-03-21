@@ -295,6 +295,13 @@ export class InternalChatService {
                     conversation.patientId,
                     { conversationId, message: botMessage },
                 );
+
+                // إرسال رد البوت للطبيب ليعلم متزامناً برد البوت
+                this.notificationsGateway.sendInternalMessage(
+                    'doctor',
+                    conversation.clinicId,
+                    { conversationId, message: botMessage },
+                );
             } catch (e) {
                 console.error('[InternalChat] Bot reply error:', e);
             }

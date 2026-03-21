@@ -115,6 +115,13 @@ export default function PatientChat() {
             if (payload.conversationId === conversation.id) {
                 setMessages(prev => {
                     if (prev.find(m => m.id === payload.message.id)) return prev;
+                    if (payload.message.senderType !== 'PATIENT') {
+                        try {
+                            const audio = new Audio('/sounds/notification.mp3');
+                            audio.volume = 0.5;
+                            audio.play().catch(() => {});
+                        } catch {}
+                    }
                     return [...prev, payload.message];
                 });
             }

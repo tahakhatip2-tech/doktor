@@ -22,7 +22,7 @@ export default function PatientHero({
     children,
     className,
     badgeText,
-    imageSrc = '/doktor-jo-auth-v2.png',
+    imageSrc = '/patient-hero-scene-v2.png',
     showBackButton = false,
 }: PatientHeroProps) {
     const navigate = useNavigate();

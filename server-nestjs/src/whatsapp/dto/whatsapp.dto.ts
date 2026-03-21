@@ -58,6 +58,11 @@ export class WhatsAppSettingsDto {
     @IsString()
     address?: string;
 
+    @ApiPropertyOptional({ description: 'رابط الموقع على الخريطة' })
+    @IsOptional()
+    @IsString()
+    location_url?: string;
+
     // ── ساعات العمل والمواعيد ────────────────────────────────
     @ApiPropertyOptional({ description: 'وقت بدء العمل', example: '09:00' })
     @IsOptional()

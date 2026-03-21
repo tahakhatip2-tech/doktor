@@ -29,6 +29,7 @@ import PatientOffers from "./pages/patient/PatientOffers";
 import InternalChat from "./pages/InternalChat";
 import PublicClinicPage from "./pages/PublicClinicPage";
 import AppointmentDetail from "./pages/patient/AppointmentDetail";
+import ClinicDoctors from "./pages/doctor/ClinicDoctors";
 
 import { ClinicProvider } from "./context/ClinicContext";
 
@@ -56,6 +57,7 @@ const App = () => (
                         <Route path="/plans" element={<Plans />} />
                         <Route path="/queue" element={<QueueDisplay />} />
                         <Route path="/internal-chat" element={<InternalChat />} />
+                        <Route path="/clinic-doctors" element={<ClinicDoctors />} />
 
                         {/* ─── Public Shareable Clinic Page (No Auth) ─── */}
                         <Route path="/clinic/:id" element={<PublicClinicPage />} />

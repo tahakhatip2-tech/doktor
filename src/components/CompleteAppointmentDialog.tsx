@@ -28,6 +28,16 @@ import {
 } from 'lucide-react';
 import { appointmentsApi, whatsappApi, BASE_URL } from '@/lib/api';
 import { toastWithSound } from '@/lib/toast-with-sound';
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || '/api';
+
+interface ClinicDoctor {
+    id: number;
+    name: string;
+    specialty?: string;
+    isActive: boolean;
+}
 
 interface CompleteAppointmentDialogProps {
     isOpen: boolean;
@@ -49,8 +59,10 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
         fee_details: 'كشفية طبية',
         national_id: '',
         age: '',
-        record_type: 'prescription'
+        record_type: 'prescription',
+        treating_doctor_id: '' as string | number,
     });
+    const [clinicDoctors, setClinicDoctors] = useState<ClinicDoctor[]>([]);
     const [file, setFile] = useState<File | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
     const [generatingPdf, setGeneratingPdf] = useState(false);
@@ -80,6 +92,18 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
             setIsSaved(false);
             setPdfUrl(null);
             setFile(null);
+            // جلب أطباء العيادة داخل دالة async منفصلة
+            const loadDoctors = async () => {
+                try {
+                    const token = localStorage.getItem('token');
+                    const res = await axios.get(`${API_URL}/clinic-doctors`, {
+                        headers: { Authorization: `Bearer ${token}` }
+                    });
+                    setClinicDoctors((res.data || []).filter((d: ClinicDoctor) => d.isActive));
+                } catch { /* تجاهل الخطأ */ }
+            };
+            loadDoctors();
+
             if (appointment) {
                 setFormData({
                     diagnosis: '',
@@ -88,7 +112,8 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                     fee_details: 'كشفية طبية',
                     national_id: appointment.contact?.nationalId || '',
                     age: appointment.contact?.ageRange || '',
-                    record_type: 'prescription'
+                    record_type: 'prescription',
+                    treating_doctor_id: '',
                 });
             }
         }
@@ -101,14 +126,14 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
         setLoading(true);
         try {
             const data: any = {
-                // لا نرسل patientId — الباك اند سيجلبه من الموعد مباشرة
                 diagnosis: formData.diagnosis,
                 treatment: formData.treatment,
                 feeAmount: parseFloat(formData.fee_amount) || 0,
                 feeDetails: formData.fee_details,
                 nationalId: formData.national_id,
                 age: formData.age,
-                recordType: formData.record_type
+                recordType: formData.record_type,
+                ...(formData.treating_doctor_id ? { treatingDoctorId: Number(formData.treating_doctor_id) } : {}),
             };
 
             let payload = data;
@@ -354,6 +379,28 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                             </div>
                                         </div>
                                     </div>
+
+                                    {/* Treating Doctor */}
+                                    {clinicDoctors.length > 0 && (
+                                        <div className="space-y-2">
+                                            <Label className="font-bold pr-1 text-primary flex items-center gap-2">
+                                                <Stethoscope className="h-4 w-4" />
+                                                الطبيب المعالج
+                                            </Label>
+                                            <select
+                                                value={formData.treating_doctor_id}
+                                                onChange={(e) => setFormData({ ...formData, treating_doctor_id: e.target.value })}
+                                                className="w-full h-12 rounded-xl border border-primary/20 bg-background px-3 text-sm font-bold text-right focus:outline-none focus:border-primary/50 transition-all"
+                                            >
+                                                <option value="">— اختر الطبيب المعالج (اختياري) —</option>
+                                                {clinicDoctors.map(doc => (
+                                                    <option key={doc.id} value={doc.id}>
+                                                        {doc.name}{doc.specialty ? ` — ${doc.specialty}` : ''}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
 
                                     <div className="space-y-2">
                                         <Label className="font-bold pr-1 text-primary">توصيف الدفعة</Label>

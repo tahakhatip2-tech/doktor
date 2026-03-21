@@ -25,6 +25,7 @@ import {
     CalendarX,
     AlertCircle,
     Bot,
+    Stethoscope,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -211,7 +212,14 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                         className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
                                     >
                                         <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        <span className="text-[8px] font-black">حسابظٹ</span>
+                                        <span className="text-[8px] font-black">حسابي</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => navigate('/clinic-doctors')}
+                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
+                                    >
+                                        <Stethoscope className="h-5 w-5 text-orange-500" />
+                                        <span className="text-[8px] font-black">الأطباء</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onSelect={() => onNavigate ? onNavigate('/admin') : navigate('/admin')}
@@ -509,6 +517,16 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                         <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
                                     </div>
                                     حسابظٹ
+                                </DropdownMenuItem>
+
+                                <DropdownMenuItem
+                                    onSelect={() => navigate('/clinic-doctors')}
+                                    className="rounded-xl focus:bg-orange-50 dark:focus:bg-orange-950/20 focus:text-orange-700 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
+                                >
+                                    <div className="p-1.5 rounded-lg bg-background border border-orange-200 dark:border-orange-800 group-hover:border-orange-400 transition-colors">
+                                        <Stethoscope className="h-4 w-4 text-orange-500" />
+                                    </div>
+                                    أطباء العيادة
                                 </DropdownMenuItem>
 
                                 <DropdownMenuItem

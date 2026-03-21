@@ -8,11 +8,11 @@ interface BeforeInstallPromptEvent extends Event {
 
 export function usePWAInstall() {
     const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-    const [isInstallable, setIsInstallable] = useState(false);
+    const [isInstallable, setIsInstallable] = useState(true); // Changed to true by default to show to everyone
     const [isInstalled, setIsInstalled] = useState(false);
 
     useEffect(() => {
-        // Check if already installed (standalone mode)
+        // Check if already installed (standalone mode or iOS standalone)
         const isStandalone =
             window.matchMedia('(display-mode: standalone)').matches ||
             (window.navigator as any).standalone === true;
@@ -42,7 +42,11 @@ export function usePWAInstall() {
     }, []);
 
     const install = async () => {
-        if (!deferredPrompt) return;
+        if (!deferredPrompt) {
+            // Fallback for iOS / Safari where automatic prompt is not supported
+            alert("لتثبيت التطبيق على جهازك (كـ الايفون مثلاً):\nقم بالضغط على زر 'المشاركة' (Share) ⍐ في المتصفح،\nثم اختر 'إضافة إلى الصفحة الرئيسية' (Add to Home Screen) ➕");
+            return;
+        }
         await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === 'accepted') {

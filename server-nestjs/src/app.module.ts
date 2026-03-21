@@ -17,6 +17,7 @@ import { OffersModule } from './offers/offers.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { FinanceModule } from './finance/finance.module';
+import { ClinicDoctorsModule } from './clinic-doctors/clinic-doctors.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { FinanceModule } from './finance/finance.module';
     InternalChatModule,
     OffersModule,
     FinanceModule,
+    ClinicDoctorsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

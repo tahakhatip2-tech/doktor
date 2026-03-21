@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useClinicContext } from '@/context/ClinicContext';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ interface ClinicSettings {
     clinic_name: string;
     clinic_description: string;
     clinic_logo: string;
-    doctor_name: string;
     phone: string;
     emergency_phone: string;
     address: string;
@@ -32,7 +31,6 @@ export default function ClinicSettings() {
         clinic_name: 'عيادتي',
         clinic_description: 'نظام إدارة العيادات',
         clinic_logo: '/logo.png',
-        doctor_name: 'د. محمد',
         phone: '',
         emergency_phone: '',
         address: '',
@@ -262,16 +260,6 @@ export default function ClinicSettings() {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="doctor_name" className="text-blue-900 dark:text-blue-100 font-semibold text-right w-full block">اسم الطبيب المسئول</Label>
-                        <Input
-                            id="doctor_name"
-                            value={settings.doctor_name}
-                            onChange={(e) => updateSetting('doctor_name', e.target.value)}
-                            placeholder="د. محمد أحمد"
-                            className="bg-white/50 dark:bg-black/20 border-blue-200 dark:border-blue-800 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-11 transition-all text-right"
-                        />
-                    </div>
 
                     <div className="space-y-2">
                         <Label htmlFor="phone" className="text-blue-900 dark:text-blue-100 font-semibold text-right w-full block">رقم الهاتف الرسمي</Label>

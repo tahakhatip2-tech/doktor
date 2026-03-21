@@ -26,6 +26,7 @@ model User {
   clinic_name           String?
   clinic_phone          String?
   clinic_address        String?
+  clinic_logo           String?
   auto_reply_enabled    Boolean                @default(false)
   ai_api_key            String?
   ai_system_instruction String?
@@ -36,6 +37,7 @@ model User {
   campaigns             Campaign[]
   contacts              Contact[]
   customerTags          CustomerTag[]
+  clinicDoctors         ClinicDoctor[]
   groups                Group[]
   notifications         Notification[]
   payments              Payment[]
@@ -263,6 +265,7 @@ model Appointment {
   notes                String?
   patientId            Int?
   doctorId             Int?
+  clinicDoctorId       Int?
   duration             Int                   @default(30)
   type                 String                @default("consultation")
   reminderSent         Boolean               @default(false)
@@ -275,6 +278,7 @@ model Appointment {
   contact              Contact?              @relation(fields: [patientId], references: [id])
   patientUser          Patient?              @relation(fields: [patientUserId], references: [id])
   user                 User?                 @relation(fields: [userId], references: [id])
+  assignedDoctor       ClinicDoctor?         @relation(fields: [clinicDoctorId], references: [id])
   medicalRecords       MedicalRecord[]
   notifications        Notification[]
   patientNotifications PatientNotification[]
@@ -342,22 +346,24 @@ model Service {
 }
 
 model MedicalRecord {
-  id            Int         @id @default(autoincrement())
-  appointmentId Int
-  patientId     Int?
-  diagnosis     String?
-  treatment     String?
-  age           String?
-  feeAmount     Decimal?    @db.Decimal(10, 2)
-  feeDetails    String?
-  attachmentUrl String?
-  recordType    String      @default("prescription")
-  aiAdvice      String?
-  createdAt     DateTime    @default(now())
-  patientUserId Int?
-  appointment   Appointment @relation(fields: [appointmentId], references: [id])
-  contact       Contact?    @relation(fields: [patientId], references: [id])
-  patientUser   Patient?    @relation(fields: [patientUserId], references: [id])
+  id                 Int           @id @default(autoincrement())
+  appointmentId      Int
+  patientId          Int?
+  diagnosis          String?
+  treatment          String?
+  age                String?
+  feeAmount          Decimal?      @db.Decimal(10, 2)
+  feeDetails         String?
+  attachmentUrl      String?
+  recordType         String        @default("prescription")
+  aiAdvice           String?
+  createdAt          DateTime      @default(now())
+  patientUserId      Int?
+  treatingDoctorId   Int?
+  appointment        Appointment   @relation(fields: [appointmentId], references: [id])
+  contact            Contact?      @relation(fields: [patientId], references: [id])
+  patientUser        Patient?      @relation(fields: [patientUserId], references: [id])
+  treatingDoctor     ClinicDoctor? @relation(fields: [treatingDoctorId], references: [id])
 }
 
 model Patient {
@@ -478,6 +484,22 @@ enum InternalSenderType {
   PATIENT
   DOCTOR
   BOT
+}
+
+model ClinicDoctor {
+  id             Int             @id @default(autoincrement())
+  clinicId       Int
+  name           String
+  specialty      String?
+  phone          String?
+  workingHours   String?
+  hourlyRate     Decimal?        @db.Decimal(10, 2)
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  clinic         User            @relation(fields: [clinicId], references: [id])
+  appointments   Appointment[]
+  medicalRecords MedicalRecord[]
 }
 
 model ClinicReview {

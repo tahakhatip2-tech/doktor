@@ -70,33 +70,17 @@ export default function PatientDashboard() {
                 subtitle="في تطبيق Doctor Jo"
                 description="نحن هنا لنقدم لك ولعائلتك أفضل رعاية طبية لتنعموا بحياة صحية وسعيدة."
                 badgeText="دائماً في خدمتك"
-            >
-                {/* Dashboard Specific Quick Stats inside Hero */}
-                <div className="flex flex-col gap-3 min-w-[200px]">
-                    <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-white shadow-xl flex items-center justify-between">
-                        <div>
-                            <p className="text-[10px] font-bold opacity-80 uppercase tracking-wider mb-1">المواعيد القادمة</p>
-                            <p className="text-2xl font-black">{upcomingAppointments.length}</p>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-orange-500/20 flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-orange-400" />
-                        </div>
-                    </div>
-                </div>
-            </PatientHero>
+            />
 
-            <div className="px-4 sm:px-0 grid grid-cols-1 lg:grid-cols-2 gap-4 -mt-4 relative z-20">
+            <div className="px-4 sm:px-0 flex flex-col gap-6 -mt-4 relative z-20">
                 {/* Upcoming Appointments */}
-                <Card className="relative rounded-2xl border-none bg-white shadow-[0_10px_40px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_50px_rgba(37,99,235,0.08)] transition-all duration-500 overflow-hidden group/card">
-                    {/* Top Accent Gradient */}
-                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-600 via-blue-500 to-orange-500 opacity-90 group-hover/card:opacity-100 transition-opacity"></div>
-                    
-                    <div className="p-3 sm:p-4 border-b border-blue-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-blue-50/30 to-transparent">
+                <Card className="relative rounded-2xl border border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-500 overflow-hidden group/card">
+                    <div className="p-3 sm:p-4 border-b border-orange-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-orange-50/30 to-transparent">
                         <div className="flex items-center gap-2">
-                            <div className="p-2 bg-blue-50 rounded-lg text-blue-600 shadow-sm border border-blue-100/50">
+                            <div className="p-2 rounded-xl bg-orange-50 text-orange-500 shadow-sm border border-orange-100">
                                 <Calendar className="h-5 w-5" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">المواعيد القادمة</h3>
+                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">المواعيد القادمة</h3>
                         </div>
                         <Link to="/patient/appointments" className="shrink-0">
                             <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
@@ -176,16 +160,13 @@ export default function PatientDashboard() {
                 </Card>
 
                 {/* Recent Notifications */}
-                <Card className="relative rounded-2xl border-none bg-white shadow-[0_10px_40px_rgba(0,0,0,0.05)] hover:shadow-[0_10px_50px_rgba(249,115,22,0.08)] transition-all duration-500 overflow-hidden group/card lg:mt-0">
-                    {/* Top Accent Gradient */}
-                    <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-orange-500 via-orange-400 to-blue-500 opacity-90 group-hover/card:opacity-100 transition-opacity"></div>
-                    
+                <Card className="relative rounded-2xl border border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-500 overflow-hidden group/card lg:mt-0">
                     <div className="p-3 sm:p-4 border-b border-orange-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-orange-50/30 to-transparent">
                         <div className="flex items-center gap-2">
-                            <div className="p-2 bg-orange-50 rounded-lg text-orange-600 shadow-sm border border-orange-100/50">
+                            <div className="p-2 rounded-xl bg-orange-50 text-orange-500 shadow-sm border border-orange-100">
                                 <Bell className="h-5 w-5" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">آخر الإشعارات</h3>
+                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">آخر الإشعارات</h3>
                         </div>
                         <Link to="/patient/notifications" className="shrink-0">
                             <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-orange-600 hover:bg-orange-50 hover:text-orange-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
