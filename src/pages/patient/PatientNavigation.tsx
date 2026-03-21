@@ -164,15 +164,15 @@ export default function PatientNavigation() {
         });
     }, [clinic, userLoc, route]);
 
-    if (loading) return <div className="h-screen bg-slate-50 flex items-center justify-center">جاري التحميل...</div>;
+    if (loading) return <div className="fixed inset-0 z-[100] bg-slate-50 flex items-center justify-center">جاري التحميل...</div>;
     
     if (!clinic?.lat) {
         return (
-            <div className="h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-50" dir="rtl">
+            <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 text-center bg-slate-50" dir="rtl">
                 <ShieldAlert className="w-16 h-16 text-slate-300 mb-4" />
                 <h2 className="text-xl font-bold mb-2">تعذر تحديد المسار</h2>
                 <p className="text-slate-500 mb-6">هذه العيادة لم تقم بتحديد إحداثيات موقعها الدقيق على الخريطة.</p>
-                <Button onClick={() => navigate(-1)}>العودة للعيادات</Button>
+                <Button onClick={() => navigate(-1)} className="px-8 shadow-md">العودة للعيادات</Button>
             </div>
         );
     }
@@ -188,7 +188,7 @@ export default function PatientNavigation() {
     };
 
     return (
-        <div className="h-screen w-full flex flex-col relative bg-slate-100 overflow-hidden" dir="rtl">
+        <div className="fixed inset-0 z-[100] w-full flex flex-col bg-slate-100 overflow-hidden" dir="rtl">
             {/* Header / Top Bar */}
             <div className="absolute top-0 inset-x-0 z-[400] bg-gradient-to-b from-black/60 to-transparent pt-6 pb-12 px-4 pointer-events-none">
                 <div className="flex justify-between items-start pointer-events-auto">
