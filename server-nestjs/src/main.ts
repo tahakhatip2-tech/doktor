@@ -9,8 +9,12 @@ async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  // Serve local uploads under /uploads/ and /api/uploads/ (fallback storage when Supabase is unavailable)
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads/',
+  });
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/api/uploads/',
   });
 
   // Enable ValidationPipe for global validation
