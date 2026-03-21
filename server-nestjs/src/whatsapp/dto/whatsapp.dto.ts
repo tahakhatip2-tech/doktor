@@ -63,6 +63,16 @@ export class WhatsAppSettingsDto {
     @IsString()
     location_url?: string;
 
+    @ApiPropertyOptional({ description: 'خط العرض (Latitude)', example: '32.0553' })
+    @IsOptional()
+    @IsString()
+    lat?: string;
+
+    @ApiPropertyOptional({ description: 'خط الطول (Longitude)', example: '35.9106' })
+    @IsOptional()
+    @IsString()
+    lng?: string;
+
     // ── ساعات العمل والمواعيد ────────────────────────────────
     @ApiPropertyOptional({ description: 'وقت بدء العمل', example: '09:00' })
     @IsOptional()
