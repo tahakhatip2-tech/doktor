@@ -324,7 +324,6 @@ export default function ClinicSettings() {
                                 تحديد موقعي 📍
                             </Button>
                         </div>
-                        </div>
                     </div>
 
                     {/* ── lat/lng ── */}

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { X, Navigation, ExternalLink } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { X, Navigation, ExternalLink, Car } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface ClinicMapModalProps {
@@ -10,6 +11,7 @@ interface ClinicMapModalProps {
         location_url?: string;
         lat?: number | null;
         lng?: number | null;
+        id?: number;
     };
     onClose: () => void;
 }
@@ -31,6 +33,7 @@ export function haversineDistance(
 }
 
 export default function ClinicMapModal({ clinic, onClose }: ClinicMapModalProps) {
+    const navigate = useNavigate();
     const mapRef = useRef<HTMLDivElement>(null);
     const mapInstanceRef = useRef<any>(null);
 
@@ -131,25 +134,40 @@ export default function ClinicMapModal({ clinic, onClose }: ClinicMapModalProps)
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3 p-4 bg-white border-t">
-                    {googleUrl ? (
-                        <a
-                            href={googleUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl py-3 text-sm transition-all shadow-sm"
+                <div className="flex flex-col gap-3 p-4 bg-white border-t rounded-b-3xl sm:rounded-b-2xl">
+                    {hasCoords && clinic.id && (
+                        <button
+                            onClick={() => {
+                                onClose();
+                                navigate(`/patient/navigate/${clinic.id}`);
+                            }}
+                            className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-bold rounded-xl py-3.5 text-sm transition-all shadow-md shadow-blue-500/20"
                         >
-                            <Navigation className="h-4 w-4" />
-                            الانتقال عبر خرائط Google
-                            <ExternalLink className="h-3.5 w-3.5 opacity-70" />
-                        </a>
-                    ) : null}
-                    <button
-                        onClick={onClose}
-                        className="px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all"
-                    >
-                        إغلاق
-                    </button>
+                            <Car className="h-4 w-4" />
+                            ابدأ التوجيه داخل التطبيق 🚀
+                        </button>
+                    )}
+                    
+                    <div className="flex gap-2">
+                        {googleUrl ? (
+                            <a
+                                href={googleUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="flex-[2] flex items-center justify-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl py-3 text-sm transition-all"
+                            >
+                                <Navigation className="h-4 w-4" />
+                                خرائط Google
+                                <ExternalLink className="h-3.5 w-3.5 opacity-50" />
+                            </a>
+                        ) : null}
+                        <button
+                            onClick={onClose}
+                            className="flex-1 px-5 py-3 rounded-xl border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 transition-all"
+                        >
+                            إغلاق
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

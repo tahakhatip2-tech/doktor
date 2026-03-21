@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
     Building2, MapPin, Phone, Clock, Search, Calendar,
     MessageCircle, Star, Share2, Eye, Navigation,
-    LocateFixed, X, ChevronDown,
+    LocateFixed, X, ChevronDown, Stethoscope,
 } from 'lucide-react';
 import axios from 'axios';
 import { BASE_URL } from '@/lib/api';
@@ -330,6 +330,12 @@ export default function PatientClinics() {
 
                                     {/* Info rows */}
                                     <div className="px-5 pb-4 space-y-2 flex-1">
+                                        {(clinic.clinic_specialty || clinic.clinic_description) && (
+                                            <div className="flex items-center gap-2 text-sm text-slate-600 font-medium bg-purple-50/50 p-1.5 rounded-lg border border-purple-100/50 -mx-1.5 px-2">
+                                                <Stethoscope className="h-4 w-4 text-purple-500 flex-shrink-0" />
+                                                <span className="truncate" title={clinic.clinic_specialty || clinic.clinic_description}>{clinic.clinic_specialty || clinic.clinic_description}</span>
+                                            </div>
+                                        )}
                                         {clinic.clinic_address && (
                                             <button
                                                 onClick={(e) => handleMapClick(e, clinic)}
@@ -358,41 +364,42 @@ export default function PatientClinics() {
                                     </div>
 
                                     {/* Action bar */}
-                                    <div className="flex items-center gap-1.5 px-3 py-3 bg-slate-50 border-t border-slate-100 mt-auto">
+                                    <div className="flex items-center gap-2 p-3 bg-slate-50/80 border-t border-slate-100 mt-auto backdrop-blur-sm">
                                         <button
                                             onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`); }}
-                                            className="flex-[2] flex justify-center items-center gap-1.5 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-sm transition-all"
+                                            className="flex-1 flex justify-center items-center gap-2 h-10 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 transition-all"
                                         >
-                                            <Calendar className="h-3.5 w-3.5" />
+                                            <Calendar className="h-4 w-4 shadow-sm" />
                                             احجز موعد
                                         </button>
 
-                                        {hasMap && (
+                                        <div className="flex items-center gap-2 flex-shrink-0">
+                                            {hasMap && (
+                                                <button
+                                                    onClick={(e) => handleMapClick(e, clinic)}
+                                                    className="flex justify-center items-center h-10 w-10 rounded-xl text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100 active:scale-95 transition-all"
+                                                    title="الموقع على الخريطة"
+                                                >
+                                                    <MapPin className="h-4 w-4" />
+                                                </button>
+                                            )}
+
                                             <button
-                                                onClick={(e) => handleMapClick(e, clinic)}
-                                                className="flex-1 flex justify-center items-center gap-1.5 py-2 rounded-xl text-xs font-bold bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition-all"
-                                                title="الموقع على الخريطة"
+                                                onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`); }}
+                                                className="flex justify-center items-center h-10 w-10 rounded-xl text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 active:scale-95 transition-all"
+                                                title="عرض التفاصيل"
                                             >
-                                                <MapPin className="h-3.5 w-3.5" />
-                                                الموقع
+                                                <Eye className="h-4 w-4" />
                                             </button>
-                                        )}
 
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`); }}
-                                            className="flex justify-center items-center px-3 py-2 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 transition-all"
-                                            title="التفاصيل"
-                                        >
-                                            <Eye className="h-3.5 w-3.5" />
-                                        </button>
-
-                                        <button
-                                            onClick={(e) => handleShare(e, clinic)}
-                                            className="flex justify-center items-center px-3 py-2 rounded-xl text-xs font-bold bg-purple-50 text-purple-600 border border-purple-200 hover:bg-purple-100 transition-all"
-                                            title="مشاركة"
-                                        >
-                                            <Share2 className="h-3.5 w-3.5" />
-                                        </button>
+                                            <button
+                                                onClick={(e) => handleShare(e, clinic)}
+                                                className="flex justify-center items-center h-10 w-10 rounded-xl text-purple-600 bg-purple-50 border border-purple-200 hover:bg-purple-100 active:scale-95 transition-all"
+                                                title="مشاركة العيادة"
+                                            >
+                                                <Share2 className="h-4 w-4" />
+                                            </button>
+                                        </div>
                                     </div>
                                 </Card>
                             );
