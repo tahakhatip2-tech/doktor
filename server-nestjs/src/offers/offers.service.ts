@@ -32,7 +32,7 @@ export class OffersService {
                     select: { 
                         id: true, name: true, clinic_name: true, avatar: true, clinic_specialty: true,
                         settings: {
-                            where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'doctor_name'] } },
+                            where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'clinic_specialty'] } },
                             select: { key: true, value: true }
                         }
                     } 
@@ -49,9 +49,9 @@ export class OffersService {
                 ...offer,
                 user: {
                     ...userData,
-                    name: settingsMap['doctor_name'] || userData.name,
+                    name: userData.name, // Always use profile name, ignore doctor_name from whatsapp settings to match patient.service.ts
                     clinic_name: settingsMap['clinic_name'] || userData.clinic_name,
-                    clinic_specialty: settingsMap['clinic_description'] || userData.clinic_specialty,
+                    clinic_specialty: settingsMap['clinic_specialty'] || settingsMap['clinic_description'] || userData.clinic_specialty,
                     clinic_logo: settingsMap['clinic_logo'] || null,
                 }
             };
@@ -89,7 +89,7 @@ export class OffersService {
                         clinic_specialty: true, 
                         phone: true,
                         settings: {
-                            where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'doctor_name'] } },
+                            where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'clinic_specialty'] } },
                             select: { key: true, value: true }
                         }
                     } 
@@ -100,16 +100,16 @@ export class OffersService {
         });
 
         return offers.map(offer => {
-            const { settings, ...userData } = offer.user;
-            const settingsMap = Object.fromEntries((settings || []).map(s => [s.key, s.value]));
+            const { settings, ...userData } = offer.user as any;
+            const settingsMap = Object.fromEntries((settings || []).map((s: any) => [s.key, s.value]));
             return {
                 ...offer,
                 user: {
                     ...userData,
-                    name: settingsMap['doctor_name'] || userData.name,
+                    name: userData.name, // Always use profile name to match patient.service.ts
                     clinic_name: settingsMap['clinic_name'] || userData.clinic_name,
-                    clinic_specialty: settingsMap['clinic_description'] || userData.clinic_specialty,
-                    clinic_description: settingsMap['clinic_description'] || userData.clinic_specialty || null,
+                    clinic_specialty: settingsMap['clinic_specialty'] || settingsMap['clinic_description'] || userData.clinic_specialty,
+                    clinic_description: settingsMap['clinic_description'] || userData.clinic_description || null,
                     clinic_logo: settingsMap['clinic_logo'] || null,
                 },
                 likesCount: offer._count.likes,
