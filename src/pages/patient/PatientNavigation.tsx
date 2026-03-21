@@ -35,9 +35,30 @@ export default function PatientNavigation() {
             try {
                 const token = localStorage.getItem('patient_token');
                 const res = await axios.get(`${API_URL}/patient/clinics/${id}`, {
-                    headers: { Authorization: `Bearer ${token}` }
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true',
+                    }
                 });
-                setClinic(res.data?.data || res.data);
+                const data = res.data?.data || res.data;
+
+                // ── If lat/lng are missing, geocode the address via Nominatim ──
+                if ((!data.lat || !data.lng) && (data.clinic_address || data.name || data.clinic_name)) {
+                    const query = [data.clinic_name || data.name, data.clinic_address].filter(Boolean).join(', ');
+                    try {
+                        const geo = await axios.get(
+                            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+                            { headers: { 'Accept-Language': 'ar' } }
+                        );
+                        if (geo.data?.length > 0) {
+                            data.lat = parseFloat(geo.data[0].lat);
+                            data.lng = parseFloat(geo.data[0].lon);
+                        }
+                    } catch {
+                        // geocoding failed – continue without coords
+                    }
+                }
+                setClinic(data);
             } catch (error) {
                 toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من جلب بيانات العيادة' });
                 navigate(-1);
@@ -76,7 +97,7 @@ export default function PatientNavigation() {
         const fetchRoute = async () => {
             try {
                 // OSRM coordinates are in format: lng,lat
-                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${userLoc.lng},${userLoc.lat};${clinic.lng},${clinic.lat}?overview=full&geometries=geojson`;
+                const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${userLoc.lng},${userLoc.lat};${clinicLng},${clinicLat}?overview=full&geometries=geojson`;
                 const res = await axios.get(osrmUrl);
                 const data = res.data.routes[0];
                 
@@ -101,7 +122,7 @@ export default function PatientNavigation() {
 
     // Setup Leaflet Map
     useEffect(() => {
-        if (!mapRef.current || !clinic?.lat || !userLoc) return;
+        if (!mapRef.current || !clinic || !userLoc) return;
 
         // Dynamic Loading to prevent SSR errors
         import('leaflet').then((L) => {
@@ -125,7 +146,7 @@ export default function PatientNavigation() {
                     html: `<div class="bg-red-500 rounded-full w-10 h-10 flex items-center justify-center shadow-xl border-2 border-white text-white"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-building-2"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg></div>`,
                     className: '', iconSize: [40, 40], iconAnchor: [20, 40]
                 });
-                L.marker([clinic.lat, clinic.lng], { icon: clinicIcon }).addTo(map);
+                L.marker([clinicLat, clinicLng], { icon: clinicIcon }).addTo(map);
 
                 // Add User Marker (Car)
                 const userIcon = L.divIcon({
@@ -166,16 +187,12 @@ export default function PatientNavigation() {
 
     if (loading) return <div className="fixed inset-0 z-[100] bg-slate-50 flex items-center justify-center">جاري التحميل...</div>;
     
-    if (!clinic?.lat) {
-        return (
-            <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center p-6 text-center bg-slate-50" dir="rtl">
-                <ShieldAlert className="w-16 h-16 text-slate-300 mb-4" />
-                <h2 className="text-xl font-bold mb-2">تعذر تحديد المسار</h2>
-                <p className="text-slate-500 mb-6">هذه العيادة لم تقم بتحديد إحداثيات موقعها الدقيق على الخريطة.</p>
-                <Button onClick={() => navigate(-1)} className="px-8 shadow-md">العودة للعيادات</Button>
-            </div>
-        );
-    }
+    // Even after geocoding, if we still have no coords, show the map centered on Amman, Jordan
+    // with a note that the exact location is unavailable
+    const clinicLat  = clinic?.lat  ?? 31.9539;
+    const clinicLng  = clinic?.lng  ?? 35.9106;
+    const hasExactCoords = !!(clinic?.lat && clinic?.lng);
+    if (!clinic) return null;
 
     const formatDuration = (seconds: number) => {
         if (seconds < 60) return "أقل من دقيقة";
@@ -209,6 +226,16 @@ export default function PatientNavigation() {
 
             {/* Map Container */}
             <div ref={mapRef} className="flex-1 w-full bg-slate-200" />
+
+            {/* Exact‑location missing warning */}
+            {!hasExactCoords && (
+                <div className="absolute top-20 inset-x-4 z-[500] flex items-start gap-2.5 bg-yellow-50 border border-yellow-300 rounded-2xl px-4 py-3 shadow">
+                    <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-yellow-800 text-xs font-bold leading-relaxed">
+                        الموقع تقريبي بناءً على العنوان. اطلب من طبيبك تحديد موقع العيادة بدقة.
+                    </p>
+                </div>
+            )}
 
             {/* Floating Navigation Dashboard */}
             <div className="absolute bottom-6 inset-x-4 z-[400] animate-in slide-in-from-bottom-12 duration-500">

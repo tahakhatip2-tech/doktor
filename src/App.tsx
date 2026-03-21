@@ -26,7 +26,6 @@ import PatientChat from "./pages/patient/PatientChat";
 import PatientMessages from "./pages/patient/PatientMessages";
 import PatientProfile from "./pages/patient/PatientProfile";
 import PatientOffers from "./pages/patient/PatientOffers";
-import PatientNavigation from "./pages/patient/PatientNavigation";
 import InternalChat from "./pages/InternalChat";
 import PublicClinicPage from "./pages/PublicClinicPage";
 import AppointmentDetail from "./pages/patient/AppointmentDetail";
@@ -83,7 +82,6 @@ const App = () => (
                             <Route path="profile" element={<PatientProfile />} />
                             <Route path="offers" element={<PatientOffers />} />
                             <Route path="chat/:clinicId" element={<PatientChat />} />
-                            <Route path="navigate/:id" element={<PatientNavigation />} />
                         </Route>
 
                         {/* Catch-all */}
