@@ -163,17 +163,11 @@ export default function PatientClinics() {
         }
     };
 
-    // ── Open map modal ──
+    // ── Enforce In-App Navigation ──
     const handleMapClick = (e: React.MouseEvent, clinic: Clinic) => {
         e.stopPropagation();
-        // If no lat/lng but has location_url or address → open Google Maps directly
-        if (clinic.lat == null && (clinic.location_url || clinic.clinic_address)) {
-            const url = clinic.location_url
-                || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(clinic.clinic_address!)}`;
-            window.open(url, '_blank', 'noopener');
-            return;
-        }
-        setMapClinic(clinic);
+        // Route to the new internal navigation screen unconditionally
+        navigate(`/patient/navigate/${clinic.id}`);
     };
 
     const logoSrc = (clinic: Clinic) => {
