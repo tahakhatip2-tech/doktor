@@ -185,7 +185,7 @@ export class PatientService {
                 working_hours: true,
                 settings: {
                     where: {
-                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url'] },
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng'] },
                     },
                     select: { key: true, value: true },
                 },
@@ -221,6 +221,8 @@ export class PatientService {
                     location_url: settingsMap['location_url'] || null,
                     clinic_address: settingsMap['address'] || u.clinic_address,
                     clinic_phone: settingsMap['phone'] || u.clinic_phone,
+                    lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
+                    lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
                 };
             })
             // Only return clinics that have a name
@@ -243,7 +245,7 @@ export class PatientService {
                 working_hours: true,
                 settings: {
                     where: {
-                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url'] },
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng'] },
                     },
                     select: { key: true, value: true },
                 },
@@ -267,6 +269,8 @@ export class PatientService {
             location_url: settingsMap['location_url'] || null,
             clinic_address: settingsMap['address'] || clinic.clinic_address,
             clinic_phone: settingsMap['phone'] || clinic.clinic_phone,
+            lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
+            lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
         };
     }
 }

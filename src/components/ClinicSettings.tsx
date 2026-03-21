@@ -24,6 +24,8 @@ interface ClinicSettings {
     reminder_enabled: boolean;
     reminder_time: number;
     location_url: string;
+    lat: string;
+    lng: string;
 }
 
 export default function ClinicSettings() {
@@ -41,6 +43,8 @@ export default function ClinicSettings() {
         reminder_enabled: true,
         reminder_time: 60,
         location_url: '',
+        lat: '',
+        lng: '',
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -128,12 +132,15 @@ export default function ClinicSettings() {
                 const { latitude, longitude } = position.coords;
                 const url = `https://maps.google.com/?q=${latitude},${longitude}`;
                 updateSetting('location_url', url);
-                toastWithSound.success('تم جلب الموقع بنجاح');
+                updateSetting('lat', String(latitude));
+                updateSetting('lng', String(longitude));
+                toastWithSound.success('تم جلب الموقع بنجاح ✅ — سيظهر على خريطة المرضى');
             },
             (error) => {
                 console.error('GPS error:', error);
                 toastWithSound.error('فشل في الوصول للموقع. تأكد من تفعيل الصلاحية.');
-            }
+            },
+            { enableHighAccuracy: true }
         );
     };
 
@@ -317,6 +324,44 @@ export default function ClinicSettings() {
                                 تحديد موقعي 📍
                             </Button>
                         </div>
+                        </div>
+                    </div>
+
+                    {/* ── lat/lng ── */}
+                    <div className="grid grid-cols-2 gap-3 lg:col-span-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="lat" className="text-blue-900 dark:text-blue-100 font-semibold text-right w-full block flex items-center gap-1">
+                                🌐 خط العرض (Latitude)
+                            </Label>
+                            <Input
+                                id="lat"
+                                value={settings.lat || ''}
+                                onChange={(e) => updateSetting('lat', e.target.value)}
+                                placeholder="31.9539"
+                                dir="ltr"
+                                type="number"
+                                step="any"
+                                className="bg-white/50 dark:bg-black/20 border-blue-200 dark:border-blue-800 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-11 transition-all"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="lng" className="text-blue-900 dark:text-blue-100 font-semibold text-right w-full block">
+                                🌐 خط الطول (Longitude)
+                            </Label>
+                            <Input
+                                id="lng"
+                                value={settings.lng || ''}
+                                onChange={(e) => updateSetting('lng', e.target.value)}
+                                placeholder="35.9106"
+                                dir="ltr"
+                                type="number"
+                                step="any"
+                                className="bg-white/50 dark:bg-black/20 border-blue-200 dark:border-blue-800 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-11 transition-all"
+                            />
+                        </div>
+                        <p className="col-span-2 text-xs text-blue-600/70 font-medium bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
+                            💡 اضغط <strong>"تحديد موقعي"</strong> بالأعلى لملء الإحداثيات تلقائياً — أو أدخلها يدوياً من Google Maps
+                        </p>
                     </div>
                 </div>
             </Card>
