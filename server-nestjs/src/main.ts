@@ -3,17 +3,59 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { join } from 'path';
+import { join, resolve } from 'path';
+import * as fs from 'fs';
+
+// ─── Global Baileys Crypto Error Handler ────────────────────────────────────
+// Catches the "Unsupported state or unable to authenticate data" error thrown
+// deep inside Baileys WebSocket handlers. Clears the corrupted session so the
+// next startup performs a fresh QR-code scan instead of looping endlessly.
+process.on('uncaughtException', (err: Error) => {
+  const isBaileysCrypto =
+    err.message?.includes('Unsupported state or unable to authenticate data') ||
+    err.message?.includes('aesDecryptGCM') ||
+    err.stack?.includes('noise-handler');
+
+  if (isBaileysCrypto) {
+    const logger = new Logger('BaileysRecovery');
+    logger.error('💥 Baileys crypto error detected — clearing corrupted sessions and restarting...');
+
+    // Clear all session folders so the next boot starts fresh
+    const sessionsDir = resolve(process.cwd(), 'sessions');
+    if (fs.existsSync(sessionsDir)) {
+      const folders = fs.readdirSync(sessionsDir);
+      for (const folder of folders) {
+        const folderPath = resolve(sessionsDir, folder);
+        try {
+          fs.rmSync(folderPath, { recursive: true, force: true });
+          logger.warn(`🗑️  Deleted corrupted session: ${folder}`);
+        } catch (e) {
+          logger.error(`Failed to delete session ${folder}: ${e.message}`);
+        }
+      }
+    }
+
+    logger.warn('♻️  Exiting process — nodemon/PM2 will restart automatically.');
+    process.exit(1);
+  }
+
+  // For any other uncaught exception, just log it without crashing
+  console.error('[UncaughtException]', err);
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  console.error('[UnhandledRejection]', reason);
+});
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Serve local uploads under /uploads/ and /api/uploads/ (fallback storage when Supabase is unavailable)
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
   });
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+  app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/api/uploads/',
   });
 

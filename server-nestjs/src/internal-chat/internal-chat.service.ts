@@ -204,8 +204,15 @@ export class InternalChatService {
             },
         );
 
-        // استدعاء الموظف الآلي
-        this.triggerBotReply(conversation, conversationId, content);
+        // استدعاء الموظف الآلي بشكل آمن (لا يؤثر على رسالة المريض)
+        (async () => {
+            try {
+                await this.triggerBotReply(conversation, conversationId, content);
+            } catch (botErr) {
+                console.error('[InternalChat] triggerBotReply failed:', botErr);
+            }
+        })();
+
 
         return message;
     }

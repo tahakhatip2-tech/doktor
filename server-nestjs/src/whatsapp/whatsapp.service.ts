@@ -127,16 +127,32 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       }
 
       if (connection === 'close') {
-        const shouldReconnect =
-          (lastDisconnect?.error as Boom)?.output?.statusCode !==
-          DisconnectReason.loggedOut;
+        const statusCode = (lastDisconnect?.error as Boom)?.output?.statusCode;
+        const errorMsg = lastDisconnect?.error?.message || '';
         this.connectionStatus.set(userId, false);
-        if (shouldReconnect) {
-          this.startSession(userId);
-        } else {
+
+        const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+
+        // ─── Crypto / corrupted-session error ──────────────────────────────
+        const isCryptoError =
+          errorMsg.includes('authenticate data') ||
+          errorMsg.includes('aesDecryptGCM') ||
+          (lastDisconnect?.error as any)?.stack?.includes('noise-handler');
+
+        if (isLoggedOut || isCryptoError) {
+          this.logger.warn(
+            `[WhatsApp] Session for user ${userId} is ${isCryptoError ? 'corrupted (crypto error)' : 'logged out'}. Clearing session files...`,
+          );
           this.qrCodes.delete(userId);
           this.sockets.delete(userId);
-          fs.rmSync(userSessionPath, { recursive: true, force: true });
+          if (fs.existsSync(userSessionPath)) {
+            fs.rmSync(userSessionPath, { recursive: true, force: true });
+          }
+          // Restart after 2s to show new QR code
+          setTimeout(() => this.startSession(userId), 2000);
+        } else {
+          // Normal transient disconnect — just reconnect
+          this.startSession(userId);
         }
       } else if (connection === 'open') {
         this.connectionStatus.set(userId, true);
@@ -144,6 +160,7 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
         this.logger.log(`WhatsApp connected for user ${userId}`);
       }
     });
+
 
     sock.ev.on('creds.update', saveCreds);
 
