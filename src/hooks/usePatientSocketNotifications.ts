@@ -16,7 +16,11 @@ export function usePatientSocketNotifications(onNewNotification?: () => void, on
         if (!patient || !token || socketRef.current) return;
 
         let socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-        socketUrl = socketUrl.replace(/\/api$/, '');
+        if (import.meta.env.PROD) {
+            socketUrl = 'https://tsunamic-unshameable-maricruz.ngrok-free.dev';
+        } else {
+            socketUrl = socketUrl.replace(/\/api$/, '');
+        }
 
         console.log('[PatientSocket] Connecting to:', socketUrl, 'Patient:', patient.id);
 

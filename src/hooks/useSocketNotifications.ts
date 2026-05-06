@@ -24,15 +24,16 @@ export function useSocketNotifications(onNewMessage?: () => void) {
         // Determine correct Socket URL
         let socketUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
-        // Clean up URL: remove '/api' suffix and ensure it points to the server root
-        if (socketUrl.startsWith('/')) {
-            // Probably a relative path (e.g., from generic proxy), explicitly point to backend port in dev
-            // Or assume window.location.origin in production if not explicitly set
-            socketUrl = window.location.hostname === 'localhost'
-                ? 'http://localhost:3000'
-                : window.location.origin;
+        if (import.meta.env.PROD) {
+            socketUrl = 'https://tsunamic-unshameable-maricruz.ngrok-free.dev';
         } else {
-            socketUrl = socketUrl.replace(/\/api$/, '');
+            // Clean up URL: remove '/api' suffix and ensure it points to the server root
+            if (socketUrl.startsWith('/')) {
+                // Probably a relative path (e.g., from generic proxy), explicitly point to backend port in dev
+                socketUrl = 'http://localhost:3000';
+            } else {
+                socketUrl = socketUrl.replace(/\/api$/, '');
+            }
         }
 
         console.log('Connecting to Socket.io at:', socketUrl, 'for User:', user.id);
