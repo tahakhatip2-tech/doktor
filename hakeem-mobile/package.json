@@ -1,0 +1,42 @@
+{
+  "name": "hakeem-mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@gorhom/bottom-sheet": "^5.2.8",
+    "@tanstack/react-query": "^5.96.2",
+    "axios": "^1.14.0",
+    "expo": "~54.0.33",
+    "expo-constants": "^55.0.11",
+    "expo-font": "^55.0.6",
+    "expo-image": "^55.0.8",
+    "expo-linking": "^55.0.11",
+    "expo-notifications": "^55.0.16",
+    "expo-router": "^55.0.10",
+    "expo-secure-store": "^55.0.11",
+    "expo-splash-screen": "^55.0.15",
+    "expo-status-bar": "~3.0.9",
+    "react": "19.1.0",
+    "react-hook-form": "^7.72.1",
+    "react-native": "0.81.5",
+    "react-native-calendars": "^1.1314.0",
+    "react-native-gesture-handler": "^2.31.0",
+    "react-native-reanimated": "^4.3.0",
+    "react-native-safe-area-context": "^5.7.0",
+    "react-native-screens": "^4.24.0",
+    "socket.io-client": "^4.8.3",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@types/react": "~19.1.0",
+    "typescript": "~5.9.2"
+  },
+  "private": true
+}

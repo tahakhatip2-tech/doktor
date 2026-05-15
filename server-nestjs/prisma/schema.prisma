@@ -26,20 +26,23 @@ model User {
   clinic_name           String?
   clinic_phone          String?
   clinic_address        String?
-  clinic_logo           String?
   auto_reply_enabled    Boolean                @default(false)
   ai_api_key            String?
   ai_system_instruction String?
   clinic_specialty      String?
   working_hours         String?
+  clinic_logo           String?
   appointments          Appointment[]
   autoReplyTemplates    AutoReplyTemplate[]
   campaigns             Campaign[]
+  clinicDoctors         ClinicDoctor[]
+  clinicReviews         ClinicReview[]
   contacts              Contact[]
   customerTags          CustomerTag[]
-  clinicDoctors         ClinicDoctor[]
   groups                Group[]
   notifications         Notification[]
+  offers                Offer[]
+  offerLikes            OfferLike[]
   payments              Payment[]
   pipelines             Pipeline[]
   services              Service[]
@@ -47,9 +50,6 @@ model User {
   plan                  Plan?                  @relation(fields: [planId], references: [id])
   whatsAppChats         WhatsAppChat[]
   internalConversations InternalConversation[] @relation("ClinicConversations")
-  offers                Offer[]
-  offerLikes            OfferLike[]
-  clinicReviews         ClinicReview[]
 }
 
 model Plan {
@@ -265,7 +265,6 @@ model Appointment {
   notes                String?
   patientId            Int?
   doctorId             Int?
-  clinicDoctorId       Int?
   duration             Int                   @default(30)
   type                 String                @default("consultation")
   reminderSent         Boolean               @default(false)
@@ -275,10 +274,11 @@ model Appointment {
   cancelledAt          DateTime?
   confirmedAt          DateTime?
   patientUserId        Int?
+  clinicDoctorId       Int?
+  assignedDoctor       ClinicDoctor?         @relation(fields: [clinicDoctorId], references: [id])
   contact              Contact?              @relation(fields: [patientId], references: [id])
   patientUser          Patient?              @relation(fields: [patientUserId], references: [id])
   user                 User?                 @relation(fields: [userId], references: [id])
-  assignedDoctor       ClinicDoctor?         @relation(fields: [clinicDoctorId], references: [id])
   medicalRecords       MedicalRecord[]
   notifications        Notification[]
   patientNotifications PatientNotification[]
@@ -346,24 +346,24 @@ model Service {
 }
 
 model MedicalRecord {
-  id                 Int           @id @default(autoincrement())
-  appointmentId      Int
-  patientId          Int?
-  diagnosis          String?
-  treatment          String?
-  age                String?
-  feeAmount          Decimal?      @db.Decimal(10, 2)
-  feeDetails         String?
-  attachmentUrl      String?
-  recordType         String        @default("prescription")
-  aiAdvice           String?
-  createdAt          DateTime      @default(now())
-  patientUserId      Int?
-  treatingDoctorId   Int?
-  appointment        Appointment   @relation(fields: [appointmentId], references: [id])
-  contact            Contact?      @relation(fields: [patientId], references: [id])
-  patientUser        Patient?      @relation(fields: [patientUserId], references: [id])
-  treatingDoctor     ClinicDoctor? @relation(fields: [treatingDoctorId], references: [id])
+  id               Int           @id @default(autoincrement())
+  appointmentId    Int
+  patientId        Int?
+  diagnosis        String?
+  treatment        String?
+  age              String?
+  feeAmount        Decimal?      @db.Decimal(10, 2)
+  feeDetails       String?
+  attachmentUrl    String?
+  recordType       String        @default("prescription")
+  createdAt        DateTime      @default(now())
+  patientUserId    Int?
+  aiAdvice         String?
+  treatingDoctorId Int?
+  appointment      Appointment   @relation(fields: [appointmentId], references: [id])
+  contact          Contact?      @relation(fields: [patientId], references: [id])
+  patientUser      Patient?      @relation(fields: [patientUserId], references: [id])
+  treatingDoctor   ClinicDoctor? @relation(fields: [treatingDoctorId], references: [id])
 }
 
 model Patient {
@@ -386,11 +386,11 @@ model Patient {
   createdAt             DateTime               @default(now())
   updatedAt             DateTime               @updatedAt
   appointments          Appointment[]
+  clinicReviews         ClinicReview[]
   medicalRecords        MedicalRecord[]
+  offerLikes            OfferLike[]
   notifications         PatientNotification[]
   internalConversations InternalConversation[] @relation("PatientConversations")
-  offerLikes            OfferLike[]
-  clinicReviews         ClinicReview[]
 }
 
 model PatientNotification {
@@ -436,20 +436,6 @@ model InternalMessage {
   @@map("internal_messages")
 }
 
-enum UserRole {
-  ADMIN
-  USER
-  AGENT
-}
-
-enum SubscriptionStatus {
-  FREE
-  TRIAL
-  ACTIVE
-  PAST_DUE
-  CANCELED
-}
-
 model Offer {
   id          Int         @id @default(autoincrement())
   userId      Int
@@ -480,12 +466,6 @@ model OfferLike {
   @@unique([offerId, userId])
 }
 
-enum InternalSenderType {
-  PATIENT
-  DOCTOR
-  BOT
-}
-
 model ClinicDoctor {
   id             Int             @id @default(autoincrement())
   clinicId       Int
@@ -497,8 +477,8 @@ model ClinicDoctor {
   isActive       Boolean         @default(true)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
-  clinic         User            @relation(fields: [clinicId], references: [id])
   appointments   Appointment[]
+  clinic         User            @relation(fields: [clinicId], references: [id])
   medicalRecords MedicalRecord[]
 }
 
@@ -514,4 +494,24 @@ model ClinicReview {
   patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@unique([clinicId, patientId])
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  AGENT
+}
+
+enum SubscriptionStatus {
+  FREE
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum InternalSenderType {
+  PATIENT
+  DOCTOR
+  BOT
 }
