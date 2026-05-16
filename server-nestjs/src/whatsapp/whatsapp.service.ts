@@ -9,6 +9,7 @@ import makeWASocket, {
   useMultiFileAuthState,
   fetchLatestBaileysVersion,
   WAMessage,
+  Browsers,
   downloadMediaMessage,
 } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
@@ -114,7 +115,10 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       auth: state,
       printQRInTerminal: false,
       logger: P({ level: 'silent' }),
-      browser: ['Al-Khatib SaaS', 'Chrome', '1.0.0'],
+      browser: Browsers.macOS('Desktop'),
+      markOnlineOnConnect: false,
+      syncFullHistory: false,
+      generateHighQualityLinkPreview: false,
     });
 
     this.sockets.set(userId, sock);
@@ -132,12 +136,21 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
         this.connectionStatus.set(userId, false);
 
         const isLoggedOut = statusCode === DisconnectReason.loggedOut;
+        const isRestartRequired = statusCode === DisconnectReason.restartRequired || statusCode === 515;
 
         // ─── Crypto / corrupted-session error ──────────────────────────────
+        // Do NOT treat 515 Restart Required as a crypto error, even if it happens inside noise-handler
         const isCryptoError =
-          errorMsg.includes('authenticate data') ||
-          errorMsg.includes('aesDecryptGCM') ||
-          (lastDisconnect?.error as any)?.stack?.includes('noise-handler');
+          !isRestartRequired && (
+            errorMsg.includes('authenticate data') ||
+            errorMsg.includes('aesDecryptGCM') ||
+            (lastDisconnect?.error as any)?.stack?.includes('noise-handler')
+          );
+
+        this.logger.error(`[WhatsApp] Connection closed! Status: ${statusCode}, Error: ${errorMsg}`);
+        if (lastDisconnect?.error) {
+            console.error(lastDisconnect.error);
+        }
 
         if (isLoggedOut || isCryptoError) {
           this.logger.warn(

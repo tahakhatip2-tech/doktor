@@ -22,7 +22,7 @@ export default function PatientHero({
     children,
     className,
     badgeText,
-    imageSrc = '/patient-hero-scene-v2.png',
+    imageSrc = '/patient-hero-scene.png',
     showBackButton = false,
 }: PatientHeroProps) {
     const navigate = useNavigate();
@@ -55,7 +55,7 @@ export default function PatientHero({
             <div className="absolute -top-12 -left-12 w-64 md:w-96 h-64 md:h-96 bg-blue-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse"></div>
             <div className="absolute -bottom-12 -right-12 w-64 md:w-96 h-64 md:h-96 bg-orange-400 rounded-full mix-blend-screen filter blur-[100px] opacity-15 animate-pulse" style={{ animationDelay: '2s' }}></div>
 
-            {/* Content Container - 30% height of screen */}
+            {/* Content Container */}
             <div className="relative z-10 w-full px-5 py-3 md:px-10 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-8 h-[22vh] min-h-[160px] md:min-h-[180px]">
 
                 {/* Back Button - Compact & Glassy */}
@@ -112,7 +112,7 @@ export default function PatientHero({
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
-                        className="w-full md:w-auto flex flex-col justify-center items-center md:items-end z-20 shrink-0"
+                        className="w-full md:w-auto flex flex-col justify-center items-center md:items-end z-30 shrink-0 mt-2 md:mt-0"
                     >
                         {children}
                     </motion.div>

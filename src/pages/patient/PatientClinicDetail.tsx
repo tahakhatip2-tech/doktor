@@ -145,8 +145,11 @@ export default function PatientClinicDetail() {
             setBookingOpen(false);
             setSelectedSlot(null);
             setNotes('');
-            // إعادة جلب الـ slots لتحديث المتاح
-            fetchSlots(selectedDate);
+            
+            // Redirect to appointments page after a short delay
+            setTimeout(() => {
+                navigate('/patient/appointments');
+            }, 1000);
         } catch (err: any) {
             toast({
                 variant: 'destructive',
@@ -227,75 +230,88 @@ export default function PatientClinicDetail() {
     if (!clinic) return null;
 
     return (
-        <div className="space-y-6 animate-fade-in w-full pb-20">
+        <div className="space-y-0 animate-fade-in w-full pb-20">
 
-            {/* ── Hero Section العيادة ── */}
+            {/* ── Hero Section ── */}
             <PatientHero
                 title={clinic.clinic_name || clinic.name}
                 subtitle={`الدكتور: ${clinic.name}`}
-                badgeText={clinic.clinic_specialty || "العيادة"}
-                imageSrc={(clinic.clinic_logo || clinic.avatar)?.startsWith('http') ? (clinic.clinic_logo || clinic.avatar) : `${BASE_URL}${(clinic.clinic_logo || clinic.avatar)?.startsWith('/') ? '' : '/'}${clinic.clinic_logo || clinic.avatar}`}
+                badgeText={clinic.clinic_specialty || 'العيادة'}
+                imageSrc={
+                    (clinic.clinic_logo || clinic.avatar)
+                        ? ((clinic.clinic_logo || clinic.avatar).startsWith('http')
+                            ? (clinic.clinic_logo || clinic.avatar)
+                            : `${BASE_URL}${(clinic.clinic_logo || clinic.avatar).startsWith('/') ? '' : '/'}${clinic.clinic_logo || clinic.avatar}`)
+                        : undefined
+                }
                 showBackButton={true}
-            >
-                {/* 3. Actions / Info Box on top of Hero padding */}
-                <div className="mt-8 flex flex-col md:flex-row gap-4 items-center max-w-2xl bg-white/10 backdrop-blur-md p-4 rounded-3xl border border-white/20">
+            />
+
+            {/* ── Action Bar (below hero, above calendar) ── */}
+            <div className="px-4 -mt-5 relative z-30 max-w-5xl mx-auto">
+                <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border p-3 flex flex-wrap gap-2 items-center">
+
+                    {/* Info: Address */}
                     {clinic.clinic_address && (
-                        <div className="flex items-center gap-2 text-white/90 text-sm">
-                            <MapPin className="h-4 w-4 text-orange-400" />
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-1 min-w-[120px]">
+                            <MapPin className="h-3.5 w-3.5 text-orange-400 shrink-0" />
                             <span className="truncate">{clinic.clinic_address}</span>
                         </div>
                     )}
+
+                    {/* Info: Hours */}
                     {clinic.working_hours && (
-                        <div className="flex items-center gap-2 text-white/90 text-sm">
-                            <Clock className="h-4 w-4 text-orange-400" />
+                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-1 min-w-[100px]">
+                            <Clock className="h-3.5 w-3.5 text-orange-400 shrink-0" />
                             <span className="truncate">{clinic.working_hours}</span>
                         </div>
                     )}
-                    {clinic.location_url && (
-                        <Button
-                            variant="secondary"
-                            size="sm"
-                            className="bg-blue-500 hover:bg-blue-600 text-white border-0 transition-colors gap-2 rounded-xl h-10 flex-1 md:flex-none"
-                            onClick={() => window.open(clinic.location_url, '_blank')}
-                        >
-                            <MapPin className="h-4 w-4" />
-                            الموقع
-                        </Button>
-                    )}
 
-                    <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0 mr-auto w-full md:w-auto">
-                        {/* ✅ زر واتساب — يبقى كما هو للتواصل الخارجي */}
+                    <div className="flex items-center gap-2 mr-auto shrink-0">
+                        {/* زر الموقع */}
+                        {clinic.location_url && (
+                            <Button
+                                size="sm"
+                                variant="outline"
+                                className="gap-1.5 rounded-xl h-9 text-xs px-3 border-blue-200 text-blue-600 hover:bg-blue-50"
+                                onClick={() => window.open(clinic.location_url, '_blank')}
+                            >
+                                <MapPin className="h-3.5 w-3.5" />
+                                الموقع
+                            </Button>
+                        )}
+
+                        {/* زر الاتصال */}
                         <Button
-                            variant="secondary"
                             size="sm"
-                            className="bg-green-500 hover:bg-green-600 text-white border-0 transition-colors gap-2 rounded-xl h-10 flex-1 md:flex-none"
+                            className="gap-1.5 rounded-xl h-9 text-xs px-3 bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm"
                             onClick={() => {
-                                const phone = (clinic.clinic_phone || clinic.phone)?.replace(/\D/g, '');
-                                if (phone) window.open(`https://wa.me/${phone}`, '_blank');
+                                const phone = clinic.clinic_phone || clinic.phone;
+                                if (phone) window.open(`tel:${phone}`, '_self');
                             }}
                         >
-                            <MessageCircle className="h-4 w-4" />
-                            واتساب
+                            <Phone className="h-3.5 w-3.5" />
+                            اتصال
                         </Button>
 
-                        {/* ✅ زر مراسلة داخلية جديد — يفتح شات المريض */}
+                        {/* زر المراسلة */}
                         <Button
                             size="sm"
-                            className="gap-2 bg-white text-blue-900 hover:bg-blue-50 transition-colors rounded-xl h-10 flex-1 md:flex-none shadow-lg"
+                            className="gap-1.5 rounded-xl h-9 text-xs px-3 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-sm"
                             onClick={() => navigate(`/patient/chat/${clinic.id}`)}
                         >
-                            <MessageCircle className="h-4 w-4 text-blue-600" />
+                            <MessageCircle className="h-3.5 w-3.5" />
                             مراسلة
                         </Button>
                     </div>
                 </div>
-            </PatientHero>
+            </div>
 
-            {/* ── Container for the rest of the content ── */}
-            <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-6">
+            {/* ── Container for the rest ── */}
+            <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-6 mt-4">
 
-            {/* â”€â”€ قسم الحجز â”€â”€ */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full -mt-16 relative z-20">
+            {/* ── قسم الحجز ── */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
 
                 {/* التقويم */}
                 <Card className="shadow-card">
