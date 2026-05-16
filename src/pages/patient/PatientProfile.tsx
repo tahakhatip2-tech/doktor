@@ -62,8 +62,16 @@ export default function PatientProfile() {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            const response = await axios.put(`${API_URL}/patient/profile`, formData, {
-                headers: { Authorization: `Bearer ${token}` }
+            
+            // Clean payload
+            const payload = { ...formData };
+            if (!payload.dateOfBirth) delete payload.dateOfBirth;
+            
+            const response = await axios.put(`${API_URL}/patient/profile`, payload, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true'
+                }
             });
 
             // Update local storage
@@ -77,7 +85,8 @@ export default function PatientProfile() {
             window.location.reload();
         } catch (error: any) {
             console.error("Profile update error:", error);
-            toastWithSound.error(error.response?.data?.message || "حدث خطأ أثناء تحديث الملف الشخصي");
+            const errMsg = error.response?.data?.message;
+            toastWithSound.error(Array.isArray(errMsg) ? errMsg[0] : (errMsg || "حدث خطأ أثناء تحديث الملف الشخصي"));
         } finally {
             setIsSaving(false);
         }
