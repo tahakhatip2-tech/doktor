@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -56,15 +56,23 @@ export default function PatientRegister() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-accent/5 p-4">
-            <div className="w-full max-w-2xl">
+        <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4">
+            {/* Unified Brand Background */}
+            <div
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                style={{ backgroundImage: 'url(/doktor-jo-auth-v2.png)' }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-950/80 via-blue-900/70 to-blue-800/60 backdrop-blur-[2px]" />
+
+            <div className="w-full max-w-2xl relative z-10">
                 {/* Logo/Header */}
                 <div className="text-center mb-8 animate-fade-in">
-                    <h1 className="text-4xl font-bold text-gradient-primary mb-2">حكيم الأردن</h1>
-                    <p className="text-muted-foreground">إنشاء حساب جديد في بوابة المرضى</p>
+                    <img src="/hakeem-logo.png" alt="Doctor Jo" className="h-16 w-16 mx-auto mb-3 rounded-2xl shadow-2xl border-2 border-white/20" />
+                    <h1 className="text-3xl font-black text-white drop-shadow-lg">Doctor Jo</h1>
+                    <p className="text-blue-200 text-sm font-medium mt-1">إنشاء حساب جديد في بوابة المرضى</p>
                 </div>
 
-                <Card className="shadow-elevated animate-slide-up">
+                <Card className="shadow-2xl border border-white/20 bg-white/95 backdrop-blur-xl animate-slide-up">
                     <CardHeader>
                         <CardTitle className="text-2xl">إنشاء حساب</CardTitle>
                         <CardDescription>
