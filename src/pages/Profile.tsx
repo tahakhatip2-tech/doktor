@@ -37,7 +37,10 @@ const Profile = () => {
         try {
             const token = localStorage.getItem("token");
             const res = await fetch(`${API_URL}/auth/profile`, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true'
+                },
             });
             if (res.ok) {
                 const data = await res.json();
@@ -64,7 +67,8 @@ const Profile = () => {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true'
                 },
                 body: JSON.stringify({ name, email, ...(password ? { password } : {}) }),
             });
@@ -102,7 +106,10 @@ const Profile = () => {
             const token = localStorage.getItem("token");
             const res = await fetch(`${API_URL}/auth/profile/avatar`, {
                 method: "POST",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true'
+                },
                 body: formData,
             });
 

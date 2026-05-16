@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -53,10 +53,10 @@ export default function PatientDashboard() {
 
     const getStatusBadge = (status: string) => {
         const statusMap: Record<string, { label: string; variant: any }> = {
-            pending: { label: 'ظپظٹ ط§ظ„ط§ظ†طھط¸ط§ط±', variant: 'secondary' },
-            confirmed: { label: 'ظ…ط¤ظƒط¯', variant: 'default' },
-            completed: { label: 'ظ…ظƒطھظ…ظ„', variant: 'outline' },
-            cancelled: { label: 'ظ…ظ„ط؛ظٹ', variant: 'destructive' },
+            pending: { label: 'في الانتظار', variant: 'secondary' },
+            confirmed: { label: 'مؤكد', variant: 'default' },
+            completed: { label: 'مكتمل', variant: 'outline' },
+            cancelled: { label: 'ملغي', variant: 'destructive' },
         };
         const config = statusMap[status] || { label: status, variant: 'secondary' };
         return <Badge variant={config.variant}>{config.label}</Badge>;
@@ -66,10 +66,10 @@ export default function PatientDashboard() {
         <div className="space-y-6 sm:space-y-8 animate-fade-in pb-8">
             {/* Elegant Hero Section */}
             <PatientHero
-                title={`ظ…ط±ط­ط¨ط§ظ‹ ط¨ظƒطŒ ${user?.fullName || ''}`}
-                subtitle="ظپظٹ طھط·ط¨ظٹظ‚ Doctor Jo"
-                description="ظ†ط­ظ† ظ‡ظ†ط§ ظ„ظ†ظ‚ط¯ظ… ظ„ظƒ ظˆظ„ط¹ط§ط¦ظ„طھظƒ ط£ظپط¶ظ„ ط±ط¹ط§ظٹط© ط·ط¨ظٹط© ظ„طھظ†ط¹ظ…ظˆط§ ط¨ط­ظٹط§ط© طµط­ظٹط© ظˆط³ط¹ظٹط¯ط©."
-                badgeText="ط¯ط§ط¦ظ…ط§ظ‹ ظپظٹ ط®ط¯ظ…طھظƒ"
+                title={`مرحباً بك، ${user?.fullName || ''}`}
+                subtitle="في تطبيق Doctor Jo"
+                description="نحن هنا لنقدم لك ولعائلتك أفضل رعاية طبية لتنعموا بحياة صحية وسعيدة."
+                badgeText="دائماً في خدمتك"
                 imageSrc="/doktor-jo-auth-v2.png"
             />
 
@@ -81,11 +81,11 @@ export default function PatientDashboard() {
                             <div className="p-2 rounded-xl bg-orange-50 text-orange-500 shadow-sm border border-orange-100">
                                 <Calendar className="h-5 w-5" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">ط§ظ„ظ…ظˆط§ط¹ظٹط¯ ط§ظ„ظ‚ط§ط¯ظ…ط©</h3>
+                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">المواعيد القادمة</h3>
                         </div>
                         <Link to="/patient/appointments" className="shrink-0">
                             <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
-                                ط¹ط±ط¶ ط§ظ„ظƒظ„
+                                عرض الكل
                             </Button>
                         </Link>
                     </div>
@@ -102,11 +102,11 @@ export default function PatientDashboard() {
                                 <div className="h-14 w-14 rounded-full bg-blue-50 flex items-center justify-center mb-3 border border-blue-100">
                                     <Calendar className="h-6 w-6 text-blue-300" />
                                 </div>
-                                <h4 className="text-sm font-bold text-slate-700 mb-1">ظ„ط§ طھظˆط¬ط¯ ظ…ظˆط§ط¹ظٹط¯ ظ‚ط§ط¯ظ…ط©</h4>
+                                <h4 className="text-sm font-bold text-slate-700 mb-1">لا توجد مواعيد قادمة</h4>
                                 <Link to="/patient/clinics">
                                     <Button size="sm" className="rounded-xl mt-3 px-4 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 shadow-md font-bold text-[10px]">
                                         <Plus className="h-3 w-3 ml-1" />
-                                        ط§ط­ط¬ط² ظ…ظˆط¹ط¯
+                                        احجز موعد
                                     </Button>
                                 </Link>
                             </div>
@@ -123,7 +123,7 @@ export default function PatientDashboard() {
                                                     {appointment.user?.clinic_name || appointment.user?.name}
                                                 </h4>
                                                 <div className="inline-flex items-center mt-1 px-2 py-0.5 rounded-md bg-orange-50 text-orange-600 text-[9px] font-bold border border-orange-100">
-                                                    {appointment.user?.clinic_specialty || 'ط¹ظٹط§ط¯ط© ط·ط¨ظٹط©'}
+                                                    {appointment.user?.clinic_specialty || 'عيادة طبية'}
                                                 </div>
                                             </div>
                                             <div className="shrink-0 scale-75 origin-top-left -mt-1 -ml-2 sm:scale-90">
@@ -153,7 +153,7 @@ export default function PatientDashboard() {
                         {upcomingAppointments.length > 0 && (
                             <Link to="/patient/appointments" className="sm:hidden block mt-3">
                                 <Button variant="outline" size="sm" className="w-full rounded-xl border-blue-200 text-blue-600 font-bold text-[11px] hover:bg-blue-50">
-                                    ط¹ط±ط¶ ظƒظ„ ط§ظ„ظ…ظˆط§ط¹ظٹط¯
+                                    عرض كل المواعيد
                                 </Button>
                             </Link>
                         )}
@@ -167,11 +167,11 @@ export default function PatientDashboard() {
                             <div className="p-2 rounded-xl bg-orange-50 text-orange-500 shadow-sm border border-orange-100">
                                 <Bell className="h-5 w-5" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">ط¢ط®ط± ط§ظ„ط¥ط´ط¹ط§ط±ط§طھ</h3>
+                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">آخر الإشعارات</h3>
                         </div>
                         <Link to="/patient/notifications" className="shrink-0">
                             <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-orange-600 hover:bg-orange-50 hover:text-orange-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
-                                ط¹ط±ط¶ ط§ظ„ظƒظ„
+                                عرض الكل
                             </Button>
                         </Link>
                     </div>
@@ -188,7 +188,7 @@ export default function PatientDashboard() {
                                 <div className="h-14 w-14 rounded-full bg-slate-50 flex items-center justify-center mb-3 border border-slate-100">
                                     <Bell className="h-6 w-6 text-slate-300" />
                                 </div>
-                                <h4 className="text-sm font-bold text-slate-700 mb-1">ظ„ط§ طھظˆط¬ط¯ ط¥ط´ط¹ط§ط±ط§طھ</h4>
+                                <h4 className="text-sm font-bold text-slate-700 mb-1">لا توجد إشعارات</h4>
                             </div>
                         ) : (
                             <div className="space-y-3">
@@ -231,7 +231,7 @@ export default function PatientDashboard() {
                         {notifications.length > 0 && (
                             <Link to="/patient/notifications" className="sm:hidden block mt-3">
                                 <Button variant="outline" size="sm" className="w-full rounded-xl border-orange-200 text-orange-600 font-bold text-[11px] hover:bg-orange-50">
-                                    ظƒظ„ ط§ظ„ط¥ط´ط¹ط§ط±ط§طھ
+                                    كل الإشعارات
                                 </Button>
                             </Link>
                         )}
@@ -241,5 +241,4 @@ export default function PatientDashboard() {
         </div >
     );
 }
-
 

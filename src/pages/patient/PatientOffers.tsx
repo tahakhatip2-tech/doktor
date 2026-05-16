@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -97,7 +97,7 @@ export default function PatientOffers() {
             });
         } else {
             navigator.clipboard.writeText(`${offer.title}\n\n${offer.content}`);
-            toast({ title: 'ًں“‹ طھظ… ظ†ط³ط® ط§ظ„ط¹ط±ط¶!' });
+            toast({ title: '📋 تم نسخ العرض!' });
         }
     };
 
@@ -105,10 +105,10 @@ export default function PatientOffers() {
         <div className="space-y-6 animate-fade-in pb-28 bg-slate-50 min-h-screen" dir="rtl">
             {/* Hero */}
             <PatientHero
-                title="ط¹ط±ظˆط¶ ظˆطھط®ظپظٹط¶ط§طھ"
-                subtitle="ظ…ظ† ط¹ظٹط§ط¯ط§طھظƒظ… ط§ظ„ظ…ظپط¶ظ„ط©"
-                description="طھطµظپط­ ط£ط­ط¯ط« ط§ظ„ط¹ط±ظˆط¶ ظˆط§ظ„طھط®ظپظٹط¶ط§طھ ط§ظ„ظ…ظ‚ط¯ظ…ط© ظ…ظ† ط§ظ„ط¹ظٹط§ط¯ط§طھ ط§ظ„ظ…ط³ط¬ظ„ط©."
-                badgeText="ط¹ط±ظˆط¶ ط­طµط±ظٹط©"
+                title="عروض وتخفيضات"
+                subtitle="من عياداتكم المفضلة"
+                description="تصفح أحدث العروض والتخفيضات المقدمة من العيادات المسجلة."
+                badgeText="عروض حصرية"
                 imageSrc="/doktor-jo-auth-v2.png"
             />
 
@@ -124,8 +124,8 @@ export default function PatientOffers() {
                         <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5">
                             <Tag className="h-10 w-10 text-blue-400 opacity-80" />
                         </div>
-                        <p className="font-bold text-xl text-slate-800">ظ„ط§ طھظˆط¬ط¯ ط¹ط±ظˆط¶ ط­ط§ظ„ظٹط§ظ‹</p>
-                        <p className="text-sm mt-2 text-slate-500">طھط§ط¨ط¹ ط§ظ„ط¹ظٹط§ط¯ط§طھ ظ„طھطµظ„ظƒ ط£ط­ط¯ط« ط¹ط±ظˆط¶ظ‡ط§ ط§ظ„ط­طµط±ظٹط©</p>
+                        <p className="font-bold text-xl text-slate-800">لا توجد عروض حالياً</p>
+                        <p className="text-sm mt-2 text-slate-500">تابع العيادات لتصلك أحدث عروضها الحصرية</p>
                     </div>
                 ) : (
                     <div className="space-y-8">
@@ -133,7 +133,7 @@ export default function PatientOffers() {
                             <Card key={offer.id}
                                 className="overflow-hidden border border-orange-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] bg-white rounded-sm transition-all duration-500 relative">
                                 <CardContent className="p-0">
-                                    {/* â”€â”€ Post Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+                                    {/* ── Post Header ───────────────── */}
                                     <div className="flex items-start justify-between p-5 pb-4">
                                         <div className="flex items-center gap-4">
                                             {/* AVATAR STACK: Doctor + Clinic Logo badge */}
@@ -161,11 +161,11 @@ export default function PatientOffers() {
                                             {/* Line 1: Doctor Name & Badge */}
                                             <div className="flex items-center gap-2">
                                                 <p className="font-extrabold text-slate-900 text-[16px] truncate leading-none">
-                                                    {offer.user.name || 'ط·ط¨ظٹط¨'}
+                                                    {offer.user.name || 'طبيب'}
                                                 </p>
                                                 {offer.isPermanent && (
                                                     <Badge className="bg-orange-100/80 text-orange-700 border-0 px-2 py-0 text-[10px] uppercase font-black tracking-wider rounded-sm shadow-sm">
-                                                        ط¯ط§ط¦ظ…
+                                                        دائم
                                                     </Badge>
                                                 )}
                                             </div>
@@ -180,7 +180,7 @@ export default function PatientOffers() {
                                                     </div>
                                                 )}
                                                 <span className="text-[13px] font-bold text-blue-800 truncate">
-                                                    {offer.user.clinic_name || 'ط§ظ„ط¹ظٹط§ط¯ط©'}
+                                                    {offer.user.clinic_name || 'العيادة'}
                                                 </span>
                                             </div>
 
@@ -189,7 +189,7 @@ export default function PatientOffers() {
                                                 <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-md">
                                                     <Stethoscope className="h-[10px] w-[10px] text-orange-500" />
                                                     <span className="text-[11px] font-bold text-slate-500 truncate max-w-[140px]">
-                                                        {offer.user.clinic_specialty || offer.user.clinic_description || 'طھط®طµطµ ط¹ط§ظ…'}
+                                                        {offer.user.clinic_specialty || offer.user.clinic_description || 'تخصص عام'}
                                                     </span>
                                                 </div>
 
@@ -206,13 +206,13 @@ export default function PatientOffers() {
                                             <div className="flex flex-col items-end">
                                                <Badge className="bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/60 gap-1.5 text-xs px-2.5 py-1 rounded-sm font-medium">
                                                    <Calendar className="h-3.5 w-3.5 text-orange-500" />
-                                                   ظٹظ†طھظ‡ظٹ {formatDistanceToNow(new Date(offer.endDate), { locale: ar, addSuffix: true })}
+                                                   ينتهي {formatDistanceToNow(new Date(offer.endDate), { locale: ar, addSuffix: true })}
                                                </Badge>
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* â”€â”€ Post Content â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+                                    {/* ── Post Content ──────────────── */}
                                     <div className="px-6 pb-4 cursor-text">
                                         <h3 className="font-black text-xl mb-3 text-blue-900 leading-tight">
                                             {offer.title}
@@ -222,7 +222,7 @@ export default function PatientOffers() {
                                         </p>
                                     </div>
 
-                                    {/* â”€â”€ Image & Stats Container â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+                                    {/* ── Image & Stats Container ─────────────────────── */}
                                     <div className="relative">
                                         {offer.image && (
                                             <div className="w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-100 relative">
@@ -240,11 +240,11 @@ export default function PatientOffers() {
                                                <div className="h-5 w-5 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center shadow-sm shadow-orange-500/20">
                                                    <Heart className="h-3 w-3 text-white fill-white" />
                                                </div>
-                                               <span className="text-slate-700">{offer.likesCount} ط´ط®طµ ط£ط¹ط¬ط¨ظ‡ظ… ظ‡ط°ط§</span>
+                                               <span className="text-slate-700">{offer.likesCount} شخص أعجبهم هذا</span>
                                            </div>
                                         )}
 
-                                        {/* â”€â”€ Glassmorphism Action Bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
+                                        {/* ── Glassmorphism Action Bar ─────────────── */}
                                         <div className={cn(
                                             "flex items-center gap-1.5 px-3 py-3",
                                             offer.image 
@@ -271,7 +271,7 @@ export default function PatientOffers() {
                                                 )}
                                             >
                                                 <Heart className={cn("h-3.5 w-3.5 transition-transform duration-300", offer.isLikedByMe ? "fill-white scale-110" : "scale-100")} />
-                                                {offer.isLikedByMe ? 'ط£ط¹ط¬ط¨ظ†ظٹ' : 'ط¥ط¹ط¬ط§ط¨'}
+                                                {offer.isLikedByMe ? 'أعجبني' : 'إعجاب'}
                                             </button>
 
                                             {/* Message (Chat) */}
@@ -285,7 +285,7 @@ export default function PatientOffers() {
                                                 )}
                                             >
                                                 <MessageCircle className="h-3.5 w-3.5" />
-                                                ظ…ط±ط§ط³ظ„ط©
+                                                مراسلة
                                             </Link>
 
                                             {/* Share */}
@@ -299,7 +299,7 @@ export default function PatientOffers() {
                                                 )}
                                             >
                                                 <Share2 className="h-3.5 w-3.5" />
-                                                ظ…ط´ط§ط±ظƒط©
+                                                مشاركة
                                             </button>
                                         </div>
                                     </div>
@@ -312,4 +312,3 @@ export default function PatientOffers() {
         </div>
     );
 }
-
