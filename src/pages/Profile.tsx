@@ -11,6 +11,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { BASE_URL, API_URL } from "@/lib/api";
 import Footer from "@/components/Footer";
 import HeroSection from "@/components/HeroSection";
+import Header from "@/components/Header";
 
 interface UserProfile {
     id: number;
@@ -143,33 +144,8 @@ const Profile = () => {
     return (
         <div className="min-h-screen bg-slate-50/50" dir="rtl">
 
-            {/* Header */}
-            <header className="border-b border-slate-100 bg-white/80 backdrop-blur-xl sticky top-0 z-50 shadow-sm">
-                <div className="container mx-auto px-6 h-20 flex items-center justify-between">
-                    <div className="flex items-center gap-6">
-                        <Button variant="ghost" size="icon" onClick={() => navigate(-1)} className="hover:bg-blue-50 text-blue-600 rounded-full transition-colors">
-                            <ArrowRight className="h-5 w-5" />
-                        </Button>
-
-                        <div className="flex items-center gap-3">
-                            <img src="./logo.png" alt="Logo" className="h-10 w-10 rounded-xl shadow-sm object-contain bg-white" />
-                            <div>
-                                <h1 className="text-xl font-black leading-tight text-slate-800">
-                                    حكيم
-                                </h1>
-                                <p className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">AL-Khatib Software</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex items-center gap-5">
-                        <Button variant="outline" className="text-red-500 border-red-100 hover:text-red-600 hover:bg-red-50 gap-2 rounded-full font-bold px-6 shadow-sm" onClick={handleSignOut}>
-                            <LogOut className="h-4 w-4" />
-                            <span className="hidden sm:inline">تسجيل الخروج</span>
-                        </Button>
-                    </div>
-                </div>
-            </header>
+            {/* Standard Header */}
+            <Header onNavigate={navigate} />
 
             <main className="container mx-auto p-4 md:p-8 max-w-5xl animate-fade-in relative z-10 space-y-6 mt-4">
                 <HeroSection
