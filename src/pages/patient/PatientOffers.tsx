@@ -109,6 +109,7 @@ export default function PatientOffers() {
                 subtitle="من عياداتكم المفضلة"
                 description="تصفح أحدث العروض والتخفيضات المقدمة من العيادات المسجلة."
                 badgeText="عروض حصرية"
+                imageSrc="/doctor-hero-scene.png"
             />
 
             <div className="px-4 sm:px-0 max-w-3xl mx-auto">

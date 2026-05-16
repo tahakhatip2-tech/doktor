@@ -248,60 +248,63 @@ export default function PatientClinicDetail() {
             />
 
             {/* ── Action Bar (below hero, above calendar) ── */}
-            <div className="px-4 -mt-5 relative z-30 max-w-5xl mx-auto">
-                <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border p-3 flex flex-wrap gap-2 items-center">
+            <div className="px-4 -mt-6 relative z-30 max-w-5xl mx-auto">
+                <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border p-3 flex flex-col gap-3">
 
-                    {/* Info: Address */}
-                    {clinic.clinic_address && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-1 min-w-[120px]">
-                            <MapPin className="h-3.5 w-3.5 text-orange-400 shrink-0" />
-                            <span className="truncate">{clinic.clinic_address}</span>
+                    {/* Top Row: Info (Address & Hours) */}
+                    {(clinic.clinic_address || clinic.working_hours) && (
+                        <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground px-1">
+                            {clinic.clinic_address && (
+                                <div className="flex items-center gap-1.5">
+                                    <MapPin className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+                                    <span className="truncate max-w-[150px]">{clinic.clinic_address}</span>
+                                </div>
+                            )}
+                            {clinic.working_hours && (
+                                <div className="flex items-center gap-1.5">
+                                    <Clock className="h-3.5 w-3.5 text-orange-400 shrink-0" />
+                                    <span className="truncate max-w-[120px]">{clinic.working_hours}</span>
+                                </div>
+                            )}
                         </div>
                     )}
 
-                    {/* Info: Hours */}
-                    {clinic.working_hours && (
-                        <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-1 min-w-[100px]">
-                            <Clock className="h-3.5 w-3.5 text-orange-400 shrink-0" />
-                            <span className="truncate">{clinic.working_hours}</span>
-                        </div>
-                    )}
-
-                    <div className="flex items-center gap-2 mr-auto shrink-0">
+                    {/* Bottom Row: Action Buttons */}
+                    <div className="flex items-center justify-between gap-2 w-full">
                         {/* زر الموقع */}
                         {clinic.location_url && (
                             <Button
                                 size="sm"
                                 variant="outline"
-                                className="gap-1.5 rounded-xl h-9 text-xs px-3 border-blue-200 text-blue-600 hover:bg-blue-50"
+                                className="flex-1 gap-1.5 rounded-xl h-9 text-xs px-2 border-blue-200 text-blue-600 hover:bg-blue-50 shadow-sm"
                                 onClick={() => window.open(clinic.location_url, '_blank')}
                             >
-                                <MapPin className="h-3.5 w-3.5" />
-                                الموقع
+                                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                                <span className="truncate">الموقع</span>
                             </Button>
                         )}
 
                         {/* زر الاتصال */}
                         <Button
                             size="sm"
-                            className="gap-1.5 rounded-xl h-9 text-xs px-3 bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm"
+                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs px-2 bg-green-500 hover:bg-green-600 text-white border-0 shadow-sm"
                             onClick={() => {
                                 const phone = clinic.clinic_phone || clinic.phone;
                                 if (phone) window.open(`tel:${phone}`, '_self');
                             }}
                         >
-                            <Phone className="h-3.5 w-3.5" />
-                            اتصال
+                            <Phone className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">اتصال</span>
                         </Button>
 
                         {/* زر المراسلة */}
                         <Button
                             size="sm"
-                            className="gap-1.5 rounded-xl h-9 text-xs px-3 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-sm"
+                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs px-2 bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-sm"
                             onClick={() => navigate(`/patient/chat/${clinic.id}`)}
                         >
-                            <MessageCircle className="h-3.5 w-3.5" />
-                            مراسلة
+                            <MessageCircle className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate">مراسلة</span>
                         </Button>
                     </div>
                 </div>

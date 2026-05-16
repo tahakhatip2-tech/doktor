@@ -22,7 +22,7 @@ export default function PatientHero({
     children,
     className,
     badgeText,
-    imageSrc = '/patient-hero-scene.png',
+    imageSrc,
     showBackButton = false,
 }: PatientHeroProps) {
     const navigate = useNavigate();
@@ -31,19 +31,21 @@ export default function PatientHero({
         <div className={cn("relative w-full overflow-hidden shadow-2xl mb-4 md:mb-6 group rounded-none border border-white/5", className)}>
             {/* Background Image & Overlays */}
             <div className="absolute inset-0">
-                <motion.img
-                    initial={{ scale: 1.1, opacity: 0.8 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                    src={imageSrc}
-                    alt="Hero Background"
-                    className="w-full h-full object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-[3s] ease-out"
-                />
+                {imageSrc ? (
+                    <motion.img
+                        initial={{ scale: 1.1, opacity: 0.8 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 1.5, ease: "easeOut" }}
+                        src={imageSrc}
+                        alt="Hero Background"
+                        className="w-full h-full object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-[3s] ease-out"
+                    />
+                ) : (
+                    /* Pure gradient background when no image */
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800" />
+                )}
 
-                {/* 
-                    Modern High-End Gradient Overlay
-                    A mix of deep trust blue and transparent tones to blend with the app background.
-                */}
+                {/* Modern High-End Gradient Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/60 to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90"></div>
                 
