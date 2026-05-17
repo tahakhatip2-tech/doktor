@@ -316,46 +316,8 @@ export class InternalChatService {
             console.error('[InternalChat] Bot reply error:', e);
         }
     }
-أقرب وقت من قبل الطاقم الطبي.`;
-            }
-        }
 
-        if (!botReply) return;
 
-        // تأخير بسيط لمحاكاة الكتابة
-        setTimeout(async () => {
-            try {
-                const botMessage = await this.prisma.internalMessage.create({
-                    data: {
-                        conversationId,
-                        content: botReply,
-                        senderType: InternalSenderType.BOT,
-                    },
-                });
-
-                await this.prisma.internalConversation.update({
-                    where: { id: conversationId },
-                    data: { updatedAt: new Date() },
-                });
-
-                // إرسال رد البوت للمريض
-                this.notificationsGateway.sendInternalMessage(
-                    'patient',
-                    conversation.patientId,
-                    { conversationId, message: botMessage },
-                );
-
-                // إرسال رد البوت للطبيب ليعلم متزامناً برد البوت
-                this.notificationsGateway.sendInternalMessage(
-                    'doctor',
-                    conversation.clinicId,
-                    { conversationId, message: botMessage },
-                );
-            } catch (e) {
-                console.error('[InternalChat] Bot reply error:', e);
-            }
-        }, 1500);
-    }
 
     private async extractAndProcessAppointments(
         clinicId: number,
