@@ -126,14 +126,15 @@ ${getSetting('ai_system_instruction')}
             }
 
             const models = [
-                'gemini-flash-latest',    // ✅ Works!
-                'gemini-1.5-flash',       // ✅ Works!
-                'gemini-2.0-flash-lite',  // الأسرع والأرخص
-                'gemini-2.0-flash',       // الأقوى من 2.0
-                'gemini-2.0-flash-exp',   // تجريبي - كوتا منفصلة مجانية
-                'gemma-3-12b-it',         // حصة منفصلة
-                'gemma-3-4b-it',          // آخر خيار - الأخف
+                'gemini-2.5-flash-preview-05-20', // ✅ الأحدث والأقوى مجاناً
+                'gemini-2.5-flash',               // ✅ نسخة مستقرة
+                'gemini-2.0-flash-lite',          // الأسرع والأرخص
+                'gemini-2.0-flash',               // الأقوى من 2.0
+                'gemini-1.5-flash-latest',        // نسخة مستقرة من 1.5
+                'gemma-3-12b-it',                 // حصة منفصلة
+                'gemma-3-4b-it',                  // آخر خيار
             ];
+
 
             for (const model of models) {
                 try {
