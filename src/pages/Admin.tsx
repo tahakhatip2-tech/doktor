@@ -71,8 +71,8 @@ const Admin = () => {
         <div className="min-h-screen bg-background flex flex-col relative overflow-hidden" dir="rtl">
             {/* Background Image with Overlay */}
             <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 resize-bg-animation"
-                style={{ backgroundImage: 'url(/doktor-jo-auth-v2.png)' }}
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 resize-bg-animation transform scale-105"
+                style={{ backgroundImage: 'url(/hakeem-logo.png)' }}
             >
                 {/* Overlay Removed */}
             </div>

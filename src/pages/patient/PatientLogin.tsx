@@ -44,8 +44,8 @@ export default function PatientLogin() {
         <div className="min-h-screen flex items-center justify-center relative overflow-hidden p-4" dir="rtl">
             {/* Unified Brand Background */}
             <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-                style={{ backgroundImage: 'url(/doktor-jo-auth-v2.png)' }}
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 transform scale-105"
+                style={{ backgroundImage: 'url(/hakeem-logo.png)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-br from-blue-950/80 via-blue-900/70 to-blue-800/60 backdrop-blur-[2px]" />
 
