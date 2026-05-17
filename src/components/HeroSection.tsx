@@ -22,7 +22,7 @@ export function HeroSection({
     icon: Icon = Sparkles,
     className,
     stats,
-    backgroundImage = "/doctor-hero-scene.png",
+    backgroundImage = "/hakeem-logo.png",
     children
 }: HeroSectionProps) {
     const { settings } = useClinicContext();
