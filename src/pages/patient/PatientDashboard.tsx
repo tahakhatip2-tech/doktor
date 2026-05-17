@@ -70,7 +70,7 @@ export default function PatientDashboard() {
                 subtitle="في تطبيق Doctor Jo"
                 description="نحن هنا لنقدم لك ولعائلتك أفضل رعاية طبية لتنعموا بحياة صحية وسعيدة."
                 badgeText="دائماً في خدمتك"
-                imageSrc="/doktor-jo-auth-v2.png"
+                imageSrc="/hakeem-logo.png"
             />
 
             <div className="px-4 sm:px-0 flex flex-col gap-6 -mt-4 relative z-20">

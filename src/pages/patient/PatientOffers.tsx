@@ -109,7 +109,7 @@ export default function PatientOffers() {
                 subtitle="من عياداتكم المفضلة"
                 description="تصفح أحدث العروض والتخفيضات المقدمة من العيادات المسجلة."
                 badgeText="عروض حصرية"
-                imageSrc="/doktor-jo-auth-v2.png"
+                imageSrc="/hakeem-logo.png"
             />
 
             <div className="px-4 sm:px-0 max-w-3xl mx-auto">
