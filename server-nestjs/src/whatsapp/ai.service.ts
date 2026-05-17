@@ -20,7 +20,7 @@ export class AiService {
         }
     }
 
-    async getAIResponse(userId: number, userMessage: string, phone?: string, contactName: string = 'غير معروف', audioFilePath?: string, historyStrOverride?: string): Promise<string | null> {
+    async getAIResponse(userId: number, userMessage: string, phone?: string, contactName: string = 'غير معروف', audioFilePath?: string, historyStrOverride?: string, source: 'whatsapp' | 'app' = 'whatsapp'): Promise<string | null> {
         try {
             // 1. Fetch ALL Settings & Templates for deep context
             const [settings, templates, services] = await Promise.all([
@@ -75,7 +75,7 @@ export class AiService {
 - أنت تتحدث باسم "${clinicName}" التي يديرها "${doctorName}".
 - تخصص العيادة وهويتها: "${clinicDesc}".
 - أسلوبك: دافئ، مهني، مختصر، ومفيد جداً. تتحدث باللهجة البيضاء أو الفصحى المبسطة.
-- اسم المتصل الحالي (كما يظهر في واتساب): "${contactName}".
+- اسم المتصل الحالي (${source === 'whatsapp' ? 'كما يظهر في واتساب' : 'المسجل في التطبيق'}): "${contactName}".
 
 معلومات العيادة (Facts):
 - العنوان: ${address}
@@ -102,6 +102,7 @@ ${knowledgeBase}
    - لا تطلب التأكيد بعد إصدار الكود، الكود هو التأكيد.
 
 3. إذا سأل هل الطبيب موجود؟ أجب بناءً على ساعات العمل.
+${source === 'app' ? '4. في نهاية رسالتك دائماً (وبعد تأكيد الحجز إن وجد)، ذكّر المريض بلطف أنه يمكنه في المستقبل استخدام "موظف الواتساب الآلي" الخاص بالعيادة للحجز والاستفسار بشكل أسرع.' : ''}
 
 تعليمات المالك (System Prompt Override):
 ${getSetting('ai_system_instruction')}

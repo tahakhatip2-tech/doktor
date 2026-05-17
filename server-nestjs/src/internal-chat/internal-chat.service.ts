@@ -261,7 +261,8 @@ export class InternalChatService {
                 patientPhone,
                 patientName,
                 undefined,
-                historyStr
+                historyStr,
+                'app'
             );
 
             console.log('[InternalChat] AI Response:', aiResponseRaw);
