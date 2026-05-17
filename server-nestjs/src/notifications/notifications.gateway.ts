@@ -177,5 +177,18 @@ export class NotificationsGateway implements OnGatewayConnection, OnGatewayDisco
             }
         }
     }
+
+    /** إرسال حدث "يكتب..." من الموظف الآلي */
+    emitBotTyping(conversationId: number, clinicId: number, patientId: number) {
+        const payload = { conversationId };
+        const doctorSockets = this.userSockets.get(clinicId);
+        if (doctorSockets) {
+            doctorSockets.forEach(sid => this.server.to(sid).emit('bot_typing', payload));
+        }
+        const patientSockets = this.patientSockets.get(patientId);
+        if (patientSockets) {
+            patientSockets.forEach(sid => this.server.to(sid).emit('bot_typing', payload));
+        }
+    }
 }
 

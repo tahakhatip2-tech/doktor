@@ -24,8 +24,10 @@ import { format, formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
-const SOCKET_URL = API_URL.replace(/\/api$/, '');
+// الـ Socket يتصل بالـ Backend مباشرة — نفس منطق useSocketNotifications
+const SOCKET_URL = import.meta.env.PROD
+    ? 'https://tsunamic-unshameable-maricruz.ngrok-free.dev'
+    : 'http://localhost:3000';
 
 interface Message {
     id: number;
@@ -54,6 +56,7 @@ export default function InternalChat() {
     const [search, setSearch] = useState('');
     const [unreadTotal, setUnreadTotal] = useState(0);
     const [aiEnabled, setAiEnabled] = useState(false);
+    const [botTyping, setBotTyping] = useState(false);
 
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const socketRef = useRef<Socket | null>(null);
@@ -142,8 +145,14 @@ export default function InternalChat() {
         });
 
         socket.on('connect', () => console.log('[DoctorChat] Socket connected'));
+        socket.on('disconnect', (reason) => console.warn('[DoctorChat] Socket disconnected:', reason));
 
         socket.on('internal_message', (payload: { conversationId: number; message: Message }) => {
+            // إخفاء مؤشر الكتابة عند وصول رد البوت
+            if (payload.message?.senderType === 'BOT') {
+                setBotTyping(false);
+            }
+
             // تحديث الرسائل إذا كانت هي المحادثة المفتوحة حالياً
             if (selectedConvIdRef.current === payload.conversationId) {
                 setMessages(msgs => {
@@ -163,6 +172,13 @@ export default function InternalChat() {
                         : c
                 ).sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
             );
+        });
+
+        // مؤشر الكتابة من الموظف الآلي
+        socket.on('bot_typing', (payload: { conversationId: number }) => {
+            if (selectedConvIdRef.current === payload.conversationId) {
+                setBotTyping(true);
+            }
         });
 
         socketRef.current = socket;
@@ -385,6 +401,19 @@ export default function InternalChat() {
                                     </div>
                                 </div>
                             ))
+                        )}
+                        {/* مؤشر كتابة الموظف الآلي */}
+                        {botTyping && (
+                            <div className="flex gap-2 max-w-[75%] flex-row-reverse mr-auto ml-0">
+                                <div className="h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0 mt-1 bg-amber-100">
+                                    <Bot className="h-4 w-4 text-amber-600" />
+                                </div>
+                                <div className="px-4 py-3 bg-amber-50 border border-amber-200 rounded-2xl rounded-tl-sm flex items-center gap-1.5">
+                                    <span className="h-2 w-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                                    <span className="h-2 w-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                                    <span className="h-2 w-2 bg-amber-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                                </div>
+                            </div>
                         )}
                         <div ref={messagesEndRef} />
                     </div>

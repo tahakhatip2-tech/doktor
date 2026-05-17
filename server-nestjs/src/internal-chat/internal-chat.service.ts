@@ -152,14 +152,18 @@ export class InternalChatService {
             data: { updatedAt: new Date() },
         });
 
-        // Socket إشعار real-time للمريض
+        // Socket: إشعار المريض برسالة الطبيب
         this.notificationsGateway.sendInternalMessage(
             'patient',
             conversation.patientId,
-            {
-                conversationId,
-                message,
-            },
+            { conversationId, message },
+        );
+
+        // Socket: إشعار الطبيب برسالته هو نفسه (لتحديث الواجهة فوراً)
+        this.notificationsGateway.sendInternalMessage(
+            'doctor',
+            conversation.clinicId,
+            { conversationId, message },
         );
 
         return message;
@@ -194,15 +198,15 @@ export class InternalChatService {
             data: { updatedAt: new Date() },
         });
 
-        // Socket إشعار real-time للطبيب
+        // Socket: إشعار الطبيب real-time
         this.notificationsGateway.sendInternalMessage(
             'doctor',
             conversation.clinicId,
-            {
-                conversationId,
-                message,
-            },
+            { conversationId, message },
         );
+
+        // إرسال حدث "يكتب..." قبل بدء الموظف الآلي
+        this.notificationsGateway.emitBotTyping(conversationId, conversation.clinicId, conversation.patientId);
 
         // استدعاء الموظف الآلي بشكل آمن (لا يؤثر على رسالة المريض)
         (async () => {
@@ -229,23 +233,23 @@ export class InternalChatService {
             select: { auto_reply_enabled: true, clinic_name: true },
         });
 
-        // إذا كان الذكاء الاصطناعي مفعلاً، يتم إسناد الرد له لاستكمال الحجز
         const settings = await this.prisma.setting.findMany({ where: { userId: conversation.clinicId } });
         const aiEnabledVal = settings.find(s => s.key === 'ai_enabled')?.value;
         const aiEnabled = aiEnabledVal === undefined || aiEnabledVal === '1' || aiEnabledVal === 'true';
 
-        console.log(`[InternalChat] Fetching settings for clinic ${conversation.clinicId}. ai_enabled:`, aiEnabledVal, 'Resolved:', aiEnabled);
+        console.log(`[InternalChat] ai_enabled:`, aiEnabledVal, 'Resolved:', aiEnabled);
 
         let botReply = '';
 
         if (aiEnabled) {
-            // جلب سجل المحادثة الداخلي وتمريره للذكاء الاصطناعي
             const history = await this.prisma.internalMessage.findMany({
                 where: { conversationId },
                 orderBy: { createdAt: 'desc' },
                 take: 10,
             });
-            const historyStr = history.reverse().map(h => `${h.senderType === 'DOCTOR' || h.senderType === 'BOT' ? 'Secretary' : 'Patient'}: ${h.content}`).join('\n');
+            const historyStr = history.reverse().map(h =>
+                `${h.senderType === 'DOCTOR' || h.senderType === 'BOT' ? 'Secretary' : 'Patient'}: ${h.content}`
+            ).join('\n');
 
             const patient = await this.prisma.patient.findUnique({ where: { id: conversation.patientId } });
             const patientName = patient?.fullName || 'المريض';
@@ -259,22 +263,60 @@ export class InternalChatService {
                 undefined,
                 historyStr
             );
-            
+
             console.log('[InternalChat] AI Response:', aiResponseRaw);
 
             if (aiResponseRaw) {
-                // استخراج ومعالجة أوامر الحجز من نص الذكاء الاصطناعي
-                botReply = await this.extractAndProcessAppointments(conversation.clinicId, conversation.patientId, aiResponseRaw, patientPhone, patientName);
+                botReply = await this.extractAndProcessAppointments(
+                    conversation.clinicId, conversation.patientId, aiResponseRaw, patientPhone, patientName
+                );
             }
         } else {
             console.log('[InternalChat] AI is Disabled for clinic:', conversation.clinicId);
         }
 
-        // إذا فشل الذكاء الاصطناعي ولم يتمكن من الرد وكان الرد التلقائي البسيط مفعلاً كبديل (وفقط إذا كان الطبيب غير متصل)
+        // رد تلقائي بسيط كبديل إذا كان الذكاء الاصطناعي معطلاً والطبيب غير متصل
         if (!botReply && clinic?.auto_reply_enabled) {
             const doctorOnline = this.notificationsGateway.isUserOnline(conversation.clinicId);
             if (!doctorOnline) {
                 botReply = `شكراً لتواصلك مع ${clinic.clinic_name || 'العيادة'}. سيتم الرد على رسالتك في أقرب وقت من قبل الطاقم الطبي.`;
+            }
+        }
+
+        if (!botReply) return;
+
+        try {
+            const botMessage = await this.prisma.internalMessage.create({
+                data: {
+                    conversationId,
+                    content: botReply,
+                    senderType: InternalSenderType.BOT,
+                },
+            });
+
+            await this.prisma.internalConversation.update({
+                where: { id: conversationId },
+                data: { updatedAt: new Date() },
+            });
+
+            // إرسال رد البوت للمريض
+            this.notificationsGateway.sendInternalMessage(
+                'patient',
+                conversation.patientId,
+                { conversationId, message: botMessage },
+            );
+
+            // إرسال رد البوت للطبيب ليعلم متزامناً
+            this.notificationsGateway.sendInternalMessage(
+                'doctor',
+                conversation.clinicId,
+                { conversationId, message: botMessage },
+            );
+        } catch (e) {
+            console.error('[InternalChat] Bot reply error:', e);
+        }
+    }
+أقرب وقت من قبل الطاقم الطبي.`;
             }
         }
 
