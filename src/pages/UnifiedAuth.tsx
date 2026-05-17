@@ -258,7 +258,7 @@ const UnifiedAuth = () => {
             {/* Animated Background */}
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 transform scale-105"
-                style={{ backgroundImage: 'url(/doktor-jo-auth-v2.png)' }}
+                style={{ backgroundImage: 'url(/hakeem-logo.png)' }}
             >
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] mix-blend-overlay"></div>
             </div>

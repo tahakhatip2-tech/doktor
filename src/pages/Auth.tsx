@@ -107,7 +107,7 @@ const Auth = () => {
       {/* Background Image with Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 resize-bg-animation transform scale-105"
-        style={{ backgroundImage: 'url(/doktor-jo-auth-v2.png)' }}
+        style={{ backgroundImage: 'url(/hakeem-logo.png)' }}
       >
         {/* Modern "Sharp" Overlay Removed for Clarity */}
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.03] mix-blend-overlay"></div>
