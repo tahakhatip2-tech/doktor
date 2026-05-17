@@ -22,7 +22,7 @@ export default function PatientHero({
     children,
     className,
     badgeText,
-    imageSrc = '/hakeem-logo.png',
+    imageSrc = '/patient-hero.png',
     showBackButton = false,
 }: PatientHeroProps) {
     const navigate = useNavigate();

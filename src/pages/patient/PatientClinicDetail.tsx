@@ -237,7 +237,6 @@ export default function PatientClinicDetail() {
                 title={clinic.clinic_name || clinic.name}
                 subtitle={`الدكتور: ${clinic.name}`}
                 badgeText={clinic.clinic_specialty || 'العيادة'}
-                imageSrc="/hakeem-logo.png"
                 showBackButton={true}
             />
 
