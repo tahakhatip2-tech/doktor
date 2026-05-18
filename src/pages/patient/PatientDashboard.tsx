@@ -66,10 +66,10 @@ export default function PatientDashboard() {
         <div className="space-y-6 sm:space-y-8 animate-fade-in pb-8">
             {/* Elegant Hero Section */}
             <PatientHero
-                title={`مرحباً بك، ${user?.fullName || ''}`}
-                subtitle="في تطبيق Doctor Jo"
-                description="نحن هنا لنقدم لك ولعائلتك أفضل رعاية طبية لتنعموا بحياة صحية وسعيدة."
-                badgeText="دائماً في خدمتك"
+                title={`مرحباً بك، ${user?.fullName.split(' ')[0] || ''}`}
+                subtitle="بوابة المريض الخاصة بك"
+                description="إدارة مواعيدك، متابعة سجلاتك الطبية، والتواصل المباشر مع أطبائك بكل سهولة."
+                showBackButton={false}
             />
 
             <div className="px-4 sm:px-0 flex flex-col gap-6 -mt-4 relative z-20">

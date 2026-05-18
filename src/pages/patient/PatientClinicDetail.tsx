@@ -241,7 +241,7 @@ export default function PatientClinicDetail() {
             />
 
             {/* ── Action Bar ── */}
-            <div className="px-4 -mt-6 relative z-30 max-w-5xl mx-auto">
+            <div className="px-4 mt-2 relative z-50 max-w-5xl mx-auto">
                 <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border p-3 flex flex-col gap-3">
 
                     {/* Row 1: Clinic Logo + Name + Info */}
