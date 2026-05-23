@@ -386,7 +386,7 @@ const Index = () => {
                                                 visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } }
                                             }}
                                             whileHover={{ y: -5, scale: 1.01 }}
-                                            className="p-4 md:p-6 bg-white shadow-sm hover:shadow-md border border-blue-100 hover:border-orange-500 rounded-2xl transition-all duration-500 cursor-pointer group relative overflow-hidden mx-1 md:mx-2"
+                                            className="p-4 md:p-6 bg-white shadow-sm hover:shadow-md border border-orange-500 rounded-2xl transition-all duration-500 cursor-pointer group relative overflow-hidden mx-1 md:mx-2"
                                             onClick={() => setActiveTab('whatsapp-bot')}
                                         >
                                             <div className="">
@@ -434,7 +434,7 @@ const Index = () => {
                                                 visible: { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 300, damping: 25 } }
                                             }}
                                             whileHover={{ y: -5, scale: 1.01 }}
-                                            className="p-4 md:p-6 bg-white shadow-sm hover:shadow-md border border-blue-100 hover:border-orange-500 rounded-2xl transition-all duration-500 cursor-pointer group relative overflow-hidden mx-1 md:mx-2"
+                                            className="p-4 md:p-6 bg-white shadow-sm hover:shadow-md border border-orange-500 rounded-2xl transition-all duration-500 cursor-pointer group relative overflow-hidden mx-1 md:mx-2"
                                             onClick={() => setActiveTab('appointments')}
                                         >
                                             <div className="">

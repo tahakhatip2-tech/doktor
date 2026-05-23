@@ -46,7 +46,7 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
             transition={{ duration: 0.8 }}
             className="px-4"
         >
-            <Card className="p-4 md:p-6 relative rounded-2xl border border-blue-100 hover:border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
+            <Card className="p-4 md:p-6 relative rounded-2xl border border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group">
                 {/* Side indicator removed */}
                 
                 <div className="relative z-20">
