@@ -574,29 +574,31 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     if (!sock) return;
 
     let from = msg.key.remoteJid;
-    // Check for LID and use alternate JID (phone number) if available to avoid duplicates
     const keyAny = msg.key as any;
     if (from?.endsWith('@lid') && keyAny.remoteJidAlt) {
-      this.logger.log(
-        `[WhatsApp] Normalizing LID ${from} to ${keyAny.remoteJidAlt}`,
-      );
+      this.logger.log(`[WhatsApp] Normalizing LID ${from} to ${keyAny.remoteJidAlt}`);
       from = keyAny.remoteJidAlt;
     }
 
     if (!from || !this.isIndividualJid(from)) return;
 
+    // ─── Detect message type ───────────────────────────────────────────────
+    const isAudio = !!(msg.message?.audioMessage || msg.message?.pttMessage);
     const messageContent =
-      msg.message?.conversation || msg.message?.extendedTextMessage?.text || '';
-    if (!messageContent) return;
+      msg.message?.conversation ||
+      msg.message?.extendedTextMessage?.text ||
+      (isAudio ? '' : '');
 
-    this.logger.log(
-      `Message from ${from} for user ${userId}: ${messageContent}`,
-    );
+    if (!messageContent && !isAudio) return;
 
-    // 1. Save or Update Chat
+    this.logger.log(`Message from ${from} for user ${userId}: ${isAudio ? '[AUDIO]' : messageContent}`);
+
+    // ─── Save or Update Chat ───────────────────────────────────────────────
     let chat = await this.prisma.whatsAppChat.findUnique({
       where: { userId_phone: { userId, phone: from } },
     });
+
+    const displayContent = isAudio ? '[رسالة صوتية]' : messageContent;
 
     if (!chat) {
       chat = await this.prisma.whatsAppChat.create({
@@ -604,7 +606,7 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
           userId,
           phone: from,
           name: msg.pushName || 'New Contact',
-          lastMessage: messageContent,
+          lastMessage: displayContent,
           lastMessageTime: new Date().toISOString(),
           unreadCount: 1,
           status: 'active',
@@ -614,63 +616,96 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       chat = await this.prisma.whatsAppChat.update({
         where: { id: chat.id },
         data: {
-          lastMessage: messageContent,
+          lastMessage: displayContent,
           lastMessageTime: new Date().toISOString(),
           unreadCount: { increment: 1 },
         },
       });
     }
 
-    // 2. Save Message
+    // ─── Save incoming message ─────────────────────────────────────────────
     await this.prisma.whatsAppMessage.create({
       data: {
         chatId: chat.id,
         messageId: msg.key.id,
         fromMe: false,
-        content: messageContent,
+        content: displayContent,
         timestamp: new Date(),
         status: 'received',
       },
     });
 
-    // 3. AI Reply (Conditional on settings)
+    // ─── AI Reply ──────────────────────────────────────────────────────────
     const settings = await this.getSettings(userId);
-    if (settings['ai_enabled'] === '1') {
-      const contactName = chat.name || msg.pushName || 'Client';
-      const aiResponseRaw = await this.aiService.getAIResponse(
-        userId,
-        messageContent,
-        from,
-        contactName,
-      );
-      if (aiResponseRaw) {
-        // Process Actions (like Appointments)
-        const aiResponse = await this.extractAndProcessActions(
-          userId,
-          aiResponseRaw,
-          from,
-        );
+    if (settings['ai_enabled'] !== '1') return;
 
-        try {
-          await sock.sendMessage(from, { text: aiResponse });
+    const contactName = chat.name || msg.pushName || 'Client';
+    let audioFilePath: string | undefined;
 
-          // Save outgoing message
-          await this.prisma.whatsAppMessage.create({
-            data: {
-              chatId: chat.id,
-              fromMe: true,
-              content: aiResponse,
-              timestamp: new Date(),
-              status: 'sent',
-            },
-          });
-        } catch (error) {
-          this.logger.error(
-            `Failed to send AI response to ${from}: ${error.message}`,
-          );
-          // Optionally try to reconnect or just log
-        }
+    // Download audio if voice message
+    if (isAudio) {
+      try {
+        const buffer = await downloadMediaMessage(msg, 'buffer', {});
+        audioFilePath = path.join(process.cwd(), 'uploads', `voice_in_${msg.key.id}.ogg`);
+        fs.writeFileSync(audioFilePath, buffer as Buffer);
+        this.logger.log(`[WhatsApp] Saved incoming audio: ${audioFilePath}`);
+      } catch (e) {
+        this.logger.error(`[WhatsApp] Failed to download audio: ${e.message}`);
+        return;
       }
+    }
+
+    const aiResponseRaw = await this.aiService.getAIResponse(
+      userId,
+      messageContent || '(رسالة صوتية)',
+      from,
+      contactName,
+      audioFilePath,
+    );
+
+    // Cleanup temp audio file
+    if (audioFilePath && fs.existsSync(audioFilePath)) {
+      fs.unlinkSync(audioFilePath);
+    }
+
+    if (!aiResponseRaw) return;
+
+    const aiResponse = await this.extractAndProcessActions(userId, aiResponseRaw, from);
+
+    try {
+      if (isAudio) {
+        // ─── Reply with voice ──────────────────────────────────────────────
+        const voiceFile = await this.aiService.generateVoice(aiResponse);
+        if (voiceFile) {
+          const voicePath = path.join(process.cwd(), 'uploads', voiceFile);
+          const audioBuffer = fs.readFileSync(voicePath);
+          await sock.sendMessage(from, {
+            audio: audioBuffer,
+            mimetype: 'audio/mp4',
+            ptt: true,
+          });
+          fs.unlinkSync(voicePath);
+          this.logger.log(`[WhatsApp] Sent voice reply to ${from}`);
+        } else {
+          // Fallback to text if TTS fails
+          await sock.sendMessage(from, { text: aiResponse });
+        }
+      } else {
+        // ─── Reply with text ───────────────────────────────────────────────
+        await sock.sendMessage(from, { text: aiResponse });
+      }
+
+      await this.prisma.whatsAppMessage.create({
+        data: {
+          chatId: chat.id,
+          fromMe: true,
+          content: aiResponse,
+          timestamp: new Date(),
+          status: 'sent',
+        },
+      });
+    } catch (error) {
+      this.logger.error(`Failed to send AI response to ${from}: ${error.message}`);
     }
   }
 
