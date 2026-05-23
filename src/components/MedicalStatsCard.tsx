@@ -37,17 +37,17 @@ const MedicalStatsCard = ({
                 
                 {/* Top Row: Icon and Value */}
                 <div className="relative z-20 flex justify-between items-center pr-2">
-                    <div className="p-2 md:p-2.5 rounded-xl bg-blue-50/80 group-hover:bg-orange-50/80 border border-blue-100/50 group-hover:border-orange-200 transition-colors flex items-center justify-center shadow-sm">
-                        <Icon className="h-4 w-4 md:h-5 md:w-5 text-blue-600 group-hover:text-orange-600 transition-colors" />
+                    <div className="p-2 md:p-2.5 rounded-xl bg-blue-50 border border-blue-100/50 group-hover:bg-orange-500 group-hover:border-orange-500 transition-all duration-300 flex items-center justify-center shadow-sm group-hover:rotate-6">
+                        <Icon className="h-4 w-4 md:h-5 md:w-5 text-blue-600 group-hover:text-white transition-colors" />
                     </div>
-                    <div className="text-2xl md:text-3xl font-black text-blue-900 font-display px-1 tracking-tighter">
+                    <div className="text-2xl md:text-3xl font-black text-blue-900 group-hover:text-orange-500 transition-colors font-display px-1 tracking-tighter">
                         {value}
                     </div>
                 </div>
 
                 {/* Bottom Row: Text content */}
                 <div className="relative z-20 flex flex-col items-start pr-2">
-                    <p className="text-[11px] md:text-[13px] font-black text-slate-700 leading-none">{title}</p>
+                    <p className="text-[11px] md:text-[13px] font-black text-slate-700 group-hover:text-orange-500 transition-colors leading-none">{title}</p>
                     {subtitle && (
                         <p className="text-[8px] md:text-[10px] font-bold text-slate-400 mt-1 md:mt-1.5 uppercase tracking-wider">
                             {subtitle}
