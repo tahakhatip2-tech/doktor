@@ -350,17 +350,6 @@ const Index = () => {
                                         <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
                                     </div>
 
-                                    <AutoReplyToggle
-                                        isActive={true}
-                                    />
-
-                                    {/* Professional Divider */}
-                                    <div className="w-full flex items-center justify-center gap-4 my-8 opacity-60">
-                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
-                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
-                                        <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
-                                    </div>
-
                                     <UpcomingAppointments
                                         appointments={upcomingAppointmentsList
                                             .filter(apt => apt.status === 'scheduled' || apt.status === 'confirmed' || apt.status === 'pending')
