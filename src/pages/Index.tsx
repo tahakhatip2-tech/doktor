@@ -458,10 +458,10 @@ const Index = () => {
                                                             <Calendar className="h-7 w-7 md:h-8 md:w-8" strokeWidth={1.5} />
                                                         </div>
                                                         <div className="flex flex-col gap-1 text-right md:text-right">
-                                                            <h3 className="text-xl md:text-2xl font-black text-blue-950 tracking-tighter italic uppercase leading-none group-hover:text-orange-500 transition-colors">عرض الواجهات</h3>
+                                                            <h3 className="text-xl md:text-2xl font-black text-blue-950 tracking-tighter italic uppercase leading-none group-hover:text-orange-500 transition-colors">جدول المواعيد</h3>
                                                             <div className="flex flex-col">
-                                                                <span className="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">Show Navigation Panel</span>
-                                                                <span className="text-[8px] md:text-[9px] text-blue-400/60 font-black uppercase tracking-widest opacity-80 mt-0.5">SYST_UI_VIEWS</span>
+                                                                <span className="text-[9px] md:text-[10px] text-slate-400 uppercase tracking-[0.2em] font-bold">Appointments Schedule</span>
+                                                                <span className="text-[8px] md:text-[9px] text-blue-400/60 font-black uppercase tracking-widest opacity-80 mt-0.5">SYST_APPOINTMENTS</span>
                                                             </div>
                                                         </div>
                                                     </div>
