@@ -1,13 +1,6 @@
 let baseApiUrl = import.meta.env.VITE_API_URL || '/api';
 
-// Dynamically route API calls: 
-// In production (Vercel), point to the Ngrok tunnel.
-// In local development, use '/api' to leverage Vite's local proxy to localhost:3000.
-if (import.meta.env.PROD) {
-    baseApiUrl = 'https://tsunamic-unshameable-maricruz.ngrok-free.dev/api';
-}
-
-// Ensure absolute URLs (like ngrok) also get the /api suffix if missing
+// Ensure absolute URLs get the /api suffix if missing
 if (baseApiUrl.startsWith('http') && !baseApiUrl.endsWith('/api')) {
     baseApiUrl = baseApiUrl.endsWith('/') ? `${baseApiUrl}api` : `${baseApiUrl}/api`;
 }
