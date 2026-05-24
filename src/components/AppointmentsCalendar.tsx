@@ -61,25 +61,6 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
     const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
     const [selectedAppointmentForDetail, setSelectedAppointmentForDetail] = useState<any>(null);
 
-    // If viewing appointment details, show detail view
-    if (selectedAppointmentForDetail) {
-        return (
-            <AppointmentDetailView
-                appointment={selectedAppointmentForDetail}
-                onBack={() => {
-                    setSelectedAppointmentForDetail(null);
-                    loadAppointments();
-                }}
-                onOpenChat={onOpenChat}
-                onSuccess={loadAppointments}
-            />
-        );
-    }
-
-    useEffect(() => {
-        loadAppointments();
-    }, [filter]);
-
     const loadAppointments = async () => {
         try {
             setLoading(true);
@@ -106,6 +87,25 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
             setLoading(false);
         }
     };
+
+    // If viewing appointment details, show detail view
+    if (selectedAppointmentForDetail) {
+        return (
+            <AppointmentDetailView
+                appointment={selectedAppointmentForDetail}
+                onBack={() => {
+                    setSelectedAppointmentForDetail(null);
+                    loadAppointments();
+                }}
+                onOpenChat={onOpenChat}
+                onSuccess={loadAppointments}
+            />
+        );
+    }
+
+    useEffect(() => {
+        loadAppointments();
+    }, [filter]);
 
     const updateStatus = async (id: number, newStatus: string, appointment?: any) => {
         if (newStatus === 'completed') {
