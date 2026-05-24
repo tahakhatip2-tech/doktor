@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool } from 'lucide-react';
+import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toastWithSound } from '@/lib/toast-with-sound';
@@ -10,6 +10,7 @@ import { appointmentsApi, dataApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
 import AddAppointmentDialog from './AddAppointmentDialog';
 import CompleteAppointmentDialog from './CompleteAppointmentDialog';
+import AppointmentDetailView from './AppointmentDetailView';
 
 interface Appointment {
     id: number;
@@ -58,6 +59,22 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedApt, setSelectedApt] = useState<any>(null);
     const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
+    const [selectedAppointmentForDetail, setSelectedAppointmentForDetail] = useState<any>(null);
+
+    // If viewing appointment details, show detail view
+    if (selectedAppointmentForDetail) {
+        return (
+            <AppointmentDetailView
+                appointment={selectedAppointmentForDetail}
+                onBack={() => {
+                    setSelectedAppointmentForDetail(null);
+                    loadAppointments();
+                }}
+                onOpenChat={onOpenChat}
+                onSuccess={loadAppointments}
+            />
+        );
+    }
 
     useEffect(() => {
         loadAppointments();
@@ -333,25 +350,36 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
                                                     </div>
                                                 </div>
 
-                                                <Button
-                                                    size="icon"
-                                                    variant="ghost"
-                                                    className="h-6 w-6 rounded-sm text-muted-foreground hover:text-green-500 hover:bg-green-500/10"
-                                                    title="فتح المحادثة"
-                                                    onClick={() => {
-                                                        if (appointment.phone) {
-                                                            if (onOpenChat) {
-                                                                onOpenChat(appointment.phone);
+                                                <div className="flex items-center gap-1">
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-6 w-6 rounded-sm text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
+                                                        title="عرض التفاصيل"
+                                                        onClick={() => setSelectedAppointmentForDetail(appointment)}
+                                                    >
+                                                        <Eye className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="ghost"
+                                                        className="h-6 w-6 rounded-sm text-muted-foreground hover:text-green-500 hover:bg-green-500/10"
+                                                        title="فتح المحادثة"
+                                                        onClick={() => {
+                                                            if (appointment.phone) {
+                                                                if (onOpenChat) {
+                                                                    onOpenChat(appointment.phone);
+                                                                } else {
+                                                                    toastWithSound.error('خدمة الدردشة غير متاحة');
+                                                                }
                                                             } else {
-                                                                toastWithSound.error('خدمة الدردشة غير متاحة');
+                                                                toastWithSound.error('رقم الهاتف غير صالح');
                                                             }
-                                                        } else {
-                                                            toastWithSound.error('رقم الهاتف غير صالح');
-                                                        }
-                                                    }}
-                                                >
-                                                    <MessageCircle className="h-3.5 w-3.5" />
-                                                </Button>
+                                                        }}
+                                                    >
+                                                        <MessageCircle className="h-3.5 w-3.5" />
+                                                    </Button>
+                                                </div>
                                             </div>
 
                                             {/* Notes if any */}
