@@ -49,9 +49,11 @@ const typeConfig = {
 
 interface AppointmentsCalendarProps {
     onOpenChat?: (phone: string) => void;
+    selectedAppointmentId?: number | null;
+    onClearAppointmentId?: () => void;
 }
 
-export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalendarProps) {
+export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId, onClearAppointmentId }: AppointmentsCalendarProps) {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'today' | 'week' | 'pending_requests'>('today');
@@ -88,21 +90,6 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
         }
     };
 
-    // If viewing appointment details, show detail view
-    if (selectedAppointmentForDetail) {
-        return (
-            <AppointmentDetailView
-                appointment={selectedAppointmentForDetail}
-                onBack={() => {
-                    setSelectedAppointmentForDetail(null);
-                    loadAppointments();
-                }}
-                onOpenChat={onOpenChat}
-                onSuccess={loadAppointments}
-            />
-        );
-    }
-
     useEffect(() => {
         loadAppointments();
     }, [filter]);
@@ -132,6 +119,36 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
         }
     };
 
+    useEffect(() => {
+        if (selectedAppointmentId && filter !== 'all') {
+            setFilter('all');
+        }
+    }, [selectedAppointmentId]);
+
+    useEffect(() => {
+        const fetchAndSelectAppointment = async () => {
+            if (selectedAppointmentId) {
+                try {
+                    const data = await dataApi.get(`/appointments/${selectedAppointmentId}`);
+                    if (data && (data.appointmentDate || data.appointment_date)) {
+                        setSelectedAppointmentForDetail(data);
+                    } else if (data && data.data) {
+                        setSelectedAppointmentForDetail(data.data);
+                    }
+                } catch (e) {
+                    console.error('Error fetching selected appointment:', e);
+                    const apt = appointments.find(a => a.id === selectedAppointmentId);
+                    if (apt) setSelectedAppointmentForDetail(apt);
+                }
+                if (onClearAppointmentId) onClearAppointmentId();
+            }
+        };
+        
+        if (selectedAppointmentId) {
+            fetchAndSelectAppointment();
+        }
+    }, [selectedAppointmentId, onClearAppointmentId]); // we do not depend on appointments here to avoid infinite loops if it changes, we try fetching first.
+
     const filteredAppointments = statusFilter === 'all'
         ? appointments
         : appointments.filter(apt => apt.status === statusFilter);
@@ -152,6 +169,21 @@ export default function AppointmentsCalendar({ onOpenChat }: AppointmentsCalenda
         }
         return acc;
     }, {} as Record<string, Appointment[]>);
+
+    // If viewing appointment details, show detail view (AFTER all hooks)
+    if (selectedAppointmentForDetail) {
+        return (
+            <AppointmentDetailView
+                appointment={selectedAppointmentForDetail}
+                onBack={() => {
+                    setSelectedAppointmentForDetail(null);
+                    loadAppointments();
+                }}
+                onOpenChat={onOpenChat}
+                onSuccess={loadAppointments}
+            />
+        );
+    }
 
     return (
         <div className="space-y-6 animate-fade-in pb-20">

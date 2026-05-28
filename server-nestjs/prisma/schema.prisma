@@ -268,6 +268,8 @@ model Appointment {
   duration             Int                   @default(30)
   type                 String                @default("consultation")
   reminderSent         Boolean               @default(false)
+  reminder24hSent      Boolean               @default(false)
+  reminder1hSent       Boolean               @default(false)
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   cancellationReason   String?

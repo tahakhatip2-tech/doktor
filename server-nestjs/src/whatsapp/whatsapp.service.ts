@@ -201,6 +201,11 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     return { status: 'initializing' };
   }
 
+  // ─── Public accessor for socket (used by CronService) ─────────────────
+  getSocket(userId: number) {
+    return this.sockets.get(userId);
+  }
+
   async getStatus(userId: number) {
     return {
       connected: this.connectionStatus.get(userId) || false,
@@ -799,7 +804,9 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
 
             let newlyCreatedPatient = false;
             if (!patientUser) {
-              const hashedPassword = await bcrypt.hash(cleanPhone, 10);
+              // Set default password as requested: 12345678
+              const defaultPassword = '12345678';
+              const hashedPassword = await bcrypt.hash(defaultPassword, 10);
               patientUser = await this.prisma.patient.create({
                 data: {
                   email: `${cleanPhone}@hakeem.jo`,
@@ -846,9 +853,10 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
             }).catch(e => this.logger.error(`Failed to create patient notification: ${e.message}`));
 
             if (newlyCreatedPatient) {
+              const loginUrl = process.env.FRONTEND_URL || 'https://hakeem.jo';
               processedText = processedText.replace(
                 fullMatch,
-                '\n\n(تم حجز الموعد بنجاح. لقد أنشأنا لك حساباً في بوابة المرضى لمتابعة مواعيدك. يمكنك الدخول للموقع واستخدام رقم هاتفك كاسم مستخدم وكلمة مرور للمرة الأولى)',
+                `\n\n(تم حجز الموعد بنجاح. لقد أنشأنا لك حساباً في بوابة المرضى لمتابعة مواعيدك.\nيمكنك الدخول عبر الرابط: ${loginUrl}/#/patient/login\nاسم المستخدم: رقم هاتفك (${cleanPhone})\nكلمة المرور الافتراضية: 12345678)`,
               );
             }
 
@@ -869,6 +877,96 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
         processedText = processedText.replace(fullMatch, '');
       }
     } // End of while loop
+
+    // 2. Cancellation Extraction: [[CANCEL_APPOINTMENT]]
+    const cancelRegex = /\[\[CANCEL_APPOINTMENT\]\]/g;
+    if (cancelRegex.test(processedText)) {
+      processedText = processedText.replace(cancelRegex, '');
+      try {
+        const upcomingAppt = await this.prisma.appointment.findFirst({
+          where: { userId, phone, status: { in: ['confirmed', 'pending'] }, appointmentDate: { gte: new Date() } },
+          orderBy: { appointmentDate: 'asc' }
+        });
+
+        if (upcomingAppt) {
+          await this.prisma.appointment.update({
+            where: { id: upcomingAppt.id },
+            data: { status: 'cancelled', cancelledAt: new Date(), cancellationReason: 'تم الإلغاء عبر الواتساب' }
+          });
+          this.logger.log(`[AI Action] Cancelled appointment ${upcomingAppt.id}`);
+          
+          await this.prisma.notification.create({
+            data: {
+              userId,
+              type: 'APPOINTMENT_CANCELLED',
+              title: 'إلغاء موعد عبر واتساب',
+              message: `تم إلغاء موعد ${upcomingAppt.customerName} المجدول في ${upcomingAppt.appointmentDate.toLocaleString('ar-EG')}`,
+              priority: 'HIGH',
+            },
+          }).catch(e => this.logger.error(`Failed to create doctor notification: ${e.message}`));
+        }
+      } catch (err) {
+        this.logger.error(`Failed to process cancellation tag: ${err.message}`);
+      }
+    }
+
+    // 3. Reschedule Extraction: [[RESCHEDULE_APPOINTMENT: YYYY-MM-DD | HH:MM]]
+    const rescheduleRegex = /\[\[RESCHEDULE_APPOINTMENT:\s*([^|]*)?\|\s*([^\]]*)?\]\]/g;
+    let resMatch;
+    while ((resMatch = rescheduleRegex.exec(processedText)) !== null) {
+      const [fullMatch, dateStr, timeStr] = resMatch;
+      try {
+        const date = dateStr?.trim();
+        const time = timeStr?.trim();
+        if (date && time) {
+          let finalDateStr = date;
+          let finalTimeStr = time;
+          if (time.includes('PM') || time.includes('م') || time.includes('ظهراً') || time.includes('عصراً') || time.includes('مساءً')) {
+            let [h, m] = time.replace(/[^\d:]/g, '').split(':');
+            let hour = parseInt(h);
+            if (hour < 12) hour += 12;
+            finalTimeStr = `${hour.toString().padStart(2, '0')}:${m || '00'}`;
+          }
+          const newDate = new Date(`${finalDateStr}T${finalTimeStr}:00`);
+
+          if (!isNaN(newDate.getTime())) {
+            const isAvailable = await this.appointmentsService.isSlotAvailable(userId, newDate, 30);
+            if (!isAvailable) {
+              processedText = processedText.replace(fullMatch, '\n\n(ملاحظة: عذراً، هذا الموعد غير متاح حالياً. يرجى اختيار وقت آخر)');
+              continue;
+            }
+
+            const upcomingAppt = await this.prisma.appointment.findFirst({
+              where: { userId, phone, status: { in: ['confirmed', 'pending'] }, appointmentDate: { gte: new Date() } },
+              orderBy: { appointmentDate: 'asc' }
+            });
+
+            if (upcomingAppt) {
+              await this.prisma.appointment.update({
+                where: { id: upcomingAppt.id },
+                data: { appointmentDate: newDate, reminderSent: false, reminder24hSent: false, reminder1hSent: false }
+              });
+              this.logger.log(`[AI Action] Rescheduled appointment ${upcomingAppt.id} to ${newDate.toISOString()}`);
+              
+              await this.prisma.notification.create({
+                data: {
+                  userId,
+                  type: 'APPOINTMENT_RESCHEDULED',
+                  title: 'تأجيل موعد عبر واتساب',
+                  message: `تم تأجيل موعد ${upcomingAppt.customerName} إلى ${newDate.toLocaleString('ar-EG')}`,
+                  priority: 'HIGH',
+                },
+              }).catch(e => this.logger.error(`Failed to create doctor notification: ${e.message}`));
+            }
+          }
+        }
+      } catch (err) {
+        this.logger.error(`Failed to process reschedule tag: ${err.message}`);
+      }
+      if (processedText.includes(fullMatch)) {
+        processedText = processedText.replace(fullMatch, '');
+      }
+    }
 
     return processedText.trim();
   }

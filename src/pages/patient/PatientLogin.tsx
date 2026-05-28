@@ -133,8 +133,8 @@ export default function PatientLogin() {
                             {/* WhatsApp booking hint */}
                             <div className="p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-xs text-green-800 dark:text-green-300 space-y-1">
                                 <p className="font-semibold">هل حجزت موعدك عبر الواتساب؟</p>
-                                <p>يمكنك الدخول برقم هاتفك كاسم مستخدم وكلمة مرور معاً للمرة الأولى</p>
-                                <p className="text-green-600 dark:text-green-400 font-medium">مثال — رقم الهاتف: 0795245961 وكلمة المرور: 0795245961</p>
+                                <p>يمكنك الدخول برقم هاتفك كاسم مستخدم وكلمة المرور الافتراضية للمرة الأولى</p>
+                                <p className="text-green-600 dark:text-green-400 font-medium">مثال — رقم الهاتف: 0795245961 وكلمة المرور: 12345678</p>
                             </div>
                         </form>
                     </CardContent>

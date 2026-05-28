@@ -68,9 +68,18 @@ export class PatientService {
     }
 
     async login(dto: LoginPatientDto) {
-        // Find patient by email
-        const patient = await this.prisma.patient.findUnique({
-            where: { email: dto.email },
+        if (!dto.email && !dto.phone) {
+            throw new UnauthorizedException('الرجاء إدخال البريد الإلكتروني أو رقم الهاتف');
+        }
+
+        // Find patient by email or phone
+        const patient = await this.prisma.patient.findFirst({
+            where: { 
+                OR: [
+                    { email: dto.email || undefined },
+                    { phone: dto.phone || undefined }
+                ]
+            },
         });
 
         if (!patient) {

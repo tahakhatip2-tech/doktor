@@ -201,7 +201,7 @@ export class AppointmentsService {
     });
 
     try {
-      await this.notificationsService.createNotification({
+      const notification = await this.notificationsService.createNotification({
         userId,
         type: 'NEW_APPOINTMENT',
         title: '📅 موعد جديد',
@@ -209,6 +209,12 @@ export class AppointmentsService {
         priority: 'HIGH',
         appointmentId: appointment.id,
         contactId: actualPatientId,
+      });
+      
+      // Send real-time notification with appointmentId
+      this.notificationsGateway.sendNotificationToDoctor(userId, {
+        ...notification,
+        appointmentId: appointment.id,
       });
     } catch (error) {
       console.error('Error creating NEW_APPOINTMENT notification:', error);

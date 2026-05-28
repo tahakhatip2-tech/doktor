@@ -60,6 +60,7 @@ const Index = () => {
     const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
     const [selectedName, setSelectedName] = useState<string | null>(null);
     const [selectedPatientForDetails, setSelectedPatientForDetails] = useState<any>(null); // New State
+    const [selectedAppointmentId, setSelectedAppointmentId] = useState<number | null>(null); // For notifications
     const { theme, toggleTheme } = useTheme();
     const { contacts, isLoading: contactsLoading, exportContacts, deleteContact, updateStatus, syncContacts } = useContacts();
 
@@ -203,6 +204,10 @@ const Index = () => {
                             onNavigate={(path) => navigate(path)}
                             onTabChange={(tab) => setActiveTab(tab)}
                             activeTab={activeTab}
+                            onNotificationClick={(id) => {
+                                setSelectedAppointmentId(id);
+                                setActiveTab('appointments');
+                            }}
                         />
                         {/* Scroll Progress Bar */}
                         <div className="absolute bottom-0 left-0 h-[2px] bg-primary z-50 transition-all duration-150" style={{ width: `${scrollProgress}%` }} />
@@ -654,7 +659,10 @@ const Index = () => {
                                 />
                             )}
 
-                            {activeTab === 'appointments' && <AppointmentsCalendar onOpenChat={(phone) => {
+                            {activeTab === 'appointments' && <AppointmentsCalendar 
+                                selectedAppointmentId={selectedAppointmentId}
+                                onClearAppointmentId={() => setSelectedAppointmentId(null)}
+                                onOpenChat={(phone) => {
                                 setSelectedPhone(phone);
                                 setActiveTab('whatsapp-bot');
                             }} />}

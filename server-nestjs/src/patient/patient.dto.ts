@@ -32,9 +32,13 @@ export class RegisterPatientDto {
 }
 
 export class LoginPatientDto {
+  @IsOptional()
   @IsEmail()
-  @IsNotEmpty()
-  email: string;
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
   @IsString()
   @IsNotEmpty()

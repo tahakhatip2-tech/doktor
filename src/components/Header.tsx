@@ -52,9 +52,10 @@ interface HeaderProps {
     onTabChange?: (tab: string) => void;
     activeTab?: string;
     transparent?: boolean;
+    onNotificationClick?: (appointmentId: number) => void;
 }
 
-const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps) => {
+const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificationClick }: HeaderProps) => {
     const { user, signOut } = useAuth();
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
@@ -240,7 +241,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                         className="flex flex-col items-center justify-center p-2 rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-900 dark:text-red-100 hover:bg-red-100"
                                     >
                                         <LogOut className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                        <span className="text-[8px] font-black">خرظˆج</span>
+                                        <span className="text-[8px] font-black">خروج</span>
                                     </DropdownMenuItem>
                                 </div>
 
@@ -354,10 +355,16 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                                                 notification.type === 'NEW_APPOINTMENT' ||
                                                                 notification.type === 'APPOINTMENT_CANCELLED' ||
                                                                 notification.type === 'APPOINTMENT_COMPLETED' ||
-                                                                notification.appointmentId
+                                                                notification.appointmentId ||
+                                                                notification.appointment_id
                                                             ) {
-                                                                if (onTabChange) onTabChange('appointments');
-                                                                navigate('/');
+                                                                const aptId = notification.appointmentId || notification.appointment_id;
+                                                                if (onNotificationClick && aptId) {
+                                                                    onNotificationClick(aptId);
+                                                                } else {
+                                                                    if (onTabChange) onTabChange('appointments');
+                                                                    navigate('/');
+                                                                }
                                                             }
                                                         }}
                                                     >
@@ -682,10 +689,16 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent }: HeaderProps
                                                                 notification.type === 'NEW_APPOINTMENT' ||
                                                                 notification.type === 'APPOINTMENT_CANCELLED' ||
                                                                 notification.type === 'APPOINTMENT_COMPLETED' ||
-                                                                notification.appointmentId
+                                                                notification.appointmentId ||
+                                                                notification.appointment_id
                                                             ) {
-                                                                if (onTabChange) onTabChange('appointments');
-                                                                navigate('/');
+                                                                const aptId = notification.appointmentId || notification.appointment_id;
+                                                                if (onNotificationClick && aptId) {
+                                                                    onNotificationClick(aptId);
+                                                                } else {
+                                                                    if (onTabChange) onTabChange('appointments');
+                                                                    navigate('/');
+                                                                }
                                                             }
                                                         }}
                                                     >
