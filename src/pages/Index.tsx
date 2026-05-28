@@ -28,6 +28,7 @@ import FinancialAnalytics from "./doctor/FinancialAnalytics";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PatientCardSkeleton } from "@/components/skeletons/PatientCardSkeleton";
 import HeroSection from "@/components/HeroSection";
+import DoctorAISecretary from "@/components/DoctorAISecretary";
 import { appointmentsApi, whatsappApi, dataApi } from "@/lib/api";
 import {
     Users,
@@ -698,6 +699,9 @@ const Index = () => {
                         onSkip={handleOnboardingSkip}
                     />
                 )}
+
+                {/* AI Secretary - Floating button for doctor */}
+                <DoctorAISecretary />
             </ClinicProvider >
         </div >
     );
