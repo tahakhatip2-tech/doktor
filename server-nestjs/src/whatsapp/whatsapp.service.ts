@@ -158,9 +158,11 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
           );
           this.qrCodes.delete(userId);
           this.sockets.delete(userId);
+          sock.ev.removeAllListeners();
           if (fs.existsSync(userSessionPath)) {
             fs.rmSync(userSessionPath, { recursive: true, force: true });
           }
+          fs.mkdirSync(userSessionPath, { recursive: true });
           // Restart after 2s to show new QR code
           setTimeout(() => this.startSession(userId), 2000);
         } else {
