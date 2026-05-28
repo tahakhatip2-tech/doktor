@@ -45,7 +45,7 @@ export default function PatientLogin() {
             {/* Unified Brand Background */}
             <div
                 className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-1000 transform scale-105"
-                style={{ backgroundImage: 'url(/hakeem-logo.png)' }}
+                style={{ backgroundImage: 'url(/doctor-jo-bg.png)' }}
             />
             <div className="absolute inset-0 bg-gradient-to-br from-blue-950/80 via-blue-900/70 to-blue-800/60 backdrop-blur-[2px]" />
 
