@@ -29,6 +29,7 @@ import {
 import { cn } from '@/lib/utils';
 import axios from 'axios';
 import Footer from '@/components/Footer';
+import PatientAIAssistant from '@/components/PatientAIAssistant';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -414,6 +415,9 @@ export default function PatientLayout() {
                     })}
                 </nav>
             </div>
+
+            {/* AI Assistant for Patient */}
+            <PatientAIAssistant />
         </div>
     );
 }

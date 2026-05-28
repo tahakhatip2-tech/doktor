@@ -120,7 +120,7 @@ const CATEGORIES: Category[] = [
 
 // ─── Gemini API ────────────────────────────────────────────────────────────────
 const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_KEY}`;
 
 async function callGemini(turns: { role: string; parts: { text: string }[] }[]): Promise<string> {
     if (!GEMINI_KEY) throw new Error('مفتاح Gemini API غير موجود. يرجى إضافة VITE_GEMINI_API_KEY في ملف .env');
