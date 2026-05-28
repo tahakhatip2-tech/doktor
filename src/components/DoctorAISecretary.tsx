@@ -628,32 +628,25 @@ ${allApptSample}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
-                        whileHover={{ scale: 1.06, y: -2 }}
-                        whileTap={{ scale: 0.94 }}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
                         onClick={() => { setIsOpen(true); setIsMinimized(false); setHasNewMsg(false); }}
-                        className="fixed bottom-24 left-4 z-50 flex items-center gap-2.5 px-4 py-3
-                            rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-violet-700
-                            text-white shadow-2xl shadow-purple-500/40 border border-white/20
-                            hover:shadow-purple-500/60 transition-shadow duration-300 group"
+                        className="fixed bottom-24 left-4 z-50 flex items-center justify-center h-14 w-14
+                            rounded-full bg-blue-600 text-white shadow-xl shadow-blue-500/40 
+                            hover:shadow-blue-500/60 transition-all duration-300 group"
                     >
                         {/* Outer pulse */}
-                        <span className="absolute -inset-1 rounded-[20px] animate-ping bg-purple-400/20 pointer-events-none" />
+                        <span className="absolute -inset-1.5 rounded-full animate-ping bg-blue-400/30 pointer-events-none" />
 
                         {/* Icon */}
-                        <div className="relative h-9 w-9 rounded-xl bg-white/15 flex items-center justify-center border border-white/25 flex-shrink-0">
-                            <Sparkles className="h-4.5 w-4.5 text-white" />
-                            <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-emerald-400 border-2 border-white animate-pulse" />
-                        </div>
+                        <Bot className="h-7 w-7 text-white" />
 
-                        {/* Labels */}
-                        <div className="flex flex-col items-start leading-none">
-                            <span className="text-[9px] text-purple-200 font-semibold tracking-wide uppercase">Doctor Jo AI</span>
-                            <span className="text-sm font-black">السكرتير الذكي</span>
-                        </div>
+                        {/* Online Indicator */}
+                        <span className="absolute top-0 right-0 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-white animate-pulse" />
 
                         {/* Badge */}
                         {hasNewMsg && (
-                            <span className="absolute -top-2 -right-2 h-5 w-5 rounded-full bg-red-500 flex items-center justify-center text-[9px] font-black text-white border-2 border-white shadow">!</span>
+                            <span className="absolute -top-1 -left-1 h-5 w-5 rounded-full bg-red-500 flex items-center justify-center text-[10px] font-black text-white border-2 border-white shadow">!</span>
                         )}
                     </motion.button>
                 )}
@@ -667,29 +660,32 @@ ${allApptSample}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.88, y: 16 }}
                         transition={{ type: 'spring', stiffness: 360, damping: 30 }}
-                        className={`fixed bottom-24 left-4 z-50 flex flex-col rounded-3xl
+                        className={`fixed z-50 flex flex-col overflow-hidden
                             bg-white dark:bg-slate-900
                             border border-slate-200 dark:border-slate-700
-                            shadow-2xl shadow-purple-500/20 overflow-hidden
-                            ${isMinimized ? 'w-72' : 'w-[400px] h-[640px] max-h-[82vh]'}
+                            shadow-2xl shadow-blue-500/20
+                            ${isMinimized 
+                                ? 'bottom-24 left-4 w-72 rounded-3xl' 
+                                : 'bottom-0 left-0 right-0 w-full h-[85dvh] rounded-t-3xl sm:bottom-24 sm:left-4 sm:right-auto sm:w-[420px] sm:h-[650px] sm:max-h-[85vh] sm:rounded-3xl'
+                            }
                         `}
                         dir="rtl"
                     >
                         {/* ══ Header ══════════════════════════════════════════ */}
-                        <div className="flex-shrink-0 bg-gradient-to-l from-violet-700 via-indigo-600 to-blue-600 px-4 py-3.5">
+                        <div className="flex-shrink-0 bg-gradient-to-l from-blue-700 via-blue-600 to-sky-600 px-4 py-3.5 shadow-md z-10">
                             <div className="flex items-center justify-between">
                                 {/* Identity */}
                                 <div className="flex items-center gap-3">
-                                    <div className="relative h-10 w-10 rounded-xl bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0">
-                                        <Sparkles className="h-5 w-5 text-white" />
-                                        <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-emerald-400 border-2 border-indigo-600" />
+                                    <div className="relative h-10 w-10 rounded-full bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0 backdrop-blur-sm">
+                                        <Bot className="h-6 w-6 text-white" />
+                                        <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-400 border-2 border-blue-600 shadow-sm" />
                                     </div>
-                                    <div>
-                                        <p className="text-white font-black text-sm">السكرتير الذكي</p>
+                                    <div className="flex flex-col justify-center">
+                                        <p className="text-white font-black text-sm tracking-wide">السكرتير الذكي <span className="opacity-70 text-[10px] font-normal tracking-normal">(Doctor Jo)</span></p>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             {isDataLoading
-                                                ? <><Loader2 className="h-2.5 w-2.5 text-white/60 animate-spin" /><span className="text-white/60 text-[10px]">يحمّل بيانات العيادة...</span></>
-                                                : <><span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" /><span className="text-white/70 text-[10px]">متصل • عيادة {clinicName}</span></>
+                                                ? <><Loader2 className="h-3 w-3 text-white/80 animate-spin" /><span className="text-white/80 text-[11px] font-medium">يحدث البيانات...</span></>
+                                                : <><span className="text-emerald-300 text-[11px] font-bold">● متصل الآن</span><span className="text-white/60 text-[10px]">({clinicName})</span></>
                                             }
                                         </div>
                                     </div>
@@ -788,8 +784,8 @@ ${allApptSample}
                                             >
                                                 {/* Avatar */}
                                                 {msg.role === 'assistant' && (
-                                                    <div className="flex-shrink-0 h-7 w-7 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mt-0.5 shadow-sm">
-                                                        <Sparkles className="h-3.5 w-3.5 text-white" />
+                                                    <div className="flex-shrink-0 h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center mt-0.5 shadow-sm">
+                                                        <Bot className="h-4 w-4 text-white" />
                                                     </div>
                                                 )}
 
@@ -797,8 +793,8 @@ ${allApptSample}
                                                     {/* Bubble */}
                                                     <div className={`relative group max-w-[92%] ${
                                                         msg.role === 'user'
-                                                            ? 'bg-gradient-to-bl from-indigo-600 to-violet-600 text-white rounded-2xl rounded-tl-sm px-3.5 py-2.5'
-                                                            : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl rounded-tr-sm px-3.5 py-2.5 shadow-sm'
+                                                            ? 'bg-blue-600 text-white rounded-2xl rounded-tl-sm px-4 py-2.5'
+                                                            : 'bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 text-slate-800 dark:text-slate-100 rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm'
                                                     }`}>
                                                         <div className="text-[13px] leading-relaxed whitespace-pre-wrap">
                                                             {renderContent(msg.content)}
@@ -846,13 +842,13 @@ ${allApptSample}
                                     {/* Loading bubbles */}
                                     {isLoading && (
                                         <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex gap-2">
-                                            <div className="h-7 w-7 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center flex-shrink-0">
-                                                <Sparkles className="h-3.5 w-3.5 text-white animate-pulse" />
+                                            <div className="h-8 w-8 rounded-full bg-blue-600 flex items-center justify-center flex-shrink-0">
+                                                <Bot className="h-4 w-4 text-white animate-pulse" />
                                             </div>
-                                            <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-tr-sm shadow-sm">
+                                            <div className="bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 px-4 py-3 rounded-2xl rounded-tr-sm shadow-sm flex items-center justify-center">
                                                 <div className="flex gap-1.5 items-center">
                                                     {[0, 150, 300].map(delay => (
-                                                        <span key={delay} className="h-2 w-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: `${delay}ms` }} />
+                                                        <span key={delay} className="h-2 w-2 rounded-full bg-blue-400 animate-bounce" style={{ animationDelay: `${delay}ms` }} />
                                                     ))}
                                                 </div>
                                             </div>
@@ -862,18 +858,16 @@ ${allApptSample}
                                 </div>
 
                                 {/* ── Input Bar ───────────────────────────────── */}
-                                <div className="flex-shrink-0 border-t border-slate-100 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-3">
-                                    <div className="flex items-end gap-2 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-600 px-3 py-2
-                                        focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-400/20 transition-all">
-                                        {/* Show categories toggle */}
+                                <div className="flex-shrink-0 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-3 z-10 shadow-[0_-4px_15px_-5px_rgba(0,0,0,0.05)]">
+                                    <div className="flex items-end gap-2 bg-white dark:bg-slate-800 rounded-3xl border border-slate-200 dark:border-slate-600 px-3 py-2 shadow-sm
+                                        focus-within:border-blue-400 focus-within:ring-2 focus-within:ring-blue-400/20 transition-all">
+                                        
+                                        {/* Attachment / Actions button (Mockup for UX) */}
                                         <button
-                                            onClick={() => setShowCategories(p => !p)}
-                                            title="تصفح الأقسام"
-                                            className={`flex-shrink-0 h-7 w-7 rounded-lg flex items-center justify-center transition-all mb-0.5 ${
-                                                showCategories ? 'bg-indigo-100 text-indigo-600' : 'text-slate-400 hover:text-slate-600'
-                                            }`}
+                                            type="button"
+                                            className="flex-shrink-0 h-8 w-8 rounded-full flex items-center justify-center text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all mb-0.5"
                                         >
-                                            <Zap className="h-3.5 w-3.5" />
+                                            <PlusCircle className="h-5 w-5" />
                                         </button>
 
                                         <textarea
@@ -881,26 +875,37 @@ ${allApptSample}
                                             value={input}
                                             onChange={e => setInput(e.target.value)}
                                             onKeyDown={handleKeyDown}
-                                            placeholder="اكتب طلبك... مثال: أكد موعد أحمد اليوم"
+                                            placeholder="اطلب أي شيء للعيادة..."
                                             rows={1}
                                             disabled={isLoading}
-                                            className="flex-1 bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none outline-none leading-relaxed max-h-28 py-0.5 disabled:opacity-50"
+                                            className="flex-1 bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none outline-none leading-relaxed max-h-28 py-1.5 disabled:opacity-50"
                                             style={{ direction: 'rtl' }}
                                         />
+                                        
                                         <button
                                             onClick={() => sendMessage(input)}
                                             disabled={!input.trim() || isLoading}
-                                            className="flex-shrink-0 h-8 w-8 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600
-                                                flex items-center justify-center text-white mb-0.5
-                                                hover:shadow-lg hover:shadow-indigo-500/30
-                                                disabled:opacity-40 disabled:cursor-not-allowed active:scale-90 transition-all"
+                                            className={`flex-shrink-0 h-9 w-9 rounded-full flex items-center justify-center text-white mb-0.5 transition-all
+                                                ${input.trim() && !isLoading 
+                                                    ? 'bg-blue-600 hover:bg-blue-700 shadow-md shadow-blue-500/30 active:scale-95' 
+                                                    : 'bg-slate-300 dark:bg-slate-700 cursor-not-allowed'}`}
                                         >
-                                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                                            {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 rtl:-scale-x-100" />}
                                         </button>
                                     </div>
-                                    <p className="text-center text-[9px] text-slate-400 mt-1.5 select-none">
-                                        ⌨️ Enter للإرسال • Shift+Enter سطر جديد • الإجراءات تحتاج تأكيدك
-                                    </p>
+                                    <div className="flex items-center justify-between mt-2 px-1">
+                                        <button
+                                            onClick={() => setShowCategories(p => !p)}
+                                            className="flex items-center gap-1 text-[10px] text-blue-600 hover:text-blue-700 font-bold bg-blue-50 px-2 py-1 rounded-md"
+                                        >
+                                            <Zap className="h-3 w-3" />
+                                            المهام السريعة
+                                        </button>
+                                        <p className="text-[9px] text-slate-400 select-none flex items-center gap-1">
+                                            <Shield className="h-3 w-3 opacity-50" />
+                                            سري ومشفر
+                                        </p>
+                                    </div>
                                 </div>
                             </>
                         )}
