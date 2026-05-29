@@ -30,6 +30,11 @@ export class ClinicDoctorsService {
     hourlyRate?: number;
     username?: string;
     password?: string;
+    avatar?: string;
+    workingDays?: string;
+    shiftTiming?: string;
+    certifications?: string;
+    experienceYears?: number;
   }) {
     let passwordHash: string | undefined;
     if (data.password) {
@@ -48,6 +53,11 @@ export class ClinicDoctorsService {
         hourlyRate: data.hourlyRate,
         username: data.username || null,
         passwordHash: passwordHash || null,
+        avatar: data.avatar || null,
+        workingDays: data.workingDays || null,
+        shiftTiming: data.shiftTiming || null,
+        certifications: data.certifications || null,
+        experienceYears: data.experienceYears || null,
       },
     }).then(({ passwordHash: _, ...d }) => ({ ...d, hasLogin: !!_ }));
   }
@@ -64,6 +74,11 @@ export class ClinicDoctorsService {
     isActive?: boolean;
     username?: string;
     password?: string;
+    avatar?: string;
+    workingDays?: string;
+    shiftTiming?: string;
+    certifications?: string;
+    experienceYears?: number;
   }) {
     const doctor = await this.prisma.clinicDoctor.findFirst({ where: { id } });
     if (!doctor) throw new NotFoundException('الموظف غير موجود');

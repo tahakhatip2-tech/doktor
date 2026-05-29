@@ -35,6 +35,11 @@ export class ClinicDoctorsController {
     hourlyRate?: number;
     username?: string;
     password?: string;
+    avatar?: string;
+    workingDays?: string;
+    shiftTiming?: string;
+    certifications?: string;
+    experienceYears?: number;
   }) {
     return this.service.create(req.user.id, body);
   }
@@ -56,6 +61,11 @@ export class ClinicDoctorsController {
       isActive?: boolean;
       username?: string;
       password?: string;
+      avatar?: string;
+      workingDays?: string;
+      shiftTiming?: string;
+      certifications?: string;
+      experienceYears?: number;
     },
   ) {
     return this.service.update(req.user.id, id, body);

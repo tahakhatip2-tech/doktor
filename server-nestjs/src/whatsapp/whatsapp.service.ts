@@ -158,7 +158,9 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
           );
           this.qrCodes.delete(userId);
           this.sockets.delete(userId);
-          sock.ev.removeAllListeners();
+          sock.ev.removeAllListeners('connection.update');
+          sock.ev.removeAllListeners('creds.update');
+          sock.ev.removeAllListeners('messages.upsert');
           if (fs.existsSync(userSessionPath)) {
             fs.rmSync(userSessionPath, { recursive: true, force: true });
           }
@@ -590,7 +592,7 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     if (!from || !this.isIndividualJid(from)) return;
 
     // ─── Detect message type ───────────────────────────────────────────────
-    const isAudio = !!(msg.message?.audioMessage || msg.message?.pttMessage);
+    const isAudio = !!msg.message?.audioMessage;
     const messageContent =
       msg.message?.conversation ||
       msg.message?.extendedTextMessage?.text ||

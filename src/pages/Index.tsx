@@ -11,6 +11,7 @@ import OnboardingTutorial from "@/components/OnboardingTutorial";
 import { useAuth } from "@/hooks/useAuth";
 import { useContacts } from "@/hooks/useContacts";
 import { useTheme } from "@/hooks/useTheme";
+import { useActiveDoctor } from "@/context/ActiveDoctorContext";
 import { TemplatesManager } from "@/components/TemplatesManager";
 import AppointmentsCalendar from "@/components/AppointmentsCalendar";
 import { PatientCard } from "@/components/PatientCard";
@@ -57,6 +58,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const Index = () => {
     const navigate = useNavigate();
     const { user, loading: authLoading, signOut } = useAuth();
+    const { activeDoctor } = useActiveDoctor();
     const [activeTab, setActiveTab] = useState("dashboard");
     const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
     const [selectedName, setSelectedName] = useState<string | null>(null);
@@ -149,6 +151,21 @@ const Index = () => {
         }
     }, [user, authLoading, navigate]);
 
+    // Enforce RBAC for activeTab
+    useEffect(() => {
+        if (activeDoctor) {
+            const role = activeDoctor.role || 'doctor';
+            const doctorAllowed = ['contacts', 'appointments', 'internal-chat', 'patient-details'];
+            const staffAllowed = ['appointments', 'internal-chat', 'patient-details'];
+            
+            if (role === 'doctor' && !doctorAllowed.includes(activeTab)) {
+                setActiveTab('appointments');
+            } else if ((role === 'secretary' || role === 'nurse') && !staffAllowed.includes(activeTab)) {
+                setActiveTab('appointments');
+            }
+        }
+    }, [activeDoctor, activeTab]);
+
     const handleSignOut = async () => {
         await signOut();
         navigate("/auth");
@@ -220,7 +237,7 @@ const Index = () => {
                             {/* Dynamic Hero Section */}
                             {activeTab !== 'patient-details' && activeTab !== 'whatsapp-bot' && activeTab !== 'internal-chat' && (
                                 <HeroSection
-                                    doctorName={user?.name ? `د. ${user.name}` : 'د. حكيم'}
+                                    doctorName={activeDoctor ? `د. ${activeDoctor.name}` : (user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : 'د. حكيم')}
                                     pageTitle={
                                         activeTab === 'dashboard' ? "موجز عمل اليوم" :
                                             activeTab === 'contacts' ? "إدارة المرضى والمراجعات" :
@@ -266,7 +283,7 @@ const Index = () => {
                                     }}
                                     className="space-y-3 md:space-y-12 pb-24"
                                 >
-                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-6">
+                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-2 md:gap-6">
                                         <motion.div
                                             variants={{
                                                 hidden: { y: 40, opacity: 0, scale: 0.5 },
@@ -344,6 +361,46 @@ const Index = () => {
                                                 subtitle={stats?.today_total > 0 ? "بناءً على مواعيد اليوم" : "النظام جديد"}
                                                 icon={TrendingUp}
                                                 color="purple"
+                                                backgroundImage="/stats-bg-1.png"
+                                            />
+                                        </motion.div>
+                                        <motion.div
+                                            variants={{
+                                                hidden: { y: 40, opacity: 0, scale: 0.5 },
+                                                visible: {
+                                                    y: 0,
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                    transition: { type: "spring", stiffness: 250, damping: 20, mass: 0.8 }
+                                                }
+                                            }}
+                                        >
+                                            <MedicalStatsCard
+                                                title="إجمالي الموظفين"
+                                                value={stats?.total_doctors_staff || 0}
+                                                subtitle="طبيب وموظف"
+                                                icon={Users}
+                                                color="blue"
+                                                backgroundImage="/stats-bg-1.png"
+                                            />
+                                        </motion.div>
+                                        <motion.div
+                                            variants={{
+                                                hidden: { y: 40, opacity: 0, scale: 0.5 },
+                                                visible: {
+                                                    y: 0,
+                                                    opacity: 1,
+                                                    scale: 1,
+                                                    transition: { type: "spring", stiffness: 250, damping: 20, mass: 0.8 }
+                                                }
+                                            }}
+                                        >
+                                            <MedicalStatsCard
+                                                title="النشطين"
+                                                value={stats?.active_doctors_staff || 0}
+                                                subtitle="موظف نشط"
+                                                icon={CheckCircle2}
+                                                color="orange"
                                                 backgroundImage="/stats-bg-1.png"
                                             />
                                         </motion.div>

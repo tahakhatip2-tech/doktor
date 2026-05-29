@@ -11,6 +11,11 @@ export interface ActiveDoctor {
     clinicId: number;
     username?: string | null;
     hasLogin: boolean;
+    avatar?: string | null;
+    workingDays?: string | null;
+    shiftTiming?: string | null;
+    certifications?: string | null;
+    experienceYears?: number | null;
 }
 
 interface ActiveDoctorContextType {

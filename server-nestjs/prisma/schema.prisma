@@ -479,8 +479,13 @@ model ClinicDoctor {
   username       String?         @unique
   passwordHash   String?
   workingHours   String?
-  hourlyRate     Decimal?        @db.Decimal(10, 2)
-  isActive       Boolean         @default(true)
+  hourlyRate      Decimal?        @db.Decimal(10, 2)
+  avatar          String?
+  workingDays     String?
+  shiftTiming     String?
+  certifications  String?
+  experienceYears Int?
+  isActive        Boolean         @default(true)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   appointments   Appointment[]

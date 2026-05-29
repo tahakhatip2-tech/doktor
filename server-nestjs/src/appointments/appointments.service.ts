@@ -212,7 +212,7 @@ export class AppointmentsService {
       });
       
       // Send real-time notification with appointmentId
-      this.notificationsGateway.sendNotificationToDoctor(userId, {
+      this.notificationsGateway.sendNotificationToUser(userId, {
         ...notification,
         appointmentId: appointment.id,
       });
@@ -381,7 +381,8 @@ export class AppointmentsService {
     // Execute queries in batches to avoid connection pool timeout (limit=5)
 
     // Batch 1: Critical Counts (4 queries)
-    const [todayTotal, todayCompleted, todayWaiting, totalPatients] =
+    // Batch 1: Critical Counts
+    const [todayTotal, todayCompleted, todayWaiting, totalPatients, totalDoctorsStaff, activeDoctorsStaff] =
       await Promise.all([
         this.prisma.appointment.count({
           where: { userId, appointmentDate: { gte: today, lt: tomorrow } },
@@ -402,6 +403,12 @@ export class AppointmentsService {
         }),
         this.prisma.contact.count({
           where: { userId },
+        }),
+        this.prisma.clinicDoctor.count({
+          where: { clinicId: userId },
+        }),
+        this.prisma.clinicDoctor.count({
+          where: { clinicId: userId, isActive: true },
         }),
       ]);
 
@@ -466,6 +473,8 @@ export class AppointmentsService {
       today_waiting: todayWaiting,
       this_month: thisMonth,
       total_patients: totalPatients,
+      total_doctors_staff: totalDoctorsStaff,
+      active_doctors_staff: activeDoctorsStaff,
       statusDistribution,
       typeDistribution,
       last7Days,

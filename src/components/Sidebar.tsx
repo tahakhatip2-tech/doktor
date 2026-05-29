@@ -25,6 +25,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { whatsappApi, BASE_URL, apiFetch } from "@/lib/api";
+import { useActiveDoctor } from "@/context/ActiveDoctorContext";
 
 interface SidebarProps {
     activeTab: string;
@@ -60,7 +61,9 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
         navigate("/auth");
     };
 
-    const mainNavItems = [
+    const { activeDoctor } = useActiveDoctor();
+
+    const allNavItems = [
         { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
         { id: 'whatsapp-bot', label: 'محادثات واتساب', icon: MessageCircle },
         { id: 'internal-chat', label: 'رسائل المرضى', icon: MessagesSquare },
@@ -71,6 +74,20 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
     ];
+
+    const mainNavItems = allNavItems.filter(item => {
+        if (!activeDoctor) return true; // Admin sees everything
+        
+        const doctorRole = activeDoctor.role || 'doctor';
+        
+        if (doctorRole === 'doctor') {
+            return ['contacts', 'appointments', 'internal-chat'].includes(item.id);
+        } else if (doctorRole === 'secretary' || doctorRole === 'nurse') {
+            return ['appointments', 'internal-chat'].includes(item.id);
+        }
+        
+        return false;
+    });
 
     const handleNavClick = (item: typeof mainNavItems[0]) => {
         setActiveTab(item.id);
@@ -131,7 +148,7 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
                         </Button>
                     ))}
 
-                    {user?.role === 'admin' && (
+                    {!activeDoctor && user?.role === 'admin' && (
                         <Button
                             variant="ghost"
                             className="w-full flex-row-reverse justify-start gap-3 text-amber-600 hover:text-amber-700 hover:bg-amber-50 mt-4"

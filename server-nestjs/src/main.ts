@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import { join, resolve } from 'path';
 import * as fs from 'fs';
 
@@ -50,6 +51,10 @@ process.on('unhandledRejection', (reason: any) => {
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Increase payload size limits for base64 images
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
 
   // Serve local uploads under /uploads/ and /api/uploads/ (fallback storage when Supabase is unavailable)
   app.useStaticAssets(join(process.cwd(), 'uploads'), {

@@ -93,6 +93,14 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
     const clinicName = settings?.clinic_name || "نظام العيادة";
     const clinicDesc = settings?.clinic_description || "إدارة ذظƒظٹة";
 
+    const getAvatarSrc = (avatar?: string) => {
+        if (!avatar) return '';
+        if (avatar.startsWith('http') || avatar.startsWith('data:image/')) {
+            return avatar;
+        }
+        return `${BASE_URL}${avatar}`;
+    };
+
     const [navItems] = useState([
         { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
         { id: 'whatsapp-bot', label: 'المحادثات', icon: MessageCircle },
@@ -102,6 +110,17 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
     ]);
+
+    const filteredNavItems = navItems.filter(item => {
+        if (!activeDoctor) return true;
+        const role = activeDoctor.role || 'doctor';
+        if (role === 'doctor') {
+            return ['contacts', 'appointments'].includes(item.id);
+        } else if (role === 'secretary' || role === 'nurse') {
+            return ['appointments'].includes(item.id);
+        }
+        return false;
+    });
 
     return (
         <header className={`sticky top-0 z-50 w-full border-b border-white/5 transition-all duration-300 ${transparent ? 'bg-white/5 backdrop-blur-3xl' : 'bg-background/40 backdrop-blur-[100px]'} shadow-none`}>
@@ -118,13 +137,21 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                     <div className="relative">
                                         <div className="absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full blur-md opacity-20 group-hover:opacity-40 transition duration-500" />
                                         <div className="relative h-11 w-11 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white overflow-hidden shadow-xl border-2 border-white/50 dark:border-blue-900/50">
-                                            {user?.avatar ?
+                                            {activeDoctor?.avatar ? (
                                                 <img
-                                                    src={user.avatar.startsWith('http') ? user.avatar : `${BASE_URL}${user.avatar}`}
+                                                    src={getAvatarSrc(activeDoctor.avatar)}
                                                     className="h-full w-full object-cover"
-                                                /> :
+                                                    alt="Doctor Avatar"
+                                                />
+                                            ) : user?.avatar ? (
+                                                <img
+                                                    src={getAvatarSrc(user.avatar)}
+                                                    className="h-full w-full object-cover"
+                                                    alt="Clinic Logo"
+                                                />
+                                            ) : (
                                                 <User className="h-5 w-5" />
-                                            }
+                                            )}
                                         </div>
                                         {/* Hamburger/Menu Badge */}
                                         <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-white dark:bg-blue-950 rounded-full flex flex-col items-center justify-center gap-0.5 border-2 border-blue-50 dark:border-blue-950 shadow-lg group-hover:scale-110 transition-transform">
@@ -189,7 +216,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
 
                                 {/* Navigation Items */}
                                 <div className="grid grid-cols-2 gap-2 mb-3">
-                                    {navItems.map((item) => (
+                                    {filteredNavItems.map((item) => (
                                         <DropdownMenuItem
                                             key={item.id}
                                             onSelect={() => onTabChange && onTabChange(item.id)}
@@ -217,27 +244,32 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                         <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                                         <span className="text-[8px] font-black">حسابي</span>
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onSelect={() => navigate('/clinic-doctors')}
-                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
-                                    >
-                                        <Stethoscope className="h-5 w-5 text-orange-500" />
-                                        <span className="text-[8px] font-black">الأطباء</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onSelect={() => onNavigate ? onNavigate('/admin') : navigate('/admin')}
-                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
-                                    >
-                                        <LayoutDashboard className="h-5 w-5 text-orange-500" />
-                                        <span className="text-[8px] font-black">الأدمن</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onSelect={() => onTabChange && onTabChange('clinic-settings')}
-                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
-                                    >
-                                        <Settings className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        <span className="text-[8px] font-black">الإعدادات</span>
-                                    </DropdownMenuItem>
+
+                                    {!activeDoctor && (
+                                        <>
+                                            <DropdownMenuItem
+                                                onSelect={() => navigate('/clinic-doctors')}
+                                                className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
+                                            >
+                                                <Stethoscope className="h-5 w-5 text-orange-500" />
+                                                <span className="text-[8px] font-black">الأطباء</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => onNavigate ? onNavigate('/admin') : navigate('/admin')}
+                                                className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
+                                            >
+                                                <LayoutDashboard className="h-5 w-5 text-orange-500" />
+                                                <span className="text-[8px] font-black">الأدمن</span>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                onSelect={() => onTabChange && onTabChange('clinic-settings')}
+                                                className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
+                                            >
+                                                <Settings className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                <span className="text-[8px] font-black">الإعدادات</span>
+                                            </DropdownMenuItem>
+                                        </>
+                                    )}
                                     <DropdownMenuItem
                                         onSelect={() => signOut()}
                                         className="flex flex-col items-center justify-center p-2 rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-900 dark:text-red-100 hover:bg-red-100"
@@ -469,13 +501,21 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                 <button className="flex items-center gap-3 pr-1.5 pl-4 py-1.5 rounded-full hover:bg-muted/30 transition-all duration-300 group outline-none border border-transparent hover:border-border/50 active:scale-95">
                                     <div className="relative">
                                         <div className="relative h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary overflow-hidden ring-1 ring-border/50 group-hover:ring-primary/50 transition-all">
-                                            {user?.avatar ?
+                                            {activeDoctor?.avatar ? (
                                                 <img
-                                                    src={user.avatar.startsWith('http') ? user.avatar : `${BASE_URL}${user.avatar}`}
+                                                    src={getAvatarSrc(activeDoctor.avatar)}
                                                     className="h-full w-full object-cover"
-                                                /> :
+                                                    alt="Doctor Avatar"
+                                                />
+                                            ) : user?.avatar ? (
+                                                <img
+                                                    src={getAvatarSrc(user.avatar)}
+                                                    className="h-full w-full object-cover"
+                                                    alt="Clinic Logo"
+                                                />
+                                            ) : (
                                                 <User className="h-5 w-5" />
-                                            }
+                                            )}
                                         </div>
                                         {/* Facebook-style Hamburger Badge */}
                                         <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-background rounded-full border border-border shadow-sm flex flex-col items-center justify-center gap-[1.5px] group-hover:scale-110 transition-transform">
@@ -530,35 +570,39 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                     حسابظٹ
                                 </DropdownMenuItem>
 
-                                <DropdownMenuItem
-                                    onSelect={() => navigate('/clinic-doctors')}
-                                    className="rounded-xl focus:bg-orange-50 dark:focus:bg-orange-950/20 focus:text-orange-700 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
-                                >
-                                    <div className="p-1.5 rounded-lg bg-background border border-orange-200 dark:border-orange-800 group-hover:border-orange-400 transition-colors">
-                                        <Stethoscope className="h-4 w-4 text-orange-500" />
-                                    </div>
-                                    أطباء العيادة
-                                </DropdownMenuItem>
+                                {(!activeDoctor) && (
+                                    <>
+                                        <DropdownMenuItem
+                                            onSelect={() => navigate('/clinic-doctors')}
+                                            className="rounded-xl focus:bg-orange-50 dark:focus:bg-orange-950/20 focus:text-orange-700 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
+                                        >
+                                            <div className="p-1.5 rounded-lg bg-background border border-orange-200 dark:border-orange-800 group-hover:border-orange-400 transition-colors">
+                                                <Stethoscope className="h-4 w-4 text-orange-500" />
+                                            </div>
+                                            أطباء العيادة
+                                        </DropdownMenuItem>
 
-                                <DropdownMenuItem
-                                    onSelect={() => onTabChange && onTabChange('clinic-settings')}
-                                    className="rounded-xl focus:bg-blue-50 dark:focus:bg-blue-950/20 focus:text-blue-700 dark:focus:text-blue-300 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
-                                >
-                                    <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
-                                        <Settings className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                    إعدادات النظام
-                                </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={() => onTabChange && onTabChange('clinic-settings')}
+                                            className="rounded-xl focus:bg-blue-50 dark:focus:bg-blue-950/20 focus:text-blue-700 dark:focus:text-blue-300 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
+                                        >
+                                            <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
+                                                <Settings className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                            </div>
+                                            إعدادات النظام
+                                        </DropdownMenuItem>
 
-                                <DropdownMenuItem
-                                    onSelect={() => onTabChange && onTabChange('dashboard')}
-                                    className="rounded-xl focus:bg-blue-50 dark:focus:bg-blue-950/20 focus:text-blue-700 dark:focus:text-blue-300 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
-                                >
-                                    <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
-                                        <LayoutDashboard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                    الواجهات
-                                </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                            onSelect={() => onTabChange && onTabChange('dashboard')}
+                                            className="rounded-xl focus:bg-blue-50 dark:focus:bg-blue-950/20 focus:text-blue-700 dark:focus:text-blue-300 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
+                                        >
+                                            <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
+                                                <LayoutDashboard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                                            </div>
+                                            الواجهات
+                                        </DropdownMenuItem>
+                                    </>
+                                )}
 
                                 <DropdownMenuSeparator className="bg-blue-100 dark:bg-blue-900 my-2" />
 
