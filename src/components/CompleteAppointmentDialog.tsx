@@ -29,6 +29,7 @@ import {
 import { appointmentsApi, whatsappApi, BASE_URL } from '@/lib/api';
 import { toastWithSound } from '@/lib/toast-with-sound';
 import axios from 'axios';
+import { useActiveDoctor } from '@/context/ActiveDoctorContext';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -68,6 +69,7 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
     const [generatingPdf, setGeneratingPdf] = useState(false);
     const [sendingPdf, setSendingPdf] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const { activeDoctor } = useActiveDoctor();
 
     useEffect(() => {
         const loadBranding = async () => {
@@ -113,11 +115,11 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                     national_id: appointment.contact?.nationalId || '',
                     age: appointment.contact?.ageRange || '',
                     record_type: 'prescription',
-                    treating_doctor_id: '',
+                    treating_doctor_id: activeDoctor ? activeDoctor.id.toString() : '',
                 });
             }
         }
-    }, [isOpen, appointment]);
+    }, [isOpen, appointment, activeDoctor]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -390,7 +392,8 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                             <select
                                                 value={formData.treating_doctor_id}
                                                 onChange={(e) => setFormData({ ...formData, treating_doctor_id: e.target.value })}
-                                                className="w-full h-12 rounded-xl border border-primary/20 bg-background px-3 text-sm font-bold text-right focus:outline-none focus:border-primary/50 transition-all"
+                                                disabled={!!activeDoctor}
+                                                className={`w-full h-12 rounded-xl border border-primary/20 bg-background px-3 text-sm font-bold text-right focus:outline-none focus:border-primary/50 transition-all ${!!activeDoctor ? 'opacity-70 cursor-not-allowed' : ''}`}
                                             >
                                                 <option value="">— اختر الطبيب المعالج (اختياري) —</option>
                                                 {clinicDoctors.map(doc => (
@@ -399,6 +402,11 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                                     </option>
                                                 ))}
                                             </select>
+                                            {activeDoctor && (
+                                                <p className="text-[10px] text-blue-600 mt-1">
+                                                    تم اختيار الطبيب تلقائياً بناءً على تسجيل الدخول الحالي.
+                                                </p>
+                                            )}
                                         </div>
                                     )}
 

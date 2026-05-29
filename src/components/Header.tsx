@@ -46,6 +46,7 @@ import { whatsappApi, appointmentsApi, BASE_URL } from '@/lib/api';
 import { formatDistanceToNow } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { useDoctorUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useActiveDoctor } from '@/context/ActiveDoctorContext';
 
 interface HeaderProps {
     onNavigate?: (path: string) => void;
@@ -60,6 +61,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
     const navigate = useNavigate();
     const { theme, toggleTheme } = useTheme();
     const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
+    const { activeDoctor, openLoginModal, logout } = useActiveDoctor();
 
     // ── رسائل الدردشة الداخلية ──
     const { unreadCount: msgCount, setUnreadCount: setMsgCount, refetch: refetchMsgs } = useDoctorUnreadMessages();
@@ -494,7 +496,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                             مرحباً بك
                                         </span>
                                         <span className="text-[13px] font-black text-blue-900 dark:text-blue-100 leading-tight">
-                                            {user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : "دكتور"}
+                                            {activeDoctor ? `د. ${activeDoctor.name}` : (user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : "دكتور")}
                                         </span>
                                     </div>
                                 </button>
@@ -506,11 +508,13 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                             >
                                 <div className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl mb-2 flex items-center gap-3 border border-blue-200 dark:border-blue-800">
                                     <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                        {user?.name?.[0] || 'D'}
+                                        {activeDoctor ? activeDoctor.name[0] : (user?.name?.[0] || 'D')}
                                     </div>
                                     <div>
-                                        <p className="font-bold text-sm text-blue-900 dark:text-blue-100">{user?.name || 'Doctor Store'}</p>
-                                        <p className="text-xs text-blue-600 dark:text-blue-400">{user?.role === 'admin' ? 'مدير النظام' : 'طبيب'}</p>
+                                        <p className="font-bold text-sm text-blue-900 dark:text-blue-100">{activeDoctor ? activeDoctor.name : (user?.name || 'Doctor Store')}</p>
+                                        <p className="text-xs text-blue-600 dark:text-blue-400">
+                                            {activeDoctor ? (activeDoctor.role === 'nurse' ? 'ممرض' : activeDoctor.role === 'secretary' ? 'سكرتارية' : 'طبيب') : (user?.role === 'admin' ? 'مدير النظام (رئيسي)' : 'طبيب')}
+                                        </p>
                                     </div>
                                 </div>
 
@@ -563,21 +567,43 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                         variant="outline"
                                         size="sm"
                                         className="w-full justify-start gap-2 rounded-xl mb-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-300 dark:hover:border-blue-700"
+                                        onClick={openLoginModal}
+                                    >
+                                        <Users className="h-4 w-4 text-blue-600" />
+                                        <span>تبديل المستخدم (طاقم العيادة)</span>
+                                    </Button>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="w-full justify-start gap-2 rounded-xl mb-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-300 dark:hover:border-blue-700"
                                         onClick={toggleTheme}
                                     >
                                         {theme === 'dark' ? <Sun className="h-4 w-4 text-blue-600" /> : <Moon className="h-4 w-4 text-blue-600" />}
                                         <span>{theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}</span>
                                     </Button>
 
-                                    <Button
-                                        variant="destructive"
-                                        size="sm"
-                                        className="w-full justify-start gap-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
-                                        onClick={() => signOut()}
-                                    >
-                                        <LogOut className="h-4 w-4" />
-                                        <span>تسجيل الخروج</span>
-                                    </Button>
+                                    {activeDoctor ? (
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            className="w-full justify-start gap-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
+                                            onClick={logout}
+                                        >
+                                            <LogOut className="h-4 w-4" />
+                                            <span>تسجيل خروج الطبيب (عودة للمسؤول)</span>
+                                        </Button>
+                                    ) : (
+                                        <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            className="w-full justify-start gap-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
+                                            onClick={() => signOut()}
+                                        >
+                                            <LogOut className="h-4 w-4" />
+                                            <span>تسجيل الخروج من النظام</span>
+                                        </Button>
+                                    )}
                                 </div>
                             </DropdownMenuContent>
                         </DropdownMenu>

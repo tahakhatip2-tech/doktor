@@ -472,8 +472,12 @@ model ClinicDoctor {
   id             Int             @id @default(autoincrement())
   clinicId       Int
   name           String
+  role           String          @default("doctor")
   specialty      String?
+  email          String?
   phone          String?
+  username       String?         @unique
+  passwordHash   String?
   workingHours   String?
   hourlyRate     Decimal?        @db.Decimal(10, 2)
   isActive       Boolean         @default(true)

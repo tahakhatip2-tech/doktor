@@ -32,6 +32,8 @@ import AppointmentDetail from "./pages/patient/AppointmentDetail";
 import ClinicDoctors from "./pages/doctor/ClinicDoctors";
 
 import { ClinicProvider } from "./context/ClinicContext";
+import { ActiveDoctorProvider } from "./context/ActiveDoctorContext";
+import StaffLoginModal from "./components/StaffLoginModal";
 
 const queryClient = new QueryClient();
 
@@ -39,11 +41,13 @@ const App = () => (
     <QueryClientProvider client={queryClient}>
         <TooltipProvider>
             <ClinicProvider>
-                <Toaster />
-                <Sonner />
-                <HashRouter>
-                    <ScrollToTop />
-                                        <PWAInstallBanner />
+                <ActiveDoctorProvider>
+                    <Toaster />
+                    <Sonner />
+                    <StaffLoginModal />
+                    <HashRouter>
+                        <ScrollToTop />
+                                            <PWAInstallBanner />
                     <Routes>
                         <Route path="/" element={<Index />} />
 
@@ -88,6 +92,7 @@ const App = () => (
                         <Route path="*" element={<NotFound />} />
                     </Routes>
                 </HashRouter>
+                </ActiveDoctorProvider>
             </ClinicProvider>
         </TooltipProvider>
     </QueryClientProvider>
