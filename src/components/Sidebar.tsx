@@ -20,6 +20,7 @@ import {
     MessagesSquare,
     Tag,
     Wallet,
+    Stethoscope,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -61,7 +62,7 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
         navigate("/auth");
     };
 
-    const { activeDoctor } = useActiveDoctor();
+    const { activeDoctor, openLoginModal, logout } = useActiveDoctor();
 
     const allNavItems = [
         { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
@@ -158,6 +159,45 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
                             لوحة الإدارة
                         </Button>
                     )}
+
+                    <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
+                        {!activeDoctor && (
+                            <>
+                                <Button
+                                    variant="ghost"
+                                    className="w-full flex-row-reverse justify-start gap-3 text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1 transition-all duration-300"
+                                    onClick={() => navigate('/clinic-doctors')}
+                                >
+                                    <Stethoscope className="h-5 w-5 flex-shrink-0" />
+                                    أطباء العيادة
+                                </Button>
+                                <Button
+                                    variant={activeTab === 'clinic-settings' ? "secondary" : "ghost"}
+                                    className={cn("w-full flex-row-reverse justify-start gap-3 transition-all duration-300", activeTab === 'clinic-settings' ? "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1" : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1")}
+                                    onClick={() => setActiveTab('clinic-settings')}
+                                >
+                                    <Settings className="h-5 w-5 flex-shrink-0" />
+                                    إعدادات النظام
+                                </Button>
+                            </>
+                        )}
+                        <Button
+                            variant="ghost"
+                            className="w-full flex-row-reverse justify-start gap-3 text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1 transition-all duration-300"
+                            onClick={openLoginModal}
+                        >
+                            <Users className="h-5 w-5 flex-shrink-0" />
+                            تبديل المستخدم
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            className="w-full flex-row-reverse justify-start gap-3 text-red-500 font-medium hover:text-red-600 hover:bg-red-50 hover:font-bold hover:translate-x-1 transition-all duration-300"
+                            onClick={activeDoctor ? logout : handleSignOut}
+                        >
+                            <LogOut className="h-5 w-5 flex-shrink-0" />
+                            {activeDoctor ? "خروج الطبيب" : "تسجيل الخروج"}
+                        </Button>
+                    </div>
                 </nav>
             </ScrollArea>
 

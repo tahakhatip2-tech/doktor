@@ -236,7 +236,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                 <DropdownMenuSeparator className="bg-blue-100/50 dark:bg-blue-900/50 my-2" />
 
                                 {/* Management Quick Actions */}
-                                <div className="grid grid-cols-4 gap-2 mb-2">
+                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
                                     <DropdownMenuItem
                                         onSelect={() => onNavigate ? onNavigate('/profile') : navigate('/profile')}
                                         className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
@@ -271,7 +271,14 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                         </>
                                     )}
                                     <DropdownMenuItem
-                                        onSelect={() => signOut()}
+                                        onSelect={() => setTimeout(openLoginModal, 100)}
+                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
+                                    >
+                                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                        <span className="text-[8px] font-black">تبديل</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onSelect={() => activeDoctor ? logout() : signOut()}
                                         className="flex flex-col items-center justify-center p-2 rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-900 dark:text-red-100 hover:bg-red-100"
                                     >
                                         <LogOut className="h-5 w-5 text-red-600 dark:text-red-400" />
@@ -496,161 +503,39 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                     {/* 1. Actions & Unified Profile (Right side in RTL) */}
                     <div className="flex items-center gap-2 sm:gap-4">
                         {/* Desktop Profile Pill - Now at the far right edge */}
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <button className="flex items-center gap-3 pr-1.5 pl-4 py-1.5 rounded-full hover:bg-muted/30 transition-all duration-300 group outline-none border border-transparent hover:border-border/50 active:scale-95">
-                                    <div className="relative">
-                                        <div className="relative h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary overflow-hidden ring-1 ring-border/50 group-hover:ring-primary/50 transition-all">
-                                            {activeDoctor?.avatar ? (
-                                                <img
-                                                    src={getAvatarSrc(activeDoctor.avatar)}
-                                                    className="h-full w-full object-cover"
-                                                    alt="Doctor Avatar"
-                                                />
-                                            ) : user?.avatar ? (
-                                                <img
-                                                    src={getAvatarSrc(user.avatar)}
-                                                    className="h-full w-full object-cover"
-                                                    alt="Clinic Logo"
-                                                />
-                                            ) : (
-                                                <User className="h-5 w-5" />
-                                            )}
-                                        </div>
-                                        {/* Facebook-style Hamburger Badge */}
-                                        <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-background rounded-full border border-border shadow-sm flex flex-col items-center justify-center gap-[1.5px] group-hover:scale-110 transition-transform">
-                                            <div className="w-2 h-[1px] bg-muted-foreground group-hover:bg-primary transition-colors"></div>
-                                            <div className="w-1.5 h-[1px] bg-muted-foreground group-hover:bg-primary transition-colors"></div>
-                                            <div className="w-2 h-[1px] bg-muted-foreground group-hover:bg-primary transition-colors"></div>
-
-                                            {/* Green Status Dot (Glow) */}
-                                            <div className="absolute -top-0.5 -left-0.5 h-1.5 w-1.5">
-                                                <div className="absolute inset-0 bg-green-500 rounded-full animate-ping opacity-20"></div>
-                                                <div className="relative h-1.5 w-1.5 bg-green-500 rounded-full border border-white dark:border-background"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div className="flex flex-col items-start mr-1 text-right">
-                                        <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-bold uppercase tracking-tighter mb-0.5">
-                                            مرحباً بك
-                                        </span>
-                                        <span className="text-[13px] font-black text-blue-900 dark:text-blue-100 leading-tight">
-                                            {activeDoctor ? `د. ${activeDoctor.name}` : (user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : "دكتور")}
-                                        </span>
-                                    </div>
-                                </button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent
-                                align="end"
-                                className="w-64 mt-4 p-2 rounded-2xl border border-border bg-card/95 backdrop-blur-3xl shadow-xl animate-in fade-in zoom-in-95"
-                                sideOffset={8}
-                            >
-                                <div className="p-3 bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-950/30 dark:to-blue-900/20 rounded-xl mb-2 flex items-center gap-3 border border-blue-200 dark:border-blue-800">
-                                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                        {activeDoctor ? activeDoctor.name[0] : (user?.name?.[0] || 'D')}
-                                    </div>
-                                    <div>
-                                        <p className="font-bold text-sm text-blue-900 dark:text-blue-100">{activeDoctor ? activeDoctor.name : (user?.name || 'Doctor Store')}</p>
-                                        <p className="text-xs text-blue-600 dark:text-blue-400">
-                                            {activeDoctor ? (activeDoctor.role === 'nurse' ? 'ممرض' : activeDoctor.role === 'secretary' ? 'سكرتارية' : 'طبيب') : (user?.role === 'admin' ? 'مدير النظام (رئيسي)' : 'طبيب')}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <DropdownMenuSeparator className="bg-blue-100 dark:bg-blue-900 my-1" />
-
-                                <DropdownMenuItem
-                                    onSelect={() => onNavigate ? onNavigate('/profile') : navigate('/profile')}
-                                    className="rounded-xl focus:bg-blue-50 dark:focus:bg-blue-950/20 focus:text-blue-700 dark:focus:text-blue-300 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
-                                >
-                                    <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
-                                        <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                    </div>
-                                    حسابظٹ
-                                </DropdownMenuItem>
-
-                                {(!activeDoctor) && (
-                                    <>
-                                        <DropdownMenuItem
-                                            onSelect={() => navigate('/clinic-doctors')}
-                                            className="rounded-xl focus:bg-orange-50 dark:focus:bg-orange-950/20 focus:text-orange-700 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
-                                        >
-                                            <div className="p-1.5 rounded-lg bg-background border border-orange-200 dark:border-orange-800 group-hover:border-orange-400 transition-colors">
-                                                <Stethoscope className="h-4 w-4 text-orange-500" />
-                                            </div>
-                                            أطباء العيادة
-                                        </DropdownMenuItem>
-
-                                        <DropdownMenuItem
-                                            onSelect={() => onTabChange && onTabChange('clinic-settings')}
-                                            className="rounded-xl focus:bg-blue-50 dark:focus:bg-blue-950/20 focus:text-blue-700 dark:focus:text-blue-300 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
-                                        >
-                                            <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
-                                                <Settings className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                            </div>
-                                            إعدادات النظام
-                                        </DropdownMenuItem>
-
-                                        <DropdownMenuItem
-                                            onSelect={() => onTabChange && onTabChange('dashboard')}
-                                            className="rounded-xl focus:bg-blue-50 dark:focus:bg-blue-950/20 focus:text-blue-700 dark:focus:text-blue-300 cursor-pointer gap-3 py-2.5 text-sm font-bold group"
-                                        >
-                                            <div className="p-1.5 rounded-lg bg-background border border-blue-200 dark:border-blue-800 group-hover:border-blue-400 dark:group-hover:border-blue-600 transition-colors">
-                                                <LayoutDashboard className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                                            </div>
-                                            الواجهات
-                                        </DropdownMenuItem>
-                                    </>
-                                )}
-
-                                <DropdownMenuSeparator className="bg-blue-100 dark:bg-blue-900 my-2" />
-
-                                <div className="p-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full justify-start gap-2 rounded-xl mb-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-300 dark:hover:border-blue-700"
-                                        onClick={openLoginModal}
-                                    >
-                                        <Users className="h-4 w-4 text-blue-600" />
-                                        <span>تبديل المستخدم (طاقم العيادة)</span>
-                                    </Button>
-
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        className="w-full justify-start gap-2 rounded-xl mb-2 border-blue-200 dark:border-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/20 hover:border-blue-300 dark:hover:border-blue-700"
-                                        onClick={toggleTheme}
-                                    >
-                                        {theme === 'dark' ? <Sun className="h-4 w-4 text-blue-600" /> : <Moon className="h-4 w-4 text-blue-600" />}
-                                        <span>{theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}</span>
-                                    </Button>
-
-                                    {activeDoctor ? (
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            className="w-full justify-start gap-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
-                                            onClick={logout}
-                                        >
-                                            <LogOut className="h-4 w-4" />
-                                            <span>تسجيل خروج الطبيب (عودة للمسؤول)</span>
-                                        </Button>
+                        <button 
+                            className="flex items-center gap-3 pr-1.5 pl-4 py-1.5 rounded-full hover:bg-muted/30 transition-all duration-300 group outline-none border border-transparent hover:border-border/50 active:scale-95 cursor-pointer"
+                            onClick={() => onNavigate ? onNavigate('/profile') : navigate('/profile')}
+                        >
+                            <div className="relative">
+                                <div className="relative h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary overflow-hidden ring-1 ring-border/50 group-hover:ring-primary/50 transition-all">
+                                    {activeDoctor?.avatar ? (
+                                        <img
+                                            src={getAvatarSrc(activeDoctor.avatar)}
+                                            className="h-full w-full object-cover"
+                                            alt="Doctor Avatar"
+                                        />
+                                    ) : user?.avatar ? (
+                                        <img
+                                            src={getAvatarSrc(user.avatar)}
+                                            className="h-full w-full object-cover"
+                                            alt="Clinic Logo"
+                                        />
                                     ) : (
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            className="w-full justify-start gap-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 hover:border-red-300"
-                                            onClick={() => signOut()}
-                                        >
-                                            <LogOut className="h-4 w-4" />
-                                            <span>تسجيل الخروج من النظام</span>
-                                        </Button>
+                                        <User className="h-5 w-5" />
                                     )}
                                 </div>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                            </div>
+
+                            <div className="flex flex-col items-start mr-1 text-right">
+                                <span className="text-[10px] text-blue-600/70 dark:text-blue-400/70 font-bold uppercase tracking-tighter mb-0.5">
+                                    مرحباً بك
+                                </span>
+                                <span className="text-[13px] font-black text-blue-900 dark:text-blue-100 leading-tight">
+                                    {activeDoctor ? `د. ${activeDoctor.name}` : (user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : "دكتور")}
+                                </span>
+                            </div>
+                        </button>
 
                         <div className="h-8 w-[1px] bg-border/50" />
 
