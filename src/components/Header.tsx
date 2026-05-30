@@ -26,6 +26,7 @@ import {
     AlertCircle,
     Bot,
     Stethoscope,
+    Tag,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -106,6 +107,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
         { id: 'whatsapp-bot', label: 'المحادثات', icon: MessageCircle },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
+        { id: 'offers', label: 'العروض', icon: Tag },
         { id: 'patient-inquiry', label: 'بوابة المرضى', icon: FileText },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
@@ -275,7 +277,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                         className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
                                     >
                                         <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        <span className="text-[8px] font-black">تبديل</span>
+                                        <span className="text-[8px] font-black">الطاقم الطبي</span>
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                         onSelect={() => activeDoctor ? logout() : signOut()}
