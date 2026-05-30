@@ -14,6 +14,7 @@ import {
 import axios from 'axios';
 import { toastWithSound } from '@/lib/toast-with-sound';
 import Header from '@/components/Header';
+import HeroSection from '@/components/HeroSection';
 import { BottomNav } from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -188,34 +189,29 @@ export default function ClinicDoctors() {
             />
 
             {/* ── Hero Banner ── */}
-            <div className="bg-gradient-to-l from-orange-500 via-orange-600 to-rose-600 text-white px-4 pt-6 pb-10 shadow-xl">
-                <div className="max-w-5xl mx-auto flex items-center justify-between flex-wrap gap-4">
-                    <div className="flex items-center gap-4">
-                        <button
-                            onClick={() => navigate('/')}
-                            className="p-2 rounded-xl bg-white/20 hover:bg-white/30 transition-all"
-                        >
-                            <ArrowRight className="h-5 w-5 text-white" />
-                        </button>
-                        <div className="p-3 rounded-2xl bg-white/20 backdrop-blur-sm shadow-inner">
-                            <Users className="h-7 w-7 text-white" />
-                        </div>
-                        <div>
-                            <h1 className="text-2xl font-black tracking-tight">إدارة طاقم العيادة</h1>
-                            <p className="text-orange-100 text-sm font-medium mt-0.5">
-                                أضف أطبائك، ممرضينك، وطاقم الاستقبال وامنحهم صلاحيات الدخول
-                            </p>
-                        </div>
-                    </div>
+            <HeroSection
+                doctorName={user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : 'دكتور'}
+                pageTitle="إدارة طاقم العيادة"
+                description="أضف أطبائك، ممرضينك، وطاقم الاستقبال وامنحهم صلاحيات الدخول"
+                icon={Users}
+            >
+                <div className="flex items-center gap-2 w-full justify-center md:justify-end">
+                    <button
+                        onClick={() => navigate('/')}
+                        className="p-2.5 rounded-xl bg-white/10 hover:bg-white/20 transition-all shadow-lg backdrop-blur-md border border-white/10 group"
+                        title="عودة للرئيسية"
+                    >
+                        <ArrowRight className="h-5 w-5 text-white group-hover:-translate-x-1 transition-transform" />
+                    </button>
                     <Button
                         onClick={openAdd}
-                        className="gap-2 rounded-2xl bg-white text-orange-600 hover:bg-orange-50 font-black shadow-xl border-2 border-white/50 px-6 py-3 h-auto text-sm transition-all hover:scale-105"
+                        className="gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 font-black shadow-[0_0_15px_rgba(249,115,22,0.4)] border border-orange-400/50 px-6 py-2.5 h-auto text-sm transition-all hover:scale-105"
                     >
                         <Plus className="h-5 w-5" />
                         إضافة موظف جديد
                     </Button>
                 </div>
-            </div>
+            </HeroSection>
 
             {/* ── Stats Bar ── */}
             <div className="max-w-5xl mx-auto -mt-5 px-4 mb-6">
