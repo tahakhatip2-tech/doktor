@@ -5,6 +5,7 @@ import {
     Plus,
     Settings,
     MessagesSquare,
+    Tag,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import AddAppointmentDialog from "@/components/AddAppointmentDialog";
@@ -22,7 +23,7 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
         { id: 'dashboard', label: 'الرئيسية', icon: Home },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'add-patient', label: 'إضافة', icon: Plus, isSpecial: true },
-        { id: 'internal-chat', label: 'رسائل', icon: MessagesSquare },
+        { id: 'offers', label: 'الأخبار', icon: Tag },
         { id: 'clinic-settings', label: 'الإعدادات', icon: Settings },
     ];
 

@@ -155,24 +155,13 @@ export default function OffersManager() {
 
     return (
         <div className="space-y-6" dir="rtl">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <h2 className="text-2xl font-black flex items-center gap-2 text-blue-900">
-                        <Tag className="h-6 w-6 text-orange-500" />
-                        آخر الأخبار والمنشورات
-                    </h2>
-                    <p className="text-muted-foreground text-sm mt-1">انشر أخبارك، عروضك، أو ريلز لمرضاك</p>
-                </div>
-                
-                <Dialog open={showForm} onOpenChange={setShowForm}>
-                    <DialogTrigger asChild>
-                        <Button className="bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg hover:shadow-blue-500/30 gap-2 font-bold rounded-full px-6">
-                            <Plus className="h-4 w-4" />
-                            أضف منشور
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[500px] border-orange-200 shadow-xl bg-gradient-to-br from-white to-blue-50/50" dir="rtl">
+            <Dialog open={showForm} onOpenChange={setShowForm}>
+                <DialogTrigger asChild>
+                    <Button className="fixed bottom-24 left-4 z-50 flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)] border-2 border-white dark:border-zinc-900 hover:scale-105 active:scale-95 transition-all duration-300 text-white p-0">
+                        <Plus className="h-7 w-7" />
+                    </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px] border-orange-200 shadow-xl bg-gradient-to-br from-white to-blue-50/50" dir="rtl">
                         <DialogHeader>
                             <DialogTitle className="text-xl font-bold flex items-center gap-2 text-blue-900">
                                 <Sparkles className="h-5 w-5 text-orange-500" />
@@ -243,7 +232,6 @@ export default function OffersManager() {
                         </div>
                     </DialogContent>
                 </Dialog>
-            </div>
 
             {/* Posts List */}
             {loading ? (

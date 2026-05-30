@@ -758,7 +758,7 @@ const Index = () => {
                 )}
 
                 {/* AI Secretary - Floating button for doctor */}
-                <DoctorAISecretary />
+                {activeTab !== 'offers' && <DoctorAISecretary />}
             </ClinicProvider >
         </div >
     );

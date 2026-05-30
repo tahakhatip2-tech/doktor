@@ -102,15 +102,7 @@ export default function PatientOffers() {
     };
 
     return (
-        <div className="space-y-6 animate-fade-in pb-28 bg-slate-50 min-h-screen" dir="rtl">
-            {/* Hero */}
-            <PatientHero
-                title="آخر الأخبار"
-                subtitle="من عياداتكم المفضلة"
-                description="تصفح أحدث أخبار وتحديثات العيادات المسجلة."
-                badgeText="متابعة مستمرة"
-            />
-
+        <div className="space-y-6 animate-fade-in pb-28 bg-slate-50 min-h-screen pt-6" dir="rtl">
             <div className="px-4 sm:px-0 max-w-3xl mx-auto">
                 {loading ? (
                     <div className="space-y-6">
