@@ -43,6 +43,7 @@ model User {
   notifications         Notification[]
   offers                Offer[]
   offerLikes            OfferLike[]
+  offerComments         OfferComment[]
   payments              Payment[]
   pipelines             Pipeline[]
   services              Service[]
@@ -439,19 +440,30 @@ model InternalMessage {
 }
 
 model Offer {
-  id          Int         @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   userId      Int
   title       String
   content     String
   image       String?
-  isPermanent Boolean     @default(false)
-  startDate   DateTime    @default(now())
+  isPermanent Boolean        @default(false)
+  startDate   DateTime       @default(now())
   endDate     DateTime?
-  isActive    Boolean     @default(true)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  user        User        @relation(fields: [userId], references: [id])
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+  user        User           @relation(fields: [userId], references: [id])
   likes       OfferLike[]
+  comments    OfferComment[]
+}
+
+model OfferComment {
+  id        Int      @id @default(autoincrement())
+  offerId   Int
+  userId    Int
+  content   String
+  createdAt DateTime @default(now())
+  offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model OfferLike {
@@ -469,16 +481,16 @@ model OfferLike {
 }
 
 model ClinicDoctor {
-  id             Int             @id @default(autoincrement())
-  clinicId       Int
-  name           String
-  role           String          @default("doctor")
-  specialty      String?
-  email          String?
-  phone          String?
-  username       String?         @unique
-  passwordHash   String?
-  workingHours   String?
+  id              Int             @id @default(autoincrement())
+  clinicId        Int
+  name            String
+  role            String          @default("doctor")
+  specialty       String?
+  email           String?
+  phone           String?
+  username        String?         @unique
+  passwordHash    String?
+  workingHours    String?
   hourlyRate      Decimal?        @db.Decimal(10, 2)
   avatar          String?
   workingDays     String?
@@ -486,11 +498,11 @@ model ClinicDoctor {
   certifications  String?
   experienceYears Int?
   isActive        Boolean         @default(true)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  appointments   Appointment[]
-  clinic         User            @relation(fields: [clinicId], references: [id])
-  medicalRecords MedicalRecord[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  appointments    Appointment[]
+  clinic          User            @relation(fields: [clinicId], references: [id])
+  medicalRecords  MedicalRecord[]
 }
 
 model ClinicReview {

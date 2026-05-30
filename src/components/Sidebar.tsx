@@ -71,7 +71,7 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
         { id: 'finance', label: 'المحاسبة', icon: Wallet },
-        { id: 'offers', label: 'العروض', icon: Tag },
+        { id: 'offers', label: 'آخر الأخبار', icon: Tag },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
     ];

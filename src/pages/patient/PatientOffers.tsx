@@ -105,10 +105,10 @@ export default function PatientOffers() {
         <div className="space-y-6 animate-fade-in pb-28 bg-slate-50 min-h-screen" dir="rtl">
             {/* Hero */}
             <PatientHero
-                title="العروض والخصومات"
+                title="آخر الأخبار"
                 subtitle="من عياداتكم المفضلة"
-                description="تصفح أحدث العروض والتخفيضات المقدمة من العيادات المسجلة."
-                badgeText="عروض حصرية"
+                description="تصفح أحدث أخبار وتحديثات العيادات المسجلة."
+                badgeText="متابعة مستمرة"
             />
 
             <div className="px-4 sm:px-0 max-w-3xl mx-auto">
@@ -123,8 +123,8 @@ export default function PatientOffers() {
                         <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-5">
                             <Tag className="h-10 w-10 text-blue-400 opacity-80" />
                         </div>
-                        <p className="font-bold text-xl text-slate-800">لا توجد عروض حالياً</p>
-                        <p className="text-sm mt-2 text-slate-500">تابع العيادات لتصلك أحدث عروضها الحصرية</p>
+                        <p className="font-bold text-xl text-slate-800">لا توجد أخبار حالياً</p>
+                        <p className="text-sm mt-2 text-slate-500">تابع العيادات لتصلك أحدث أخبارها</p>
                     </div>
                 ) : (
                     <div className="space-y-8">
@@ -225,12 +225,16 @@ export default function PatientOffers() {
                                     <div className="relative">
                                         {offer.image && (
                                             <div className="w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-100 relative">
-                                                <img
-                                                    src={logoSrc(offer.image) || ''}
-                                                    alt={offer.title}
-                                                    className="w-full h-full object-cover"
-                                                    loading="lazy"
-                                                />
+                                                {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
+                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full h-full object-contain bg-black" />
+                                                ) : (
+                                                    <img
+                                                        src={logoSrc(offer.image) || ''}
+                                                        alt={offer.title}
+                                                        className="w-full h-full object-cover"
+                                                        loading="lazy"
+                                                    />
+                                                )}
                                             </div>
                                         )}
 

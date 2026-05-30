@@ -71,7 +71,7 @@ export default function PatientLayout() {
         { path: '/patient/appointments', label: 'مواعيدي', icon: Calendar },
         { path: '/patient/clinics', label: 'العيادات', icon: Building2 },
         { path: '/patient/dashboard', label: 'الرئيسية', icon: Home }, // المركزية
-        { path: '/patient/offers', label: 'العروض', icon: Tag },
+        { path: '/patient/offers', label: 'آخر الأخبار', icon: Tag },
         { path: '/patient/medical-records', label: 'السجلات', icon: FileText },
     ];
 

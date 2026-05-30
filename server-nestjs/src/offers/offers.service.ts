@@ -38,7 +38,13 @@ export class OffersService {
                     } 
                 },
                 likes: true,
-                _count: { select: { likes: true } },
+                comments: {
+                    include: {
+                        user: { select: { id: true, name: true, avatar: true } }
+                    },
+                    orderBy: { createdAt: 'asc' }
+                },
+                _count: { select: { likes: true, comments: true } },
             },
         });
 
@@ -95,7 +101,13 @@ export class OffersService {
                     } 
                 },
                 likes: true,
-                _count: { select: { likes: true } },
+                comments: {
+                    include: {
+                        user: { select: { id: true, name: true, avatar: true } }
+                    },
+                    orderBy: { createdAt: 'asc' }
+                },
+                _count: { select: { likes: true, comments: true } },
             },
         });
 
@@ -133,5 +145,13 @@ export class OffersService {
             await this.prisma.offerLike.create({ data: { offerId, patientId } });
             return { liked: true };
         }
+    }
+
+    // ── الطبيب: إضافة تعليق ────────────────────────────────────
+    async addComment(offerId: number, userId: number, content: string) {
+        return this.prisma.offerComment.create({
+            data: { offerId, userId, content },
+            include: { user: { select: { id: true, name: true, avatar: true } } }
+        });
     }
 }

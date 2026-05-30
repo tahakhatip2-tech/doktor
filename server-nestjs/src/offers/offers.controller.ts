@@ -35,6 +35,13 @@ export class OffersController {
         return this.offersService.delete(req.user.id, id);
     }
 
+    /** إضافة تعليق (الطبيب) */
+    @Post(':id/comments')
+    @UseGuards(AuthGuard('jwt'))
+    addComment(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number, @Body('content') content: string) {
+        return this.offersService.addComment(id, req.user.id, content);
+    }
+
     /** جلب الـ Feed العام (متاح للجميع) */
     @Get('feed')
     getFeed() {

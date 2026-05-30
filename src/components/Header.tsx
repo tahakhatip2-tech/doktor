@@ -107,7 +107,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
         { id: 'whatsapp-bot', label: 'المحادثات', icon: MessageCircle },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
-        { id: 'offers', label: 'العروض', icon: Tag },
+        { id: 'offers', label: 'آخر الأخبار', icon: Tag },
         { id: 'patient-inquiry', label: 'بوابة المرضى', icon: FileText },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
