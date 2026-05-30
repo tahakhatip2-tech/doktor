@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import {
     Plus, Trash2, Tag, Clock, Image as ImageIcon,
-    Building2, Heart, X, Sparkles, MessageCircle, Send, PlayCircle
+    Building2, Heart, X, Sparkles, MessageCircle, Send, PlayCircle, Share2
 } from 'lucide-react';
 import axios from 'axios';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -145,6 +145,38 @@ export default function OffersManager() {
             toast({ variant: 'destructive', title: 'فشل إضافة التعليق' });
         } finally {
             setPostingComment(prev => ({ ...prev, [offerId]: false }));
+        }
+    };
+
+    const handleLike = async (offerId: number) => {
+        try {
+            const res = await axios.post(`${API_URL}/offers/${offerId}/like`, {}, { headers });
+            setOffers(prev => prev.map(o => {
+                if (o.id === offerId) {
+                    const isNowLiked = res.data.liked;
+                    return {
+                        ...o,
+                        isLiked: isNowLiked,
+                        _count: { ...o._count, likes: isNowLiked ? (o._count?.likes || 0) + 1 : Math.max(0, (o._count?.likes || 0) - 1) }
+                    };
+                }
+                return o;
+            }));
+        } catch {
+            toast({ variant: 'destructive', title: 'فشل الإعجاب' });
+        }
+    };
+
+    const handleShare = (offer: any) => {
+        if (navigator.share) {
+            navigator.share({
+                title: offer.title,
+                text: `${offer.title}\n\n${offer.content}`,
+                url: window.location.href,
+            }).catch(() => {});
+        } else {
+            navigator.clipboard.writeText(`${offer.title}\n\n${offer.content}\n\n${window.location.href}`);
+            toast({ title: '📋 تم نسخ رابط المنشور!' });
         }
     };
 
@@ -295,18 +327,35 @@ export default function OffersManager() {
                                     </div>
                                 )}
 
-                                {/* Stats & Comments Section */}
-                                <div className="px-4 py-3 bg-slate-50/50">
-                                    <div className="flex items-center gap-4 text-sm text-slate-500 font-medium mb-3 pb-3 border-b border-slate-100">
-                                        <div className="flex items-center gap-1.5">
-                                            <div className="bg-blue-100 p-1 rounded-full"><Heart className="h-3 w-3 text-blue-600 fill-blue-600" /></div>
+                                {/* Action Bar */}
+                                <div className="px-4 py-3 bg-slate-50 border-y border-slate-100 flex items-center justify-between">
+                                    <div className="flex items-center gap-4 text-sm font-medium">
+                                        <button 
+                                            onClick={() => handleLike(offer.id)}
+                                            className={cn(
+                                                "flex items-center gap-1.5 transition-colors",
+                                                offer.isLiked ? "text-orange-500" : "text-slate-500 hover:text-orange-500"
+                                            )}
+                                        >
+                                            <Heart className={cn("h-4 w-4", offer.isLiked && "fill-orange-500")} />
                                             <span>{offer._count?.likes || 0} إعجاب</span>
-                                        </div>
-                                        <div className="flex items-center gap-1.5">
+                                        </button>
+                                        <div className="flex items-center gap-1.5 text-slate-500">
                                             <MessageCircle className="h-4 w-4" />
                                             <span>{offer._count?.comments || 0} تعليق</span>
                                         </div>
                                     </div>
+                                    <button 
+                                        onClick={() => handleShare(offer)}
+                                        className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors"
+                                    >
+                                        <Share2 className="h-4 w-4" />
+                                        مشاركة
+                                    </button>
+                                </div>
+
+                                {/* Comments Section */}
+                                <div className="px-4 py-3 bg-slate-50/50">
 
                                     {/* Comments List */}
                                     {offer.comments && offer.comments.length > 0 && (

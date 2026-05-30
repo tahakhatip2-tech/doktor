@@ -18,7 +18,7 @@ import { BASE_URL } from '@/lib/api';
 
 const logoSrc = (url?: string) => {
     if (!url) return null;
-    if (url.startsWith('http')) return url;
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
     return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
 };
 
@@ -45,6 +45,7 @@ interface Offer {
         clinic_logo?: string;
         phone?: string;
     };
+    comments?: any[];
 }
 
 export default function PatientOffers() {
@@ -298,6 +299,41 @@ export default function PatientOffers() {
                                             </button>
                                         </div>
                                     </div>
+
+                                    {/* Comments Section */}
+                                    {offer.comments && offer.comments.length > 0 && (
+                                        <div className="px-4 py-3 bg-slate-50/50 border-t border-slate-100">
+                                            <div className="flex items-center gap-2 mb-3 text-slate-500 text-sm font-medium">
+                                                <MessageCircle className="h-4 w-4" />
+                                                <span>التعليقات ({offer.comments.length})</span>
+                                            </div>
+                                            <div className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                                                {offer.comments.map((comment: any) => (
+                                                    <div key={comment.id} className="flex gap-2.5">
+                                                        <div className="h-7 w-7 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                                                            {comment.user.avatar ? (
+                                                                <img src={logoSrc(comment.user.avatar) || ''} className="h-full w-full object-cover" />
+                                                            ) : (
+                                                                <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-700 font-bold text-[10px]">
+                                                                    {comment.user.name.charAt(0)}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="bg-white border border-slate-100 rounded-2xl rounded-tr-none px-3 py-2 shadow-sm">
+                                                                <p className="font-bold text-[11px] text-slate-900">{comment.user.name}</p>
+                                                                <p className="text-xs text-slate-700 mt-0.5">{comment.content}</p>
+                                                            </div>
+                                                            <p className="text-[9px] text-slate-400 mt-1 ml-1">
+                                                                {formatDistanceToNow(new Date(comment.createdAt), { locale: ar, addSuffix: true })}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                 </CardContent>
                             </Card>
                         ))}

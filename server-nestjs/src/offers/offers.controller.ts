@@ -42,6 +42,13 @@ export class OffersController {
         return this.offersService.addComment(id, req.user.id, content);
     }
 
+    /** إضافة إعجاب (الطبيب) */
+    @Post(':id/like')
+    @UseGuards(AuthGuard('jwt'))
+    toggleLike(@Req() req: AuthRequest, @Param('id', ParseIntPipe) id: number) {
+        return this.offersService.toggleLikeForDoctor(id, req.user.id);
+    }
+
     /** جلب الـ Feed العام (متاح للجميع) */
     @Get('feed')
     getFeed() {

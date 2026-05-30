@@ -53,6 +53,7 @@ export class OffersService {
             const settingsMap = Object.fromEntries((settings || []).map((s: any) => [s.key, s.value]));
             return {
                 ...offer,
+                isLiked: (offer.likes as any[])?.some(like => like.userId === userId),
                 user: {
                     ...userData,
                     name: userData.name, // Always use profile name, ignore doctor_name from whatsapp settings to match patient.service.ts
@@ -71,6 +72,28 @@ export class OffersService {
         if (offer.userId !== userId) throw new ForbiddenException('غير مصرح');
         await this.prisma.offer.delete({ where: { id: offerId } });
         return { success: true };
+    }
+
+    // ── الطبيب: تسجيل الإعجاب بعرض ───────────────────────────────────────────────
+    async toggleLikeForDoctor(offerId: number, userId: number) {
+        const offer = await this.prisma.offer.findUnique({ where: { id: offerId } });
+        if (!offer) throw new NotFoundException('العرض غير موجود');
+
+        const existingLike = await this.prisma.offerLike.findUnique({
+            where: {
+                offerId_userId: { offerId, userId }
+            }
+        });
+
+        if (existingLike) {
+            await this.prisma.offerLike.delete({ where: { id: existingLike.id } });
+            return { success: true, liked: false };
+        } else {
+            await this.prisma.offerLike.create({
+                data: { offerId, userId }
+            });
+            return { success: true, liked: true };
+        }
     }
 
     // ── المريض: جلب كل العروض النشطة (Feed) ────────────────────────────
