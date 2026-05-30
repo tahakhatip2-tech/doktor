@@ -235,7 +235,7 @@ const Index = () => {
                     <main className="flex-1 p-4 md:p-10">
                         <div className="max-w-7xl mx-auto">
                             {/* Dynamic Hero Section */}
-                            {activeTab !== 'patient-details' && activeTab !== 'whatsapp-bot' && activeTab !== 'internal-chat' && (
+                            {activeTab !== 'patient-details' && activeTab !== 'whatsapp-bot' && activeTab !== 'internal-chat' && activeTab !== 'offers' && (
                                 <HeroSection
                                     doctorName={activeDoctor ? `د. ${activeDoctor.name}` : (user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : 'د. حكيم')}
                                     pageTitle={
