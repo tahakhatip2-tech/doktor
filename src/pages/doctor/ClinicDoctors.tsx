@@ -9,7 +9,7 @@ import {
     UserPlus, Stethoscope, Phone, Clock, DollarSign,
     Pencil, Trash2, X, Check, Plus, Power, PowerOff,
     Users, Shield, Key, ArrowRight, Eye, EyeOff,
-    Mail, Briefcase, BadgeCheck, Lock
+    Mail, Briefcase, BadgeCheck, Lock, CheckCircle2, FileText
 } from 'lucide-react';
 import axios from 'axios';
 import { toastWithSound } from '@/lib/toast-with-sound';
@@ -58,10 +58,10 @@ const emptyForm = {
     experienceYears: '',
 };
 
-const ROLE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; icon: string }> = {
-    doctor:    { label: 'طبيب معالج',           color: 'text-blue-700',   bg: 'bg-blue-50',   border: 'border-blue-200',   icon: '🩺' },
-    nurse:     { label: 'ممرض/ة',                color: 'text-emerald-700',bg: 'bg-emerald-50',border: 'border-emerald-200', icon: '💉' },
-    secretary: { label: 'استقبال / سكرتارية',   color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200',  icon: '🗂️' },
+const ROLE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; icon: any }> = {
+    doctor:    { label: 'طبيب معالج',           color: 'text-blue-700',   bg: 'bg-blue-50',   border: 'border-blue-200',   icon: Stethoscope },
+    nurse:     { label: 'ممرض/ة',                color: 'text-emerald-700',bg: 'bg-emerald-50',border: 'border-emerald-200', icon: Briefcase },
+    secretary: { label: 'استقبال / سكرتارية',   color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200',  icon: FileText },
 };
 
 export default function ClinicDoctors() {
@@ -217,16 +217,18 @@ export default function ClinicDoctors() {
             <div className="max-w-5xl mx-auto -mt-5 px-4 mb-6">
                 <div className="grid grid-cols-3 gap-3">
                     {[
-                        { label: 'إجمالي الموظفين', value: doctors.length, color: 'text-slate-700', bg: 'bg-white', icon: '👥' },
-                        { label: 'نشطون حالياً',    value: activeCount,    color: 'text-emerald-600', bg: 'bg-emerald-50', icon: '✅' },
-                        { label: 'لديهم دخول',       value: loginCount,     color: 'text-blue-600', bg: 'bg-blue-50', icon: '🔑' },
-                    ].map(stat => (
+                        { label: 'إجمالي الموظفين', value: doctors.length, color: 'text-slate-700', bg: 'bg-white', icon: Users },
+                        { label: 'نشطون حالياً',    value: activeCount,    color: 'text-emerald-600', bg: 'bg-emerald-50', icon: CheckCircle2 },
+                        { label: 'لديهم دخول',       value: loginCount,     color: 'text-blue-600', bg: 'bg-blue-50', icon: Key },
+                    ].map(stat => {
+                        const Icon = stat.icon;
+                        return (
                         <div key={stat.label} className={`${stat.bg} rounded-2xl shadow-sm border border-white/80 p-3 text-center`}>
-                            <div className="text-xl mb-0.5">{stat.icon}</div>
+                            <div className="mb-0.5 flex justify-center"><Icon className={`h-6 w-6 ${stat.color}`} /></div>
                             <div className={`text-xl font-black ${stat.color}`}>{stat.value}</div>
                             <div className="text-[10px] text-slate-500 font-bold">{stat.label}</div>
                         </div>
-                    ))}
+                    )})}
                 </div>
             </div>
 
@@ -244,7 +246,7 @@ export default function ClinicDoctors() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-center py-20 px-4 rounded-3xl border-2 border-dashed border-slate-200 bg-white"
                     >
-                        <div className="text-6xl mb-4">👨‍⚕️</div>
+                        <Users className="h-16 w-16 mx-auto mb-4 text-slate-300" />
                         <p className="text-slate-600 font-black text-lg mb-2">لا يوجد طاقم مضاف بعد</p>
                         <p className="text-slate-400 text-sm mb-6">أضف أطباءك وموظفيك ليتمكنوا من الدخول للنظام</p>
                         <Button
@@ -273,7 +275,7 @@ export default function ClinicDoctors() {
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-xl shadow-inner border ${roleInfo.bg} ${roleInfo.border}`}>
-                                                        {roleInfo.icon}
+                                                        <roleInfo.icon className={`h-6 w-6 ${roleInfo.color}`} />
                                                     </div>
                                                     <div>
                                                         <h3 className="font-black text-slate-800 text-sm leading-tight">{doc.name}</h3>
