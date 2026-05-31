@@ -107,7 +107,7 @@ export class AppointmentsService {
       customerName,
       appointmentDate,
       duration,
-      appointmentType,
+      type,
       status,
       notes,
     } = data;
@@ -186,7 +186,7 @@ export class AppointmentsService {
         customerName,
         appointmentDate: new Date(appointmentDate),
         duration: duration || 30,
-        type: appointmentType || 'consultation',
+        type: type || 'consultation',
         status: status || 'scheduled',
         notes,
       },

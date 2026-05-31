@@ -55,4 +55,26 @@ export class PatientController {
         const slots = await this.appointmentsService.getAvailableSlots(clinicId, date);
         return { date, clinicId, slots };
     }
+
+    @Get('pharmacies')
+    @UseGuards(PatientAuthGuard)
+    async getPharmacies() {
+        return this.patientService.getPharmacies();
+    }
+
+    @Get('prescriptions')
+    @UseGuards(PatientAuthGuard)
+    async getPrescriptions(@Request() req) {
+        return this.patientService.getPrescriptions(req.user.id);
+    }
+
+    @Post('prescriptions/:id/send-to-pharmacy')
+    @UseGuards(PatientAuthGuard)
+    async sendPrescriptionToPharmacy(
+        @Request() req,
+        @Param('id', ParseIntPipe) prescriptionId: number,
+        @Body('pharmacyId', ParseIntPipe) pharmacyId: number
+    ) {
+        return this.patientService.sendPrescriptionToPharmacy(req.user.id, prescriptionId, pharmacyId);
+    }
 }

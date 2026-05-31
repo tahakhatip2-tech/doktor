@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
     Tag, Heart, Share2, MessageCircle,
-    Building2, Calendar, Infinity, Clock, Phone, Stethoscope
+    Building2, Calendar, Infinity, Clock, Phone, Stethoscope, X, Send
 } from 'lucide-react';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,6 +15,8 @@ import { ar } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import PatientHero from '@/components/patient/PatientHero';
 import { BASE_URL } from '@/lib/api';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 const logoSrc = (url?: string) => {
     if (!url) return null;
@@ -52,6 +54,9 @@ export default function PatientOffers() {
     const { toast } = useToast();
     const [offers, setOffers] = useState<Offer[]>([]);
     const [loading, setLoading] = useState(true);
+    const [selectedOfferForComments, setSelectedOfferForComments] = useState<Offer | null>(null);
+    const [commentText, setCommentText] = useState('');
+    const [postingComment, setPostingComment] = useState(false);
 
     const token = localStorage.getItem('patient_token');
     const headers = { Authorization: `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' };
@@ -69,36 +74,67 @@ export default function PatientOffers() {
 
     useEffect(() => { fetchOffers(); }, []);
 
-    const handleLike = async (offer: Offer) => {
-        // Optimistic UI
-        setOffers(prev => prev.map(o => o.id === offer.id ? {
-            ...o,
-            isLikedByMe: !o.isLikedByMe,
-            likesCount: o.isLikedByMe ? o.likesCount - 1 : o.likesCount + 1,
-        } : o));
-
+    const handleLike = async (offer: any) => {
         try {
-            await axios.post(`${API_URL}/patient/offers/${offer.id}/like`, {}, { headers });
+            const res = await axios.post(`${API_URL}/patient/offers/${offer.id}/like`, {}, { headers });
+            setOffers(prev => prev.map(o => {
+                if (o.id === offer.id) {
+                    const isNowLiked = res.data.liked;
+                    return {
+                        ...o,
+                        isLikedByMe: isNowLiked,
+                        likesCount: isNowLiked ? o.likesCount + 1 : Math.max(0, o.likesCount - 1)
+                    };
+                }
+                return o;
+            }));
         } catch {
-            // Revert on error
-            setOffers(prev => prev.map(o => o.id === offer.id ? {
-                ...o,
-                isLikedByMe: offer.isLikedByMe,
-                likesCount: offer.likesCount,
-            } : o));
+            toast({ variant: 'destructive', title: 'حدث خطأ' });
         }
     };
 
-    const handleShare = (offer: Offer) => {
+    const handleAddComment = async (offerId: number) => {
+        if (!commentText.trim()) return;
+        setPostingComment(true);
+        try {
+            const res = await axios.post(`${API_URL}/offers/${offerId}/comments`, { content: commentText }, { headers });
+            const newComment = res.data;
+            
+            setOffers(prev => prev.map(o => {
+                if (o.id === offerId) {
+                    return { ...o, comments: [...(o.comments || []), newComment] };
+                }
+                return o;
+            }));
+            
+            if (selectedOfferForComments?.id === offerId) {
+                setSelectedOfferForComments(prev => prev ? { ...prev, comments: [...(prev.comments || []), newComment] } : prev);
+            }
+            
+            setCommentText('');
+            toast({ title: 'تمت إضافة التعليق' });
+        } catch {
+            toast({ variant: 'destructive', title: 'فشل إضافة التعليق' });
+        } finally {
+            setPostingComment(false);
+        }
+    };
+
+    const handleShare = (offer: any) => {
+        const shareText = `${offer.title}\n\n${offer.content}`;
+        const url = window.location.href;
+        
         if (navigator.share) {
             navigator.share({
                 title: offer.title,
-                text: `${offer.title}\n\n${offer.content}`,
-                url: window.location.href,
-            });
+                text: shareText,
+                url: url,
+            }).catch(() => { });
         } else {
-            navigator.clipboard.writeText(`${offer.title}\n\n${offer.content}`);
-            toast({ title: '📋 تم نسخ العرض!' });
+            // Fallback for desktop: Open WhatsApp web
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + url)}`;
+            window.open(whatsappUrl, '_blank');
+            toast({ title: 'تم الفتح في واتساب!' });
         }
     };
 
@@ -217,14 +253,14 @@ export default function PatientOffers() {
                                     {/* ── Image & Stats Container ─────────────────────── */}
                                     <div className="relative">
                                         {offer.image && (
-                                            <div className="w-full aspect-[4/3] sm:aspect-[16/10] bg-slate-100 relative">
+                                            <div className="w-full bg-slate-50 border-y border-slate-100">
                                                 {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
-                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full h-full object-contain bg-black" />
+                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[500px] object-contain bg-black" />
                                                 ) : (
                                                     <img
                                                         src={logoSrc(offer.image) || ''}
                                                         alt={offer.title}
-                                                        className="w-full h-full object-cover"
+                                                        className="w-full max-h-[500px] object-cover"
                                                         loading="lazy"
                                                     />
                                                 )}
@@ -284,6 +320,21 @@ export default function PatientOffers() {
                                                 مراسلة
                                             </Link>
 
+                                            {/* Comments Toggle */}
+                                            <button
+                                                onClick={() => setSelectedOfferForComments(offer)}
+                                                className={cn(
+                                                    "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
+                                                    offer.image
+                                                        ? "bg-white/50 text-slate-700 border border-white/60 hover:bg-white/80"
+                                                        : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                                                )}
+                                            >
+                                                <MessageCircle className="h-3.5 w-3.5" />
+                                                التعليقات
+                                                {offer.comments && offer.comments.length > 0 && ` (${offer.comments.length})`}
+                                            </button>
+
                                             {/* Share */}
                                             <button
                                                 onClick={() => handleShare(offer)}
@@ -340,6 +391,69 @@ export default function PatientOffers() {
                     </div>
                 )}
             </div>
+
+            {/* Comments Modal */}
+            <Dialog open={!!selectedOfferForComments} onOpenChange={(open) => !open && setSelectedOfferForComments(null)}>
+                <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col p-0 overflow-hidden" dir="rtl">
+                    <DialogHeader className="px-4 py-3 border-b bg-slate-50/50">
+                        <DialogTitle className="text-lg flex items-center gap-2 text-slate-800">
+                            <MessageCircle className="h-5 w-5 text-blue-500" />
+                            التعليقات
+                        </DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 custom-scrollbar">
+                        {(!selectedOfferForComments?.comments || selectedOfferForComments.comments.length === 0) ? (
+                            <div className="text-center py-8 text-slate-500">
+                                لا توجد تعليقات بعد. كن أول من يعلق!
+                            </div>
+                        ) : (
+                            selectedOfferForComments.comments.map((comment: any) => (
+                                <div key={comment.id} className="flex gap-3">
+                                    <div className="h-8 w-8 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                                        {comment.user?.avatar ? (
+                                            <img src={logoSrc(comment.user.avatar) || ''} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-700 font-bold text-xs">
+                                                {comment.user?.name?.charAt(0) || '?'}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="bg-white border border-slate-200 rounded-2xl rounded-tr-none px-3 py-2 shadow-sm inline-block min-w-[120px]">
+                                            <p className="font-bold text-[13px] text-slate-900">{comment.user?.name || 'مستخدم'}</p>
+                                            <p className="text-[14px] text-slate-700 mt-0.5 whitespace-pre-wrap">{comment.content}</p>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-1 mr-2">
+                                            {formatDistanceToNow(new Date(comment.createdAt), { locale: ar, addSuffix: true })}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    
+                    <div className="p-3 bg-white border-t flex items-center gap-2 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                        <Input 
+                            placeholder="اكتب تعليقك هنا..."
+                            value={commentText}
+                            onChange={(e) => setCommentText(e.target.value)}
+                            className="flex-1 rounded-full bg-slate-100 border-transparent focus-visible:ring-1 focus-visible:ring-blue-500 px-4"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleAddComment(selectedOfferForComments!.id);
+                            }}
+                        />
+                        <Button 
+                            size="icon"
+                            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex-shrink-0"
+                            onClick={() => handleAddComment(selectedOfferForComments!.id)}
+                            disabled={postingComment || !commentText.trim()}
+                        >
+                            <Send className="h-4 w-4" dir="ltr" />
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

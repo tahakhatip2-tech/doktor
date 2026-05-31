@@ -1,4 +1,4 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
 import { useMediaQuery } from '@/hooks/use-media-query';
 import {
     Dialog,
@@ -77,7 +77,7 @@ export default function AddAppointmentDialog({ open, onOpenChange, onSuccess, on
                 customerName: formData.customer_name,
                 phone: formData.phone,
                 appointmentDate: fullDateTime,
-                appointmentType: formData.appointment_type,
+                type: formData.appointment_type,
                 notes: formData.notes,
                 status: 'scheduled'
             });

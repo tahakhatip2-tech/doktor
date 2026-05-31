@@ -48,6 +48,7 @@ export default function PatientClinics() {
 
     const [loading, setLoading] = useState(true);
     const [clinics, setClinics] = useState<Clinic[]>([]);
+    const [pharmacies, setPharmacies] = useState<Clinic[]>([]);
     const [filtered, setFiltered] = useState<Clinic[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeSpec, setActiveSpec] = useState<string>('الكل');
@@ -55,15 +56,20 @@ export default function PatientClinics() {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locating, setLocating] = useState(false);
     const [mapClinic, setMapClinic] = useState<Clinic | null>(null);
+    const [activeTab, setActiveTab] = useState<'clinics' | 'pharmacies'>('clinics');
 
     // Unique specialties list
     const [specialties, setSpecialties] = useState<string[]>([]);
 
-    useEffect(() => { fetchClinics(); }, []);
+    useEffect(() => { 
+        fetchClinics(); 
+        fetchPharmacies();
+    }, []);
 
     // ── Build filtered list whenever deps change ──
     useEffect(() => {
-        let result = [...clinics];
+        const sourceData = activeTab === 'clinics' ? clinics : pharmacies;
+        let result = [...sourceData];
 
         // Text filter
         if (searchTerm) {
@@ -94,7 +100,7 @@ export default function PatientClinics() {
         }
 
         setFiltered(result);
-    }, [searchTerm, activeSpec, sortMode, clinics, userLocation]);
+    }, [searchTerm, activeSpec, sortMode, clinics, pharmacies, activeTab, userLocation]);
 
     const fetchClinics = async () => {
         try {
@@ -109,13 +115,32 @@ export default function PatientClinics() {
             const data: Clinic[] = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
             setClinics(data);
 
-            // Extract unique specialties
-            const specs = Array.from(new Set(data.map(c => c.clinic_specialty).filter(Boolean))) as string[];
-            setSpecialties(specs);
+            // Extract unique specialties only for clinics
+            if (activeTab === 'clinics') {
+                const specs = Array.from(new Set(data.map(c => c.clinic_specialty).filter(Boolean))) as string[];
+                setSpecialties(specs);
+            }
         } catch {
             toast({ variant: 'destructive', title: 'خطأ', description: 'حدث خطأ أثناء تحميل العيادات' });
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchPharmacies = async () => {
+        try {
+            const token = localStorage.getItem('patient_token');
+            const res = await axios.get(`${API_URL}/patient/pharmacies`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                    'bypass-tunnel-reminder': 'true',
+                },
+            });
+            const data: Clinic[] = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+            setPharmacies(data);
+        } catch {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'حدث خطأ أثناء تحميل الصيدليات' });
         }
     };
 
@@ -188,13 +213,36 @@ export default function PatientClinics() {
             {/* Hero */}
             <PatientHero
                 showBackButton={true}
-                title="العيادات المتاحة"
-                subtitle="اكتشف أفضل الأطباء"
-                description="اختر العيادة المناسبة واحجز موعدك من المواعيد المتاحة."
-                badgeText="صحتك أولاً"
+                title={activeTab === 'clinics' ? "العيادات المتاحة" : "الصيدليات المتاحة"}
+                subtitle={activeTab === 'clinics' ? "اكتشف أفضل الأطباء" : "اكتشف أقرب الصيدليات"}
+                description={activeTab === 'clinics' ? "اختر العيادة المناسبة واحجز موعدك من المواعيد المتاحة." : "تواصل مع الصيدليات وأرسل وصفاتك الطبية بكل سهولة."}
+                badgeText={activeTab === 'clinics' ? "صحتك أولاً" : "دوائك عندنا"}
             />
 
             <div className="px-4 sm:px-0 space-y-4 pt-6">
+                {/* ── Tabs ── */}
+                <div className="flex bg-slate-100/80 backdrop-blur-sm p-1 rounded-2xl border border-slate-200">
+                    <button
+                        onClick={() => { setActiveTab('clinics'); setActiveSpec('الكل'); setSearchTerm(''); }}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'clinics'
+                            ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                            }`}
+                    >
+                        <Stethoscope className="w-4 h-4" />
+                        العيادات
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('pharmacies'); setActiveSpec('الكل'); setSearchTerm(''); }}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'pharmacies'
+                            ? 'bg-white text-green-600 shadow-sm border border-slate-200/60'
+                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                            }`}
+                    >
+                        <Building2 className="w-4 h-4" />
+                        الصيدليات
+                    </button>
+                </div>
                 {/* ── Search + Nearest button ── */}
                 <div className="flex gap-2">
                     <div className="relative flex-1">

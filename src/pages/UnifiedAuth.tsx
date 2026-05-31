@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { toastWithSound } from '@/lib/toast-with-sound';
-import { Loader2, Stethoscope, Users, ArrowRight, Sparkles, Eye, EyeOff } from "lucide-react";
+import { Loader2, Stethoscope, Users, ArrowRight, Sparkles, Eye, EyeOff, Pill } from "lucide-react";
 import { z } from "zod";
 import axios from 'axios';
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,8 +43,19 @@ const patientRegisterSchema = z.object({
     path: ['confirmPassword'],
 });
 
+const pharmacyRegisterSchema = z.object({
+    email: z.string().email('البريد الإلكتروني غير صحيح'),
+    password: z.string().min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل'),
+    confirmPassword: z.string().min(1, 'تأكيد كلمة المرور مطلوب'),
+    name: z.string().min(2, 'اسم الصيدلية يجب أن يكون حرفين على الأقل'),
+    phone: z.string().regex(/^(\+962|00962|962|0)?7[789]\d{7}$/, 'رقم الهاتف يجب أن يكون رقم أردني صحيح'),
+}).refine((data) => data.password === data.confirmPassword, {
+    message: 'كلمة المرور وتأكيد كلمة المرور غير متطابقين',
+    path: ['confirmPassword'],
+});
+
 // ─── Types ───────────────────────────────────────────────────────────────────
-type UserRole = 'doctor' | 'patient' | null;
+type UserRole = 'doctor' | 'patient' | 'pharmacy' | null;
 
 // ─── Component ───────────────────────────────────────────────────────────────
 const UnifiedAuth = () => {
@@ -189,6 +200,66 @@ const UnifiedAuth = () => {
         }
     };
 
+    // ─── Pharmacy Auth ───────────────────────────────────────────────────────
+    const handlePharmacyAuth = async () => {
+        try {
+            if (isLogin) {
+                const validation = loginSchema.safeParse({ email, password });
+                if (!validation.success) {
+                    toastWithSound.error(validation.error.errors[0].message);
+                    return false;
+                }
+
+                const response = await axios.post(`${API_URL}/pharmacy/auth/login`, {
+                    email,
+                    password,
+                }, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+
+                localStorage.setItem('pharmacy_token', response.data.access_token);
+                localStorage.setItem('pharmacy_user', JSON.stringify(response.data.user));
+
+                toastWithSound.success("مرحباً بعودتك! تم تسجيل الدخول بنجاح");
+                navigate('/pharmacy/dashboard');
+                return true;
+            } else {
+                const validation = pharmacyRegisterSchema.safeParse({
+                    email, password, confirmPassword, name: fullName, phone
+                });
+
+                if (!validation.success) {
+                    toastWithSound.error(validation.error.errors[0].message);
+                    return false;
+                }
+
+                const response = await axios.post(`${API_URL}/pharmacy/auth/register`, {
+                    email,
+                    password,
+                    name: fullName,
+                    clinic_name: fullName, // Use clinic_name as pharmacy name in db
+                    phone,
+                }, {
+                    headers: { 'ngrok-skip-browser-warning': 'true' }
+                });
+
+                localStorage.setItem('pharmacy_token', response.data.access_token);
+                localStorage.setItem('pharmacy_user', JSON.stringify(response.data.user));
+
+                toastWithSound.success("مرحباً بك! تم إنشاء الحساب بنجاح");
+                navigate('/pharmacy/dashboard');
+                return true;
+            }
+        } catch (error: any) {
+            if (error.response?.data?.message) {
+                toastWithSound.error(error.response.data.message);
+            } else {
+                toastWithSound.error("حدث خطأ في تسجيل الدخول");
+            }
+            return false;
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -197,6 +268,8 @@ const UnifiedAuth = () => {
                 await handleDoctorAuth();
             } else if (selectedRole === 'patient') {
                 await handlePatientAuth();
+            } else if (selectedRole === 'pharmacy') {
+                await handlePharmacyAuth();
             }
         } finally {
             setIsLoading(false);
@@ -225,14 +298,19 @@ const UnifiedAuth = () => {
 
     // ─── Colors by role ──────────────────────────────────────────────────────
     const isDoctor = selectedRole === 'doctor';
-    const borderColor = isDoctor ? 'border-blue-500/50' : 'border-orange-500/50';
-    const focusBorder = isDoctor ? 'focus:border-blue-400' : 'focus:border-orange-400';
-    const labelColor = isDoctor ? 'text-blue-200/80' : 'text-orange-200/80';
+    const isPharmacy = selectedRole === 'pharmacy';
+    const borderColor = isDoctor ? 'border-blue-500/50' : isPharmacy ? 'border-green-500/50' : 'border-orange-500/50';
+    const focusBorder = isDoctor ? 'focus:border-blue-400' : isPharmacy ? 'focus:border-green-400' : 'focus:border-orange-400';
+    const labelColor = isDoctor ? 'text-blue-200/80' : isPharmacy ? 'text-green-200/80' : 'text-orange-200/80';
     const btnBorder = isDoctor
         ? 'border-blue-500 hover:bg-blue-500/10 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.2)]'
+        : isPharmacy 
+        ? 'border-green-500 hover:bg-green-500/10 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.2)]'
         : 'border-orange-500 hover:bg-orange-500/10 text-orange-400 shadow-[0_0_20px_rgba(249,115,22,0.2)]';
     const toggleColor = isDoctor
         ? 'text-blue-300 border-blue-500/30 hover:border-blue-400'
+        : isPharmacy
+        ? 'text-green-300 border-green-500/30 hover:border-green-400'
         : 'text-orange-300 border-orange-500/30 hover:border-orange-400';
 
     const inputClass = `!bg-transparent border ${borderColor} ${focusBorder} focus:ring-0 text-white placeholder:text-white/20 h-11 text-sm transition-all font-mono text-left`;
@@ -357,6 +435,29 @@ const UnifiedAuth = () => {
                                                 </div>
                                                 <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-orange-500/20 transition-colors">
                                                     <ArrowRight className="w-4 h-4 text-white/50 group-hover:text-orange-400 group-hover:-translate-x-1 transition-all" />
+                                                </div>
+                                            </div>
+                                        </Button>
+
+                                        {/* Pharmacy Button */}
+                                        <Button
+                                            onClick={() => handleRoleSelect('pharmacy')}
+                                            variant="outline"
+                                            className="h-14 md:h-16 w-full relative overflow-hidden group bg-green-950/20 border border-green-500/30 hover:border-green-400 hover:bg-green-900/40 transition-all duration-300 rounded-2xl shadow-lg"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-green-600/0 via-green-500/10 to-green-600/0 group-hover:translate-x-full duration-1000 transition-transform -translate-x-full"></div>
+                                            <div className="flex items-center justify-between w-full px-2">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="w-10 h-10 rounded-xl bg-green-500/20 text-green-400 flex items-center justify-center group-hover:bg-green-500 group-hover:text-white group-hover:scale-110 transition-all duration-300 shadow-inner border border-green-500/20">
+                                                        <Pill className="w-5 h-5" />
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="block text-base font-bold text-white tracking-wide group-hover:text-green-200 transition-colors">بوابة الصيدليات</span>
+                                                        <span className="block text-[10px] text-green-300/60 font-medium">إدارة الوصفات الطبية</span>
+                                                    </div>
+                                                </div>
+                                                <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-green-500/20 transition-colors">
+                                                    <ArrowRight className="w-4 h-4 text-white/50 group-hover:text-green-400 group-hover:-translate-x-1 transition-all" />
                                                 </div>
                                             </div>
                                         </Button>

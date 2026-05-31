@@ -168,15 +168,20 @@ export default function OffersManager() {
     };
 
     const handleShare = (offer: any) => {
+        const shareText = `${offer.title}\n\n${offer.content}`;
+        const url = window.location.href;
+        
         if (navigator.share) {
             navigator.share({
                 title: offer.title,
-                text: `${offer.title}\n\n${offer.content}`,
-                url: window.location.href,
+                text: shareText,
+                url: url,
             }).catch(() => {});
         } else {
-            navigator.clipboard.writeText(`${offer.title}\n\n${offer.content}\n\n${window.location.href}`);
-            toast({ title: '📋 تم نسخ رابط المنشور!' });
+            // Fallback for desktop: Open WhatsApp web
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + url)}`;
+            window.open(whatsappUrl, '_blank');
+            toast({ title: 'تم الفتح في واتساب!' });
         }
     };
 

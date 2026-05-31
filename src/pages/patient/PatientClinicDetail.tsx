@@ -61,8 +61,14 @@ export default function PatientClinicDetail() {
     const [reviewComment, setReviewComment] = useState('');
     const [reviewLoading, setReviewLoading] = useState(false);
 
+    // ── Prescriptions (If Pharmacy) ──
+    const [prescriptions, setPrescriptions] = useState<any[]>([]);
+    const [loadingPrescriptions, setLoadingPrescriptions] = useState(false);
+    const [sendingPrescription, setSendingPrescription] = useState(false);
+    const [prescriptionDialogOpen, setPrescriptionDialogOpen] = useState(false);
+    const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<number | null>(null);
 
-    // â”€â”€ جلب بيانات العيادة â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── جلب بيانات العيادة ──â”€
     useEffect(() => {
         const fetchClinic = async () => {
             try {
@@ -70,9 +76,15 @@ export default function PatientClinicDetail() {
                 const response = await axios.get(`${API_URL}/patient/clinics/${id}`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
-                setClinic(response.data);
+                const clinicData = response.data;
+                setClinic(clinicData);
+
+                // If pharmacy, fetch prescriptions
+                if (clinicData.role === 'PHARMACY') {
+                    fetchPrescriptions();
+                }
             } catch {
-                toast({ variant: 'destructive', title: 'خطأ', description: 'لم يتم العثور على العيادة' });
+                toast({ variant: 'destructive', title: 'خطأ', description: 'لم يتم العثور على المكان' });
                 navigate('/patient/clinics');
             } finally {
                 setLoadingClinic(false);
@@ -80,6 +92,23 @@ export default function PatientClinicDetail() {
         };
         if (id) fetchClinic();
     }, [id]);
+
+    const fetchPrescriptions = async () => {
+        try {
+            setLoadingPrescriptions(true);
+            const token = localStorage.getItem('patient_token');
+            const res = await axios.get(`${API_URL}/patient/prescriptions`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            // Filter only PENDING prescriptions
+            const pending = (res.data || []).filter((p: any) => p.status === 'PENDING');
+            setPrescriptions(pending);
+        } catch {
+            console.error('Failed to fetch prescriptions');
+        } finally {
+            setLoadingPrescriptions(false);
+        }
+    };
 
     // â”€â”€ جلب الـ Slots عند اختيار يوم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     const fetchSlots = useCallback(async (date: Date) => {
@@ -156,8 +185,37 @@ export default function PatientClinicDetail() {
                 title: 'خطأ في الحجز',
                 description: err.response?.data?.message || 'حدث خطأ أثناء إرسال الطلب',
             });
-        } finally {
             setBookingLoading(false);
+        }
+    };
+
+    // ── إرسال الوصفة للصيدلية ──
+    const handleSendPrescription = async () => {
+        if (!selectedPrescriptionId || !clinic || clinic.role !== 'PHARMACY') return;
+        setSendingPrescription(true);
+        try {
+            const token = localStorage.getItem('patient_token');
+            await axios.post(
+                `${API_URL}/patient/prescriptions/${selectedPrescriptionId}/send-to-pharmacy`,
+                { pharmacyId: clinic.id },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast({
+                title: '✅ تم إرسال الوصفة بنجاح!',
+                description: 'تم إرسال الوصفة إلى الصيدلية، بانتظار صرفها.',
+            });
+            setPrescriptionDialogOpen(false);
+            setSelectedPrescriptionId(null);
+            // Refresh prescriptions
+            fetchPrescriptions();
+        } catch (err: any) {
+            toast({
+                variant: 'destructive',
+                title: 'خطأ في الإرسال',
+                description: err.response?.data?.message || 'حدث خطأ أثناء إرسال الوصفة',
+            });
+        } finally {
+            setSendingPrescription(false);
         }
     };
 
@@ -307,143 +365,204 @@ export default function PatientClinicDetail() {
             <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-6 mt-4">
 
             {/* ── قسم الحجز ── */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-
-                {/* التقويم */}
-                <Card className="shadow-card">
-                    <CardHeader>
-                        <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <Calendar className="h-5 w-5 text-primary" />
-                                اختر اليوم
-                            </CardTitle>
-                            <div className="flex items-center gap-1">
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
-                                >
-                                    <ChevronRight className="h-4 w-4" />
-                                </Button>
-                                <span className="text-sm font-medium min-w-[100px] text-center">
-                                    {format(currentMonth, 'MMMM yyyy', { locale: ar })}
-                                </span>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
-                                >
-                                    <ChevronLeft className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    </CardHeader>
-                    <CardContent>
-                        {/* رؤوس الأيام */}
-                        <div className="grid grid-cols-7 mb-2">
-                            {DAY_NAMES_AR.map(d => (
-                                <div key={d} className="text-center text-xs text-muted-foreground py-1 font-medium">
-                                    {d}
-                                </div>
-                            ))}
-                        </div>
-                        {/* أيام الشهر */}
-                        <div className="grid grid-cols-7 gap-1">
-                            {calendarDays().map((day, idx) => {
-                                if (!day) return <div key={`empty-${idx}`} />;
-                                const isPast = day < today;
-                                const isSelected = selectedDate && isSameDay(day, selectedDate);
-                                const isToday = isSameDay(day, today);
-                                return (
-                                    <button
-                                        key={day.toISOString()}
-                                        disabled={isPast}
-                                        onClick={() => handleSelectDate(day)}
-                                        className={cn(
-                                            'h-9 w-full rounded-lg text-sm font-medium transition-all',
-                                            isPast && 'opacity-30 cursor-not-allowed',
-                                            !isPast && !isSelected && 'hover:bg-primary/10',
-                                            isToday && !isSelected && 'border border-primary text-primary',
-                                            isSelected && 'gradient-primary text-white shadow-glow scale-105',
-                                        )}
-                                    >
-                                        {format(day, 'd')}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* الـ Slots */}
-                <Card className="shadow-card">
-                    <CardHeader>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                            <Clock className="h-5 w-5 text-primary" />
-                            المواعيد المتاحة
-                            {selectedDate && (
-                                <span className="text-sm font-normal text-muted-foreground mr-auto">
-                                    {format(selectedDate, 'EEEE dd MMM', { locale: ar })}
-                                </span>
-                            )}
+            {/* ── قسم الحجز أو صرف الوصفات ── */}
+            {clinic.role === 'PHARMACY' ? (
+                <Card className="shadow-card border-green-100">
+                    <CardHeader className="bg-green-50/50">
+                        <CardTitle className="text-lg flex items-center gap-2 text-green-700">
+                            <Plus className="h-5 w-5" />
+                            إرسال وصفة طبية
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        {!selectedDate ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <Calendar className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                                <p className="text-muted-foreground">اختر يوماً من التقويم لعرض المواعيد المتاحة</p>
+                    <CardContent className="pt-6">
+                        {loadingPrescriptions ? (
+                            <div className="flex flex-col items-center justify-center py-8">
+                                <Loader2 className="h-8 w-8 text-green-500 animate-spin mb-3" />
+                                <p className="text-sm text-slate-500">جاري تحميل وصفاتك...</p>
                             </div>
-                        ) : loadingSlots ? (
-                            <div className="grid grid-cols-3 gap-2">
-                                {Array(6).fill(0).map((_, i) => (
-                                    <Skeleton key={i} className="h-10 rounded-lg" />
-                                ))}
-                            </div>
-                        ) : slots.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
-                                <AlertCircle className="h-12 w-12 text-muted-foreground/40 mb-3" />
-                                <p className="text-muted-foreground font-medium">لا توجد مواعيد متاحة</p>
-                                <p className="text-muted-foreground text-sm mt-1">يرجى اختيار يوم آخر</p>
+                        ) : prescriptions.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-10 text-center">
+                                <AlertCircle className="h-12 w-12 text-slate-300 mb-3" />
+                                <p className="text-slate-500 font-medium">لا توجد لديك وصفات طبية قيد الانتظار</p>
+                                <p className="text-sm text-slate-400 mt-1">عندما يكتب لك الطبيب وصفة، ستظهر هنا لإرسالها للصيدلية</p>
                             </div>
                         ) : (
-                            <>
-                                <div className="grid grid-cols-3 gap-2 mb-6">
-                                    {slots.map(slot => (
+                            <div className="space-y-4">
+                                <p className="text-sm text-slate-600 font-medium mb-2">اختر الوصفة التي تود صرفها:</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {prescriptions.map(p => (
                                         <button
-                                            key={slot}
-                                            onClick={() => setSelectedSlot(slot === selectedSlot ? null : slot)}
+                                            key={p.id}
+                                            onClick={() => setSelectedPrescriptionId(p.id)}
                                             className={cn(
-                                                'h-10 rounded-lg text-sm font-medium border transition-all',
-                                                selectedSlot === slot
-                                                    ? 'gradient-primary text-white border-transparent shadow-glow scale-105'
-                                                    : 'border-border hover:border-primary hover:text-primary bg-background'
+                                                'p-3 rounded-xl border text-right transition-all flex flex-col gap-2',
+                                                selectedPrescriptionId === p.id
+                                                    ? 'border-green-500 bg-green-50 shadow-sm ring-1 ring-green-500'
+                                                    : 'border-slate-200 hover:border-green-300 hover:bg-slate-50'
                                             )}
                                         >
-                                            {slot}
+                                            <div className="flex items-center justify-between w-full">
+                                                <span className="font-bold text-sm text-slate-800">وصفة طبية</span>
+                                                <span className="text-xs text-slate-500">{format(new Date(p.createdAt), 'dd MMM yyyy', { locale: ar })}</span>
+                                            </div>
+                                            {p.doctor && (
+                                                <div className="text-xs text-slate-600 bg-white px-2 py-1 rounded-md border inline-flex items-center gap-1">
+                                                    <User className="h-3 w-3" />
+                                                    {p.doctor.clinic_name || p.doctor.name}
+                                                </div>
+                                            )}
                                         </button>
                                     ))}
                                 </div>
-
-                                {/* زر تأكيد الحجز */}
                                 <Button
-                                    className="w-full gradient-primary text-white shadow-glow gap-2"
-                                    disabled={!selectedSlot}
-                                    onClick={() => setBookingOpen(true)}
+                                    className="w-full bg-green-600 hover:bg-green-700 text-white mt-4"
+                                    disabled={!selectedPrescriptionId}
+                                    onClick={() => setPrescriptionDialogOpen(true)}
                                 >
-                                    <Calendar className="h-4 w-4" />
-                                    {selectedSlot
-                                        ? `احجز الساعة ${selectedSlot}`
-                                        : 'اختر موعداً للمتابعة'
-                                    }
+                                    إرسال الوصفة للصيدلية
                                 </Button>
-                            </>
+                            </div>
                         )}
                     </CardContent>
                 </Card>
-            </div>
+            ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+                    {/* التقويم */}
+                    <Card className="shadow-card">
+                        <CardHeader>
+                            <div className="flex items-center justify-between">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Calendar className="h-5 w-5 text-primary" />
+                                    اختر اليوم
+                                </CardTitle>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                    <span className="text-sm font-medium min-w-[100px] text-center">
+                                        {format(currentMonth, 'MMMM yyyy', { locale: ar })}
+                                    </span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {/* رؤوس الأيام */}
+                            <div className="grid grid-cols-7 mb-2">
+                                {DAY_NAMES_AR.map(d => (
+                                    <div key={d} className="text-center text-xs text-muted-foreground py-1 font-medium">
+                                        {d}
+                                    </div>
+                                ))}
+                            </div>
+                            {/* أيام الشهر */}
+                            <div className="grid grid-cols-7 gap-1">
+                                {calendarDays().map((day, idx) => {
+                                    if (!day) return <div key={`empty-${idx}`} />;
+                                    const isPast = day < today;
+                                    const isSelected = selectedDate && isSameDay(day, selectedDate);
+                                    const isToday = isSameDay(day, today);
+                                    return (
+                                        <button
+                                            key={day.toISOString()}
+                                            disabled={isPast}
+                                            onClick={() => handleSelectDate(day)}
+                                            className={cn(
+                                                'h-9 w-full rounded-lg text-sm font-medium transition-all',
+                                                isPast && 'opacity-30 cursor-not-allowed',
+                                                !isPast && !isSelected && 'hover:bg-primary/10',
+                                                isToday && !isSelected && 'border border-primary text-primary',
+                                                isSelected && 'gradient-primary text-white shadow-glow scale-105',
+                                            )}
+                                        >
+                                            {format(day, 'd')}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* الـ Slots */}
+                    <Card className="shadow-card">
+                        <CardHeader>
+                            <CardTitle className="text-lg flex items-center gap-2">
+                                <Clock className="h-5 w-5 text-primary" />
+                                المواعيد المتاحة
+                                {selectedDate && (
+                                    <span className="text-sm font-normal text-muted-foreground mr-auto">
+                                        {format(selectedDate, 'EEEE dd MMM', { locale: ar })}
+                                    </span>
+                                )}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            {!selectedDate ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-center">
+                                    <Calendar className="h-12 w-12 text-muted-foreground/40 mb-3" />
+                                    <p className="text-muted-foreground">اختر يوماً من التقويم لعرض المواعيد المتاحة</p>
+                                </div>
+                            ) : loadingSlots ? (
+                                <div className="grid grid-cols-3 gap-2">
+                                    {Array(6).fill(0).map((_, i) => (
+                                        <Skeleton key={i} className="h-10 rounded-lg" />
+                                    ))}
+                                </div>
+                            ) : slots.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-12 text-center">
+                                    <AlertCircle className="h-12 w-12 text-muted-foreground/40 mb-3" />
+                                    <p className="text-muted-foreground font-medium">لا توجد مواعيد متاحة</p>
+                                    <p className="text-muted-foreground text-sm mt-1">يرجى اختيار يوم آخر</p>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="grid grid-cols-3 gap-2 mb-6">
+                                        {slots.map(slot => (
+                                            <button
+                                                key={slot}
+                                                onClick={() => setSelectedSlot(slot === selectedSlot ? null : slot)}
+                                                className={cn(
+                                                    'h-10 rounded-lg text-sm font-medium border transition-all',
+                                                    selectedSlot === slot
+                                                        ? 'gradient-primary text-white border-transparent shadow-glow scale-105'
+                                                        : 'border-border hover:border-primary hover:text-primary bg-background'
+                                                )}
+                                            >
+                                                {slot}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* زر تأكيد الحجز */}
+                                    <Button
+                                        className="w-full gradient-primary text-white shadow-glow gap-2"
+                                        disabled={!selectedSlot}
+                                        onClick={() => setBookingOpen(true)}
+                                    >
+                                        <Calendar className="h-4 w-4" />
+                                        {selectedSlot
+                                            ? `احجز الساعة ${selectedSlot}`
+                                            : 'اختر موعداً للمتابعة'
+                                        }
+                                    </Button>
+                                </>
+                            )}
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {/* â”€â”€ Dialog تأكيد الحجز â”€â”€ */}
             <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
@@ -531,6 +650,47 @@ export default function PatientClinicDetail() {
                                 <><Loader2 className="h-4 w-4 ml-2 animate-spin" />جاري الحجز...</>
                             ) : (
                                 'تأكيد الحجز'
+                            )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* ── Dialog إرسال الوصفة ── */}
+            <Dialog open={prescriptionDialogOpen} onOpenChange={setPrescriptionDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2 text-green-700">
+                            <CheckCircle2 className="h-5 w-5" />
+                            تأكيد إرسال الوصفة
+                        </DialogTitle>
+                        <DialogDescription>
+                            هل أنت متأكد من إرسال هذه الوصفة إلى {clinic?.clinic_name || clinic?.name}؟
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <p className="text-sm text-slate-600 bg-slate-50 border rounded-lg p-3">
+                        سيتم إرسال الوصفة الطبية، وسيقوم الصيدلاني بتحضير الدواء لك. يمكنك التواصل معه عبر زر المراسلة لمزيد من التفاصيل.
+                    </p>
+
+                    <DialogFooter className="gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => setPrescriptionDialogOpen(false)}
+                            disabled={sendingPrescription}
+                            className="flex-1"
+                        >
+                            إلغاء
+                        </Button>
+                        <Button
+                            className="flex-1 bg-green-600 hover:bg-green-700 text-white"
+                            onClick={handleSendPrescription}
+                            disabled={sendingPrescription}
+                        >
+                            {sendingPrescription ? (
+                                <><Loader2 className="h-4 w-4 ml-2 animate-spin" />جاري الإرسال...</>
+                            ) : (
+                                'تأكيد وإرسال'
                             )}
                         </Button>
                     </DialogFooter>

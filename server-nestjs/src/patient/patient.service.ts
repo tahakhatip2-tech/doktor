@@ -243,6 +243,7 @@ export class PatientService {
             where: { id: clinicId },
             select: {
                 id: true,
+                role: true,
                 name: true,
                 email: true,
                 phone: true,
@@ -278,8 +279,90 @@ export class PatientService {
             location_url: settingsMap['location_url'] || null,
             clinic_address: settingsMap['address'] || clinic.clinic_address,
             clinic_phone: settingsMap['phone'] || clinic.clinic_phone,
-            lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
             lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
         };
+    }
+
+    async getPharmacies() {
+        const users = await this.prisma.user.findMany({
+            where: {
+                role: 'PHARMACY',
+                status: 'active',
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                clinic_name: true, // Used as Pharmacy Name
+                clinic_address: true,
+                clinic_phone: true,
+                working_hours: true,
+                settings: {
+                    where: {
+                        key: { in: ['clinic_name', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng'] },
+                    },
+                    select: { key: true, value: true },
+                },
+            },
+            orderBy: { name: 'asc' },
+        });
+
+        return users.map((u) => {
+            const settingsMap: Record<string, string> = {};
+            u.settings.forEach((s) => { settingsMap[s.key] = s.value; });
+            const resolvedPharmacyName = settingsMap['clinic_name'] || u.clinic_name;
+
+            return {
+                ...u,
+                settings: undefined,
+                clinic_name: resolvedPharmacyName,
+                clinic_logo: settingsMap['clinic_logo'] || null,
+                clinic_description: settingsMap['clinic_description'] || null,
+                location_url: settingsMap['location_url'] || null,
+                clinic_address: settingsMap['address'] || u.clinic_address,
+                clinic_phone: settingsMap['phone'] || u.clinic_phone,
+                lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
+                lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
+            };
+        }).filter(u => u.clinic_name);
+    }
+
+    async getPrescriptions(patientId: number) {
+        return this.prisma.prescription.findMany({
+            where: { patientId },
+            include: {
+                doctor: {
+                    select: { id: true, name: true, clinic_name: true }
+                },
+                pharmacy: {
+                    select: { id: true, name: true, clinic_name: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+    }
+
+    async sendPrescriptionToPharmacy(patientId: number, prescriptionId: number, pharmacyId: number) {
+        const prescription = await this.prisma.prescription.findFirst({
+            where: { id: prescriptionId, patientId }
+        });
+
+        if (!prescription) {
+            throw new NotFoundException('الوصفة غير موجودة');
+        }
+
+        if (prescription.status !== 'PENDING') {
+            throw new ConflictException('هذه الوصفة تم إرسالها مسبقاً أو تم صرفها');
+        }
+
+        return this.prisma.prescription.update({
+            where: { id: prescriptionId },
+            data: {
+                pharmacyId,
+                status: 'SENT_TO_PHARMACY'
+            }
+        });
     }
 }

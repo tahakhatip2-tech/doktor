@@ -51,6 +51,8 @@ model User {
   plan                  Plan?                  @relation(fields: [planId], references: [id])
   whatsAppChats         WhatsAppChat[]
   internalConversations InternalConversation[] @relation("ClinicConversations")
+  doctorPrescriptions   Prescription[]         @relation("DoctorPrescriptions")
+  pharmacyPrescriptions Prescription[]         @relation("PharmacyPrescriptions")
 }
 
 model Plan {
@@ -285,6 +287,7 @@ model Appointment {
   medicalRecords       MedicalRecord[]
   notifications        Notification[]
   patientNotifications PatientNotification[]
+  prescriptions        Prescription[]
 }
 
 model TelegramChat {
@@ -394,6 +397,7 @@ model Patient {
   offerLikes            OfferLike[]
   notifications         PatientNotification[]
   internalConversations InternalConversation[] @relation("PatientConversations")
+  prescriptions         Prescription[]
 }
 
 model PatientNotification {
@@ -523,6 +527,7 @@ enum UserRole {
   ADMIN
   USER
   AGENT
+  PHARMACY
 }
 
 enum SubscriptionStatus {
@@ -537,4 +542,29 @@ enum InternalSenderType {
   PATIENT
   DOCTOR
   BOT
+}
+
+model Prescription {
+  id              Int                  @id @default(autoincrement())
+  appointmentId   Int?
+  patientId       Int
+  doctorId        Int
+  pharmacyId      Int?
+  medications     String               // JSON string of medications
+  notes           String?
+  status          PrescriptionStatus   @default(PENDING)
+  dispensedAt     DateTime?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  appointment     Appointment?         @relation(fields: [appointmentId], references: [id])
+  patient         Patient              @relation(fields: [patientId], references: [id])
+  doctor          User                 @relation("DoctorPrescriptions", fields: [doctorId], references: [id])
+  pharmacy        User?                @relation("PharmacyPrescriptions", fields: [pharmacyId], references: [id])
+}
+
+enum PrescriptionStatus {
+  PENDING
+  SENT_TO_PHARMACY
+  DISPENSED
+  REJECTED
 }
