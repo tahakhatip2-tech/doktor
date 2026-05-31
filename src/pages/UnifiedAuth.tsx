@@ -502,11 +502,11 @@ const UnifiedAuth = () => {
                             transition={{ duration: 0.5 }}
                             className="w-full max-w-md"
                         >
-                            <Card className={`w-full p-6 border ${isDoctor ? 'border-blue-500/30 bg-blue-950/80' : 'border-orange-500/30 bg-orange-950/80'} shadow-2xl relative overflow-hidden`}>
+                            <Card className={`w-full p-6 border ${isDoctor ? 'border-blue-500/30 bg-blue-950/80' : isPharmacy ? 'border-green-500/30 bg-green-950/80' : 'border-orange-500/30 bg-orange-950/80'} shadow-2xl relative overflow-hidden`}>
 
                                 {/* Glow */}
-                                <div className={`absolute -top-20 -right-20 w-40 h-40 ${isDoctor ? 'bg-blue-500/20' : 'bg-orange-500/20'} rounded-full blur-3xl`}></div>
-                                <div className={`absolute -bottom-20 -left-20 w-40 h-40 ${isDoctor ? 'bg-orange-500/10' : 'bg-blue-500/10'} rounded-full blur-3xl`}></div>
+                                <div className={`absolute -top-20 -right-20 w-40 h-40 ${isDoctor ? 'bg-blue-500/20' : isPharmacy ? 'bg-green-500/20' : 'bg-orange-500/20'} rounded-full blur-3xl`}></div>
+                                <div className={`absolute -bottom-20 -left-20 w-40 h-40 ${isDoctor ? 'bg-orange-500/10' : isPharmacy ? 'bg-blue-500/10' : 'bg-blue-500/10'} rounded-full blur-3xl`}></div>
 
                                 {/* Back Button */}
                                 <button
@@ -518,14 +518,14 @@ const UnifiedAuth = () => {
 
                                 {/* Icon & Title */}
                                 <div className="flex flex-col items-center gap-3 mb-5 relative z-10">
-                                    <div className={`w-14 h-14 rounded-full ${isDoctor ? 'bg-gradient-to-br from-blue-500 to-blue-700' : 'bg-gradient-to-br from-orange-500 to-orange-700'} flex items-center justify-center shadow-2xl`}>
-                                        {isDoctor ? <Stethoscope className="w-7 h-7 text-white" /> : <Users className="w-7 h-7 text-white" />}
+                                    <div className={`w-14 h-14 rounded-full ${isDoctor ? 'bg-gradient-to-br from-blue-500 to-blue-700' : isPharmacy ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-orange-500 to-orange-700'} flex items-center justify-center shadow-2xl`}>
+                                        {isDoctor ? <Stethoscope className="w-7 h-7 text-white" /> : isPharmacy ? <Pill className="w-7 h-7 text-white" /> : <Users className="w-7 h-7 text-white" />}
                                     </div>
                                     <div className="text-center space-y-1">
                                         <h2 className="text-xl font-black text-white">
-                                            {isDoctor ? 'بوابة الأطباء' : 'بوابة المرضى'}
+                                            {isDoctor ? 'بوابة الأطباء' : isPharmacy ? 'بوابة الصيدليات' : 'بوابة المرضى'}
                                         </h2>
-                                        <p className={`text-xs font-bold uppercase tracking-wider ${isDoctor ? 'text-blue-300/80' : 'text-orange-300/80'}`}>
+                                        <p className={`text-xs font-bold uppercase tracking-wider ${isDoctor ? 'text-blue-300/80' : isPharmacy ? 'text-green-300/80' : 'text-orange-300/80'}`}>
                                             {isLogin ? 'تسجيل الدخول' : 'إنشاء حساب جديد'}
                                         </p>
                                     </div>
@@ -540,13 +540,13 @@ const UnifiedAuth = () => {
                                             {/* الاسم */}
                                             <div className="space-y-1">
                                                 <Label className={`${labelColor} text-xs font-bold uppercase tracking-wide`}>
-                                                    {isDoctor ? 'اسم الطبيب' : 'الاسم الكامل'}
+                                                    {isDoctor ? 'اسم الطبيب' : isPharmacy ? 'اسم الصيدلية' : 'الاسم الكامل'}
                                                 </Label>
                                                 <Input
                                                     type="text"
                                                     value={fullName}
                                                     onChange={(e) => setFullName(e.target.value)}
-                                                    placeholder={isDoctor ? 'د. أحمد محمد' : 'أدخل اسمك الكامل'}
+                                                    placeholder={isDoctor ? 'د. أحمد محمد' : isPharmacy ? 'صيدلية النور' : 'أدخل اسمك الكامل'}
                                                     className={`${inputClass} text-right`}
                                                     required={!isLogin}
                                                 />
