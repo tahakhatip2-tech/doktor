@@ -45,11 +45,12 @@ export class WhatsAppController {
     }
 
     @Get('settings')
-    @ApiOperation({ summary: 'إعدادات واتساب (عام)', description: 'جلب إعدادات العيادة الأساسية - لا يتطلب تسجيل دخول' })
+    @ApiBearerAuth('JWT-auth')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'إعدادات واتساب', description: 'جلب إعدادات العيادة الخاصة بالطبيب المسجّل دخوله' })
     @ApiResponse({ status: 200, description: 'تم جلب الإعدادات بنجاح', type: WhatsAppSettingsDto })
     async getSettings(@Request() req) {
-        // If user is authenticated, use their ID, otherwise use default (user 1)
-        const userId = req.user?.id || 1;
+        const userId = req.user.id;
         return this.whatsappService.getSettings(userId);
     }
 
