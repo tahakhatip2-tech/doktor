@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import {
     Plus, Trash2, Tag, Clock, Image as ImageIcon,
-    Building2, Heart, X, Sparkles, MessageCircle, Send, PlayCircle, Share2
+    Building2, Heart, X, Sparkles, MessageCircle, Send, PlayCircle, Share2, Pill
 } from 'lucide-react';
 import axios from 'axios';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -42,6 +42,14 @@ interface Comment {
     };
 }
 
+interface OfferAuthor {
+    id: number;
+    name: string;
+    clinic_name?: string;
+    avatar?: string;
+    clinic_specialty?: string;
+}
+
 interface Offer {
     id: number;
     title: string;
@@ -49,12 +57,20 @@ interface Offer {
     image?: string;
     isActive: boolean;
     createdAt: string;
+    isLiked?: boolean;
+    isLikedByMe?: boolean;
+    likesCount?: number;
     _count: { likes: number, comments: number };
     comments?: Comment[];
+    user: OfferAuthor;
 }
 
-export default function OffersManager() {
-    const { user } = useAuth();
+interface OffersManagerProps {
+    userType?: 'doctor' | 'pharmacy';
+}
+
+export default function OffersManager({ userType = 'doctor' }: OffersManagerProps) {
+    const { user: doctorUser } = useAuth();
     const { toast } = useToast();
     const fileRef = useRef<HTMLInputElement>(null);
 
@@ -71,12 +87,20 @@ export default function OffersManager() {
     const [commentText, setCommentText] = useState<{ [key: number]: string }>({});
     const [postingComment, setPostingComment] = useState<{ [key: number]: boolean }>({});
 
-    const token = localStorage.getItem('token');
+    const isPharmacy = userType === 'pharmacy';
+    const tokenKey = isPharmacy ? 'pharmacy_token' : 'token';
+    const userKey = isPharmacy ? 'pharmacy_user' : 'user';
+    const token = localStorage.getItem(tokenKey);
+    const storedUser = (() => {
+        try { return JSON.parse(localStorage.getItem(userKey) || 'null'); } catch { return null; }
+    })();
+    const currentUserId = storedUser?.id;
+    const currentAuthor = isPharmacy ? storedUser : doctorUser;
     const headers = { Authorization: `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' };
 
     const fetchOffers = async () => {
         try {
-            const res = await axios.get(`${API_URL}/offers/mine`, { headers });
+            const res = await axios.get(`${API_URL}/offers/feed`, { headers });
             setOffers(Array.isArray(res.data) ? res.data : []);
         } catch { setOffers([]); } finally { setLoading(false); }
     };
@@ -86,9 +110,9 @@ export default function OffersManager() {
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        
+
         setIsVideo(file.type.startsWith('video/'));
-        
+
         const reader = new FileReader();
         reader.onload = ev => setImage(ev.target?.result as string);
         reader.readAsDataURL(file);
@@ -157,6 +181,7 @@ export default function OffersManager() {
                     return {
                         ...o,
                         isLiked: isNowLiked,
+                        isLikedByMe: isNowLiked,
                         _count: { ...o._count, likes: isNowLiked ? (o._count?.likes || 0) + 1 : Math.max(0, (o._count?.likes || 0) - 1) }
                     };
                 }
@@ -170,7 +195,7 @@ export default function OffersManager() {
     const handleShare = (offer: any) => {
         const shareText = `${offer.title}\n\n${offer.content}`;
         const url = window.location.href;
-        
+
         if (navigator.share) {
             navigator.share({
                 title: offer.title,
@@ -178,7 +203,6 @@ export default function OffersManager() {
                 url: url,
             }).catch(() => {});
         } else {
-            // Fallback for desktop: Open WhatsApp web
             const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText + '\n' + url)}`;
             window.open(whatsappUrl, '_blank');
             toast({ title: 'تم الفتح في واتساب!' });
@@ -190,85 +214,105 @@ export default function OffersManager() {
         return url.startsWith('data:video/') || url.match(/\.(mp4|webm|ogg)$/i);
     };
 
+    const displayName = (author?: { name?: string; clinic_name?: string }) => {
+        return author?.clinic_name || author?.name || (isPharmacy ? 'الصيدلية' : 'العيادة');
+    };
+
+    const roleLabel = isPharmacy ? 'الصيدلية' : 'العيادة';
+    const RoleIcon = isPharmacy ? Pill : Building2;
+    const accent = isPharmacy ? 'teal' : 'orange';
+    const accentRgb = isPharmacy ? '13,148,136' : '249,115,22';
+
     return (
         <div className="space-y-6" dir="rtl">
             <Dialog open={showForm} onOpenChange={setShowForm}>
                 <DialogTrigger asChild>
-                    <Button className="fixed bottom-24 left-4 z-50 flex items-center justify-center h-14 w-14 rounded-full bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)] border-2 border-white dark:border-zinc-900 hover:scale-105 active:scale-95 transition-all duration-300 text-white p-0">
+                    <Button className={cn(
+                        "fixed bottom-24 left-4 z-50 flex items-center justify-center h-14 w-14 rounded-full text-white p-0 border-2 border-white dark:border-zinc-900 hover:scale-105 active:scale-95 transition-all duration-300",
+                        isPharmacy
+                            ? "bg-gradient-to-tr from-teal-600 via-teal-500 to-teal-400 shadow-[0_8px_25px_rgba(20,184,166,0.4)]"
+                            : "bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)]"
+                    )}>
                         <Plus className="h-7 w-7" />
                     </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px] border-orange-200 shadow-xl bg-gradient-to-br from-white to-blue-50/50" dir="rtl">
-                        <DialogHeader>
-                            <DialogTitle className="text-xl font-bold flex items-center gap-2 text-blue-900">
-                                <Sparkles className="h-5 w-5 text-orange-500" />
-                                إنشاء منشور جديد
-                            </DialogTitle>
-                        </DialogHeader>
-                        
-                        <div className="space-y-4 py-4">
-                            <div className="flex items-center gap-3">
-                                <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-orange-500 flex items-center justify-center shadow">
-                                    {user?.avatar ? (
-                                        <img src={logoSrc(user.avatar) || ''} alt="avatar" className="h-full w-full rounded-full object-cover" />
-                                    ) : (
-                                        <Building2 className="h-5 w-5 text-white" />
-                                    )}
-                                </div>
-                                <div>
-                                    <p className="font-bold text-sm text-slate-800">{user?.clinic_name || user?.name}</p>
-                                    <Badge variant="outline" className="text-[10px] py-0 h-4 border-blue-200 text-blue-600 bg-blue-50 mt-0.5">العيادة</Badge>
-                                </div>
+                <DialogContent className={cn("sm:max-w-[500px] shadow-xl bg-gradient-to-br from-white to-blue-50/50", isPharmacy ? "border-teal-200" : "border-orange-200")} dir="rtl">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2 text-blue-900">
+                            <Sparkles className={cn("h-5 w-5", isPharmacy ? "text-teal-500" : "text-orange-500")} />
+                            إنشاء منشور جديد
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-4">
+                        <div className="flex items-center gap-3">
+                            <div className={cn(
+                                "h-10 w-10 rounded-full flex items-center justify-center shadow",
+                                isPharmacy
+                                    ? "bg-gradient-to-br from-teal-600 to-teal-500"
+                                    : "bg-gradient-to-br from-blue-600 to-orange-500"
+                            )}>
+                                {currentAuthor?.avatar ? (
+                                    <img src={logoSrc(currentAuthor.avatar) || ''} alt="avatar" className="h-full w-full rounded-full object-cover" />
+                                ) : (
+                                    <RoleIcon className="h-5 w-5 text-white" />
+                                )}
                             </div>
-
-                            <Input
-                                placeholder="عنوان المنشور..."
-                                value={title}
-                                onChange={e => setTitle(e.target.value)}
-                                className="font-bold text-base border-0 border-b border-slate-200 rounded-none px-0 focus-visible:ring-0 focus-visible:border-orange-500 bg-transparent placeholder:font-medium"
-                            />
-                            <Textarea
-                                placeholder="بم تفكر؟ تفاصيل المنشور..."
-                                value={content}
-                                onChange={e => setContent(e.target.value)}
-                                rows={4}
-                                className="border-0 rounded-none px-0 focus-visible:ring-0 bg-transparent resize-none text-slate-700 text-base"
-                            />
-
-                            {/* Media Preview */}
-                            {image && (
-                                <div className="relative rounded-xl overflow-hidden border border-slate-100 shadow-sm bg-black/5 flex items-center justify-center min-h-[150px]">
-                                    {isVideo ? (
-                                        <video src={image} controls className="w-full max-h-[300px] object-contain" />
-                                    ) : (
-                                        <img src={image} alt="post media" className="w-full max-h-[300px] object-contain" />
-                                    )}
-                                    <Button size="icon" variant="destructive" className="absolute top-2 left-2 rounded-full h-8 w-8 shadow-md"
-                                        onClick={() => { setImage(''); setIsVideo(false); }}>
-                                        <X className="h-4 w-4" />
-                                    </Button>
-                                </div>
-                            )}
-
-                            <div className="flex items-center gap-2 pt-4 border-t border-slate-100">
-                                <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageChange} />
-                                <Button variant="outline" size="sm" className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 font-semibold rounded-full"
-                                    onClick={() => fileRef.current?.click()}>
-                                    <ImageIcon className="h-4 w-4 text-green-500" /> صورة
-                                </Button>
-                                <Button variant="outline" size="sm" className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 font-semibold rounded-full"
-                                    onClick={() => fileRef.current?.click()}>
-                                    <PlayCircle className="h-4 w-4 text-red-500" /> فيديو (Reels)
-                                </Button>
-                                <div className="flex-1" />
-                                <Button className="bg-blue-600 hover:bg-blue-700 text-white gap-2 rounded-full px-6"
-                                    onClick={handleSubmit} disabled={saving}>
-                                    {saving ? 'جاري النشر...' : 'نشر'}
-                                </Button>
+                            <div>
+                                <p className="font-bold text-sm text-slate-800">{displayName(currentAuthor)}</p>
+                                <Badge variant="outline" className={cn("text-[10px] py-0 h-4 mt-0.5", isPharmacy ? "border-teal-200 text-teal-600 bg-teal-50" : "border-blue-200 text-blue-600 bg-blue-50")}>
+                                    {roleLabel}
+                                </Badge>
                             </div>
                         </div>
-                    </DialogContent>
-                </Dialog>
+
+                        <Input
+                            placeholder="عنوان المنشور..."
+                            value={title}
+                            onChange={e => setTitle(e.target.value)}
+                            className={cn("font-bold text-base border-0 border-b border-slate-200 rounded-none px-0 focus-visible:ring-0 bg-transparent placeholder:font-medium", isPharmacy ? "focus-visible:border-teal-500" : "focus-visible:border-orange-500")}
+                        />
+                        <Textarea
+                            placeholder="بم تفكر؟ تفاصيل المنشور..."
+                            value={content}
+                            onChange={e => setContent(e.target.value)}
+                            rows={4}
+                            className="border-0 rounded-none px-0 focus-visible:ring-0 bg-transparent resize-none text-slate-700 text-base"
+                        />
+
+                        {image && (
+                            <div className="relative rounded-xl overflow-hidden border border-slate-100 shadow-sm bg-black/5 flex items-center justify-center min-h-[150px]">
+                                {isVideo ? (
+                                    <video src={image} controls className="w-full max-h-[300px] object-contain" />
+                                ) : (
+                                    <img src={image} alt="post media" className="w-full max-h-[300px] object-contain" />
+                                )}
+                                <Button size="icon" variant="destructive" className="absolute top-2 left-2 rounded-full h-8 w-8 shadow-md"
+                                    onClick={() => { setImage(''); setIsVideo(false); }}>
+                                    <X className="h-4 w-4" />
+                                </Button>
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-2 pt-4 border-t border-slate-100">
+                            <input ref={fileRef} type="file" accept="image/*,video/*" className="hidden" onChange={handleImageChange} />
+                            <Button variant="outline" size="sm" className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 font-semibold rounded-full"
+                                onClick={() => fileRef.current?.click()}>
+                                <ImageIcon className="h-4 w-4 text-green-500" /> صورة
+                            </Button>
+                            <Button variant="outline" size="sm" className="gap-2 border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-blue-600 font-semibold rounded-full"
+                                onClick={() => fileRef.current?.click()}>
+                                <PlayCircle className="h-4 w-4 text-red-500" /> فيديو (Reels)
+                            </Button>
+                            <div className="flex-1" />
+                            <Button className={cn("text-white gap-2 rounded-full px-6", isPharmacy ? "bg-teal-600 hover:bg-teal-700" : "bg-blue-600 hover:bg-blue-700")}
+                                onClick={handleSubmit} disabled={saving}>
+                                {saving ? 'جاري النشر...' : 'نشر'}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
 
             {/* Posts List */}
             {loading ? (
@@ -279,8 +323,8 @@ export default function OffersManager() {
                 <div className="text-center py-20 text-muted-foreground border-2 border-dashed border-slate-200 rounded-3xl max-w-2xl mx-auto">
                     <Tag className="h-16 w-16 mx-auto mb-4 text-slate-300" />
                     <p className="font-bold text-xl text-slate-700">لا توجد منشورات حتى الآن</p>
-                    <p className="text-sm mt-2">ابدأ بالتواصل مع مرضاك وشاركهم أخبارك</p>
-                    <Button variant="outline" className="mt-6 rounded-full border-blue-200 text-blue-600" onClick={() => setShowForm(true)}>
+                    <p className="text-sm mt-2">ابدأ بمشاركة آخر الأخبار والتخفيضات</p>
+                    <Button variant="outline" className={cn("mt-6 rounded-full", isPharmacy ? "border-teal-200 text-teal-600" : "border-blue-200 text-blue-600")} onClick={() => setShowForm(true)}>
                         إنشاء أول منشور
                     </Button>
                 </div>
@@ -288,31 +332,39 @@ export default function OffersManager() {
                 <div className="space-y-8 max-w-2xl mx-auto pb-10">
                     {offers.map(offer => {
                         const isVid = checkIsVideo(offer.image);
+                        const isOwn = currentUserId != null && offer.user?.id === currentUserId;
                         return (
                         <Card key={offer.id} className="overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow bg-white rounded-xl">
                             <CardContent className="p-0">
                                 {/* Header */}
                                 <div className="flex items-start justify-between p-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-12 w-12 rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center border border-slate-100 overflow-hidden">
-                                            {user?.avatar ? (
-                                                <img src={logoSrc(user.avatar) || ''} alt="avatar" className="h-full w-full object-cover" />
+                                        <div className={cn(
+                                            "h-12 w-12 rounded-full flex items-center justify-center border border-slate-100 overflow-hidden",
+                                            isPharmacy
+                                                ? "bg-gradient-to-br from-teal-100 to-teal-50"
+                                                : "bg-gradient-to-br from-blue-100 to-orange-50"
+                                        )}>
+                                            {offer.user?.avatar ? (
+                                                <img src={logoSrc(offer.user.avatar) || ''} alt="avatar" className="h-full w-full object-cover" />
                                             ) : (
-                                                <Building2 className="h-6 w-6 text-blue-800" />
+                                                <Building2 className={cn("h-6 w-6", isPharmacy ? "text-teal-800" : "text-blue-800")} />
                                             )}
                                         </div>
                                         <div>
-                                            <p className="font-bold text-[15px] text-slate-900 leading-tight">{user?.clinic_name || user?.name}</p>
+                                            <p className="font-bold text-[15px] text-slate-900 leading-tight">{displayName(offer.user)}</p>
                                             <p className="text-[12px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
                                                 {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
                                                 • <Clock className="h-3 w-3" />
                                             </p>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-full"
-                                        onClick={() => handleDelete(offer.id)}>
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    {isOwn && (
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-full"
+                                            onClick={() => handleDelete(offer.id)}>
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    )}
                                 </div>
 
                                 {/* Content */}
@@ -335,14 +387,16 @@ export default function OffersManager() {
                                 {/* Action Bar */}
                                 <div className="px-4 py-3 bg-slate-50 border-y border-slate-100 flex items-center justify-between">
                                     <div className="flex items-center gap-4 text-sm font-medium">
-                                        <button 
+                                        <button
                                             onClick={() => handleLike(offer.id)}
                                             className={cn(
                                                 "flex items-center gap-1.5 transition-colors",
-                                                offer.isLiked ? "text-orange-500" : "text-slate-500 hover:text-orange-500"
+                                                isPharmacy
+                                                    ? (offer.isLikedByMe || offer.isLiked ? "text-teal-500" : "text-slate-500 hover:text-teal-500")
+                                                    : (offer.isLikedByMe || offer.isLiked ? "text-orange-500" : "text-slate-500 hover:text-orange-500")
                                             )}
                                         >
-                                            <Heart className={cn("h-4 w-4", offer.isLiked && "fill-orange-500")} />
+                                            <Heart className={cn("h-4 w-4", (offer.isLikedByMe || offer.isLiked) && isPharmacy ? "fill-teal-500" : (offer.isLikedByMe || offer.isLiked) && "fill-orange-500")} />
                                             <span>{offer._count?.likes || 0} إعجاب</span>
                                         </button>
                                         <div className="flex items-center gap-1.5 text-slate-500">
@@ -350,7 +404,7 @@ export default function OffersManager() {
                                             <span>{offer._count?.comments || 0} تعليق</span>
                                         </div>
                                     </div>
-                                    <button 
+                                    <button
                                         onClick={() => handleShare(offer)}
                                         className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors"
                                     >
@@ -362,7 +416,6 @@ export default function OffersManager() {
                                 {/* Comments Section */}
                                 <div className="px-4 py-3 bg-slate-50/50">
 
-                                    {/* Comments List */}
                                     {offer.comments && offer.comments.length > 0 && (
                                         <div className="space-y-3 mb-4">
                                             {offer.comments.map(comment => (
@@ -393,14 +446,14 @@ export default function OffersManager() {
                                     {/* Add Comment Input */}
                                     <div className="flex items-center gap-2">
                                         <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border border-blue-200 flex-shrink-0">
-                                            {user?.avatar ? (
-                                                <img src={logoSrc(user.avatar) || ''} alt="avatar" className="h-full w-full object-cover" />
+                                            {currentAuthor?.avatar ? (
+                                                <img src={logoSrc(currentAuthor.avatar) || ''} alt="avatar" className="h-full w-full object-cover" />
                                             ) : (
                                                 <Building2 className="h-4 w-4 text-blue-700" />
                                             )}
                                         </div>
                                         <div className="flex-1 relative">
-                                            <Input 
+                                            <Input
                                                 placeholder="اكتب تعليقاً..."
                                                 value={commentText[offer.id] || ''}
                                                 onChange={e => setCommentText(prev => ({ ...prev, [offer.id]: e.target.value }))}
@@ -409,9 +462,9 @@ export default function OffersManager() {
                                                     if (e.key === 'Enter') handleAddComment(offer.id);
                                                 }}
                                             />
-                                            <Button 
-                                                size="icon" 
-                                                variant="ghost" 
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
                                                 className="absolute left-1 top-1 h-8 w-8 rounded-full text-blue-600 hover:bg-blue-50"
                                                 onClick={() => handleAddComment(offer.id)}
                                                 disabled={postingComment[offer.id] || !commentText[offer.id]?.trim()}

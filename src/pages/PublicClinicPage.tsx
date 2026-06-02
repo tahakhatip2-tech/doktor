@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
-    MapPin, Phone, Clock, Calendar,
+    MapPin, Phone, Clock, Calendar, Pill,
     MessageCircle, Star, Share2, AlertCircle, CheckCircle2
 } from 'lucide-react';
 import axios from 'axios';
@@ -212,19 +212,23 @@ function PublicClinicView({ id, toast }: { id?: string; toast: any }) {
                     </div>
                 </div>
 
-                {/* CTA — Login to book */}
-                <div className="rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 p-5 text-white shadow-[0_8px_30px_rgba(37,99,235,0.3)]">
+                {/* CTA — Login to book / dispense */}
+                <div className={`rounded-2xl p-5 text-white shadow-[0_8px_30px_rgba(0,0,0,0.15)] ${clinic?.role === 'PHARMACY' ? 'bg-gradient-to-br from-teal-600 to-teal-700' : 'bg-gradient-to-br from-blue-600 to-blue-700'}`}>
                     <div className="flex items-start gap-3 mb-4">
-                        <div className="p-2 bg-white/20 rounded-xl"><Calendar className="h-5 w-5" /></div>
+                        <div className="p-2 bg-white/20 rounded-xl">
+                            {clinic?.role === 'PHARMACY' ? <Pill className="h-5 w-5" /> : <Calendar className="h-5 w-5" />}
+                        </div>
                         <div>
-                            <h2 className="font-black text-lg leading-tight">احجز موعدك الآن</h2>
-                            <p className="text-blue-100 text-sm mt-0.5">سجّل دخولك أو أنشئ حساباً مجانياً لحجز موعد في هذه العيادة</p>
+                            <h2 className="font-black text-lg leading-tight">{clinic?.role === 'PHARMACY' ? 'صرف وصفتك الآن' : 'احجز موعدك الآن'}</h2>
+                            <p className={`text-sm mt-0.5 ${clinic?.role === 'PHARMACY' ? 'text-teal-100' : 'text-blue-100'}`}>
+                                {clinic?.role === 'PHARMACY' ? 'سجّل دخولك أو أنشئ حساباً مجانياً لصرف وصفة طبية من هذه الصيدلية' : 'سجّل دخولك أو أنشئ حساباً مجانياً لحجز موعد في هذه العيادة'}
+                            </p>
                         </div>
                     </div>
                     <Link to={`/unified-auth?redirect=/clinic/${id}`}>
-                        <Button className="w-full bg-white text-blue-700 hover:bg-blue-50 rounded-xl font-black py-5 text-base shadow-lg">
+                        <Button className={`w-full bg-white rounded-xl font-black py-5 text-base shadow-lg ${clinic?.role === 'PHARMACY' ? 'text-teal-700 hover:bg-teal-50' : 'text-blue-700 hover:bg-blue-50'}`}>
                             <CheckCircle2 className="h-5 w-5 ml-2" />
-                            سجّل دخولك وأحجز الآن
+                            {clinic?.role === 'PHARMACY' ? 'سجّل دخولك وصرف وصفة' : 'سجّل دخولك وأحجز الآن'}
                         </Button>
                     </Link>
                 </div>

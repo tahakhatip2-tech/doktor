@@ -30,6 +30,9 @@ import PatientOffers from "./pages/patient/PatientOffers";
 // Pharmacy Portal Pages
 import PharmacyLayout from "./pages/pharmacy/PharmacyLayout";
 import PharmacyDashboard from "./pages/pharmacy/PharmacyDashboard";
+import PharmacyFeed from "./pages/pharmacy/PharmacyFeed";
+import PharmacyProfile from "./pages/pharmacy/PharmacyProfile";
+import { PharmacyProvider } from "./contexts/PharmacyContext";
 
 import InternalChat from "./pages/InternalChat";
 import PublicClinicPage from "./pages/PublicClinicPage";
@@ -94,9 +97,11 @@ const App = () => (
                         </Route>
 
                         {/* â”€â”€â”€ Pharmacy Portal Routes â”€â”€â”€ */}
-                        <Route path="/pharmacy" element={<PharmacyLayout />}>
+                        <Route path="/pharmacy" element={<PharmacyProvider><PharmacyLayout /></PharmacyProvider>}>
                             <Route index element={<Navigate to="dashboard" replace />} />
                             <Route path="dashboard" element={<PharmacyDashboard />} />
+                            <Route path="feed" element={<PharmacyFeed />} />
+                            <Route path="profile" element={<PharmacyProfile />} />
                             {/* Placeholder for future specific pharmacy routes */}
                         </Route>
 

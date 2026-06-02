@@ -1,6 +1,6 @@
 import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
 
@@ -73,6 +73,17 @@ export class PharmacyService {
     };
   }
 
+  async getProfile(pharmacyId: number) {
+    const pharmacy = await this.prisma.user.findUnique({
+      where: { id: pharmacyId },
+    });
+    if (!pharmacy) {
+      throw new NotFoundException('الصيدلية غير موجودة');
+    }
+    const { password, ...result } = pharmacy;
+    return result;
+  }
+
   async getDashboardStats(pharmacyId: number) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -104,7 +115,7 @@ export class PharmacyService {
         patient: {
           select: {
             id: true,
-            name: true,
+            fullName: true,
             phone: true,
             gender: true,
           },

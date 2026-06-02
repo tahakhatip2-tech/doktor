@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
-    Building2, MapPin, Phone, Clock, Search, Calendar,
+    Building2, MapPin, Phone, Clock, Search, Calendar, Pill,
     MessageCircle, Star, Share2, Eye, Navigation,
     LocateFixed, X, ChevronDown, Stethoscope,
 } from 'lucide-react';
@@ -418,8 +418,17 @@ export default function PatientClinics() {
                                             onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`); }}
                                             className="flex-1 flex justify-center items-center gap-2 h-10 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 transition-all"
                                         >
-                                            <Calendar className="h-4 w-4 shadow-sm" />
-                                            احجز موعد
+                                            {activeTab === 'clinics' ? (
+                                                <>
+                                                    <Calendar className="h-4 w-4 shadow-sm" />
+                                                    احجز موعد
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Pill className="h-4 w-4 shadow-sm" />
+                                                    صرف وصفة
+                                                </>
+                                            )}
                                         </button>
 
                                         <div className="flex items-center gap-2 flex-shrink-0">

@@ -729,7 +729,7 @@ const Index = () => {
 
                             {activeTab === 'bot-stats' && <ClinicStats />}
 
-                            {activeTab === 'offers' && <OffersManager />}
+                            {activeTab === 'offers' && <OffersManager userType="doctor" />}
 
                             {activeTab === 'finance' && <FinancialAnalytics />}
 

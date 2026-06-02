@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, UseGuards, Request, Patch, Param } from '@nestjs/common';
 import { PharmacyService } from './pharmacy.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { UpdatePharmacySettingsDto } from './dto/update-settings.dto';
 
 @Controller('pharmacy')
 export class PharmacyController {
@@ -14,6 +15,12 @@ export class PharmacyController {
   @Post('auth/login')
   async login(@Body() body: any) {
     return this.pharmacyService.login(body);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getProfile(@Request() req) {
+    return this.pharmacyService.getProfile(req.user.id);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -42,7 +49,7 @@ export class PharmacyController {
 
   @UseGuards(JwtAuthGuard)
   @Post('settings')
-  async updateSettings(@Request() req, @Body() body: any) {
+  async updateSettings(@Request() req, @Body() body: UpdatePharmacySettingsDto) {
     return this.pharmacyService.updateSettings(req.user.id, body);
   }
 }
