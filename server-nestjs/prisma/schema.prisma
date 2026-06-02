@@ -398,6 +398,7 @@ model Patient {
   notifications         PatientNotification[]
   internalConversations InternalConversation[] @relation("PatientConversations")
   prescriptions         Prescription[]
+  offerComments         OfferComment[]
 }
 
 model PatientNotification {
@@ -463,11 +464,13 @@ model Offer {
 model OfferComment {
   id        Int      @id @default(autoincrement())
   offerId   Int
-  userId    Int
+  userId    Int?
+  patientId Int?
   content   String
   createdAt DateTime @default(now())
   offer     Offer    @relation(fields: [offerId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patient   Patient? @relation(fields: [patientId], references: [id], onDelete: Cascade)
 }
 
 model OfferLike {

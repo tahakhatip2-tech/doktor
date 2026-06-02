@@ -74,4 +74,11 @@ export class PatientOffersController {
     toggleLike(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
         return this.offersService.toggleLike(id, req.user.id);
     }
+
+    /** إضافة تعليق (المريض) */
+    @Post(':id/comments')
+    @UseGuards(PatientAuthGuard)
+    addComment(@Req() req: any, @Param('id', ParseIntPipe) id: number, @Body('content') content: string) {
+        return this.offersService.addPatientComment(id, req.user.id, content);
+    }
 }

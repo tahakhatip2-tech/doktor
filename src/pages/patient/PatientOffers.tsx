@@ -97,7 +97,7 @@ export default function PatientOffers() {
         if (!commentText.trim()) return;
         setPostingComment(true);
         try {
-            const res = await axios.post(`${API_URL}/offers/${offerId}/comments`, { content: commentText }, { headers });
+            const res = await axios.post(`${API_URL}/patient/offers/${offerId}/comments`, { content: commentText }, { headers });
             const newComment = res.data;
             
             setOffers(prev => prev.map(o => {

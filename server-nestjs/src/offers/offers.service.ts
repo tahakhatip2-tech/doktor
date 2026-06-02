@@ -40,7 +40,8 @@ export class OffersService {
                 likes: true,
                 comments: {
                     include: {
-                        user: { select: { id: true, name: true, avatar: true } }
+                        user: { select: { id: true, name: true, avatar: true } },
+                        patient: { select: { id: true, fullName: true, avatar: true } }
                     },
                     orderBy: { createdAt: 'asc' }
                 },
@@ -60,7 +61,18 @@ export class OffersService {
                     clinic_name: settingsMap['clinic_name'] || userData.clinic_name,
                     clinic_specialty: settingsMap['clinic_specialty'] || settingsMap['clinic_description'] || userData.clinic_specialty,
                     clinic_logo: settingsMap['clinic_logo'] || null,
-                }
+                },
+                comments: (offer.comments || []).map((c: any) => ({
+                    id: c.id,
+                    offerId: c.offerId,
+                    content: c.content,
+                    createdAt: c.createdAt,
+                    user: c.patient
+                        ? { id: c.patient.id, name: c.patient.fullName, avatar: c.patient.avatar }
+                        : c.user
+                            ? { id: c.user.id, name: c.user.name, avatar: c.user.avatar }
+                            : null,
+                })),
             };
         });
     }
@@ -126,7 +138,8 @@ export class OffersService {
                 likes: true,
                 comments: {
                     include: {
-                        user: { select: { id: true, name: true, avatar: true } }
+                        user: { select: { id: true, name: true, avatar: true } },
+                        patient: { select: { id: true, fullName: true, avatar: true } }
                     },
                     orderBy: { createdAt: 'asc' }
                 },
@@ -147,6 +160,17 @@ export class OffersService {
                     clinic_description: settingsMap['clinic_description'] || userData.clinic_description || null,
                     clinic_logo: settingsMap['clinic_logo'] || null,
                 },
+                comments: (offer.comments || []).map((c: any) => ({
+                    id: c.id,
+                    offerId: c.offerId,
+                    content: c.content,
+                    createdAt: c.createdAt,
+                    user: c.patient
+                        ? { id: c.patient.id, name: c.patient.fullName, avatar: c.patient.avatar }
+                        : c.user
+                            ? { id: c.user.id, name: c.user.name, avatar: c.user.avatar }
+                            : null,
+                })),
                 likesCount: offer._count.likes,
                 isLikedByMe: patientId
                     ? offer.likes.some(l => l.patientId === patientId)
@@ -176,5 +200,28 @@ export class OffersService {
             data: { offerId, userId, content },
             include: { user: { select: { id: true, name: true, avatar: true } } }
         });
+    }
+
+    // ── المريض: إضافة تعليق ────────────────────────────────────
+    async addPatientComment(offerId: number, patientId: number, content: string) {
+        const offer = await this.prisma.offer.findUnique({ where: { id: offerId } });
+        if (!offer) throw new NotFoundException('العرض غير موجود');
+
+        const comment = await this.prisma.offerComment.create({
+            data: { offerId, patientId, content },
+            include: { patient: { select: { id: true, fullName: true, avatar: true } } }
+        });
+
+        return {
+            id: comment.id,
+            offerId: comment.offerId,
+            content: comment.content,
+            createdAt: comment.createdAt,
+            user: {
+                id: comment.patient!.id,
+                name: comment.patient!.fullName,
+                avatar: comment.patient!.avatar,
+            },
+        };
     }
 }
