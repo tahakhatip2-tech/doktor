@@ -1,4 +1,11 @@
-import { Injectable, ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  NotFoundException,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
@@ -6,6 +13,8 @@ import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class PharmacyService {
+  private readonly logger = new Logger(PharmacyService.name);
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -74,14 +83,27 @@ export class PharmacyService {
   }
 
   async getProfile(pharmacyId: number) {
-    const pharmacy = await this.prisma.user.findUnique({
-      where: { id: pharmacyId },
-    });
-    if (!pharmacy) {
-      throw new NotFoundException('الصيدلية غير موجودة');
+    try {
+      const pharmacy = await this.prisma.user.findUnique({
+        where: { id: pharmacyId },
+      });
+      if (!pharmacy) {
+        throw new NotFoundException('الصيدلية غير موجودة');
+      }
+      const { password, ...result } = pharmacy as any;
+      return result;
+    } catch (err: any) {
+      if (err instanceof NotFoundException) throw err;
+      this.logger.error(
+        `getProfile(${pharmacyId}) failed: ${err?.message || err}`,
+        err?.stack,
+      );
+      throw new InternalServerErrorException(
+        err?.message?.includes("Can't reach database server")
+          ? 'تعذّر الاتصال بقاعدة البيانات. حاول مرة أخرى بعد قليل.'
+          : 'فشل تحميل بيانات الصيدلية',
+      );
     }
-    const { password, ...result } = pharmacy;
-    return result;
   }
 
   async getDashboardStats(pharmacyId: number) {
@@ -179,36 +201,73 @@ export class PharmacyService {
   }
 
   async updateSettings(pharmacyId: number, data: any) {
-    const { settings, ...userUpdates } = data;
+    const { settings, ...userUpdates } = data || {};
 
-    // Update user table
-    if (Object.keys(userUpdates).length > 0) {
-      await this.prisma.user.update({
-        where: { id: pharmacyId },
-        data: userUpdates,
-      });
+    if (
+      typeof userUpdates.avatar === 'string' &&
+      userUpdates.avatar.startsWith('data:')
+    ) {
+      this.logger.warn(
+        `updateSettings(${pharmacyId}) received a base64 avatar — ignoring. ` +
+          `Use POST /pharmacy/upload-logo to upload images.`,
+      );
+      delete userUpdates.avatar;
     }
 
-    // Update settings table
-    if (settings && Object.keys(settings).length > 0) {
-      for (const [key, value] of Object.entries(settings)) {
-        await this.prisma.setting.upsert({
-          where: {
-            userId_key: {
-              userId: pharmacyId,
-              key: key,
-            },
-          },
-          update: { value: String(value) },
-          create: {
-            userId: pharmacyId,
-            key: key,
-            value: String(value),
-          },
+    try {
+      if (Object.keys(userUpdates).length > 0) {
+        await this.prisma.user.update({
+          where: { id: pharmacyId },
+          data: userUpdates,
         });
       }
-    }
 
-    return this.getSettings(pharmacyId);
+      if (settings && Object.keys(settings).length > 0) {
+        for (const [key, value] of Object.entries(settings)) {
+          await this.prisma.setting.upsert({
+            where: {
+              userId_key: {
+                userId: pharmacyId,
+                key: key,
+              },
+            },
+            update: { value: String(value) },
+            create: {
+              userId: pharmacyId,
+              key: key,
+              value: String(value),
+            },
+          });
+        }
+      }
+
+      return this.getProfile(pharmacyId);
+    } catch (err: any) {
+      this.logger.error(
+        `updateSettings(${pharmacyId}) failed: ${err?.message || err}`,
+        err?.stack,
+      );
+      throw new InternalServerErrorException(
+        err?.message || 'فشل تحديث بيانات الصيدلية',
+      );
+    }
+  }
+
+  async updateAvatar(pharmacyId: number, avatarUrl: string) {
+    try {
+      await this.prisma.user.update({
+        where: { id: pharmacyId },
+        data: { avatar: avatarUrl, clinic_logo: avatarUrl },
+      });
+      return this.getProfile(pharmacyId);
+    } catch (err: any) {
+      this.logger.error(
+        `updateAvatar(${pharmacyId}) failed: ${err?.message || err}`,
+        err?.stack,
+      );
+      throw new InternalServerErrorException(
+        err?.message || 'فشل حفظ شعار الصيدلية',
+      );
+    }
   }
 }

@@ -541,6 +541,7 @@ enum SubscriptionStatus {
 enum InternalSenderType {
   PATIENT
   DOCTOR
+  PHARMACY
   BOT
 }
 

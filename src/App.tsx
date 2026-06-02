@@ -32,6 +32,10 @@ import PharmacyLayout from "./pages/pharmacy/PharmacyLayout";
 import PharmacyDashboard from "./pages/pharmacy/PharmacyDashboard";
 import PharmacyFeed from "./pages/pharmacy/PharmacyFeed";
 import PharmacyProfile from "./pages/pharmacy/PharmacyProfile";
+import PharmacyMessages from "./pages/pharmacy/PharmacyMessages";
+import PharmacyChat from "./pages/pharmacy/PharmacyChat";
+import PharmacyPrescriptions from "./pages/pharmacy/PharmacyPrescriptions";
+import PharmacyNotifications from "./pages/pharmacy/PharmacyNotifications";
 import { PharmacyProvider } from "./contexts/PharmacyContext";
 
 import InternalChat from "./pages/InternalChat";
@@ -102,7 +106,10 @@ const App = () => (
                             <Route path="dashboard" element={<PharmacyDashboard />} />
                             <Route path="feed" element={<PharmacyFeed />} />
                             <Route path="profile" element={<PharmacyProfile />} />
-                            {/* Placeholder for future specific pharmacy routes */}
+                            <Route path="prescriptions" element={<PharmacyPrescriptions />} />
+                            <Route path="notifications" element={<PharmacyNotifications />} />
+                            <Route path="messages" element={<PharmacyMessages />} />
+                            <Route path="messages/:patientId" element={<PharmacyChat />} />
                         </Route>
 
                         {/* Catch-all */}

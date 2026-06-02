@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -12,14 +13,15 @@ import {
 import { cn } from '@/lib/utils';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, '');
 
 const getAvatarSrc = (avatar?: string) => {
     if (!avatar) return '';
-    if (avatar.startsWith('http') || avatar.startsWith('data:image')) return avatar;
-    return `${API_URL.replace(/\/api$/, '')}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
+    if (avatar.startsWith('http') || avatar.startsWith('data:image') || avatar.startsWith('blob:')) return avatar;
+    return `${API_ORIGIN}${avatar.startsWith('/') ? '' : '/'}${avatar}`;
 };
 
-const compressImage = (file: File, maxSize = 320, quality = 0.85): Promise<string> =>
+const compressImage = (file: File, maxSize = 512, quality = 0.85): Promise<File> =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onerror = () => reject(new Error('فشل قراءة الملف'));
@@ -36,7 +38,15 @@ const compressImage = (file: File, maxSize = 320, quality = 0.85): Promise<strin
                 const ctx = canvas.getContext('2d');
                 if (!ctx) return reject(new Error('فشل معالجة الصورة'));
                 ctx.drawImage(img, 0, 0, w, h);
-                resolve(canvas.toDataURL('image/jpeg', quality));
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) return reject(new Error('فشل ضغط الصورة'));
+                        const safeName = (file.name || 'logo').replace(/\.[^.]+$/, '') + '.jpg';
+                        resolve(new File([blob], safeName, { type: 'image/jpeg' }));
+                    },
+                    'image/jpeg',
+                    quality,
+                );
             };
             img.src = ev.target?.result as string;
         };
@@ -44,7 +54,7 @@ const compressImage = (file: File, maxSize = 320, quality = 0.85): Promise<strin
     });
 
 export default function PharmacyProfile() {
-    const { pharmacy, loading, setPharmacy } = usePharmacyAuth();
+    const { pharmacy, loading, setPharmacy, refresh } = usePharmacyAuth();
     const navigate = useNavigate();
     const { toast } = useToast();
     const fileRef = useRef<HTMLInputElement>(null);
@@ -66,8 +76,9 @@ export default function PharmacyProfile() {
         setClinicPhone(pharmacy.clinic_phone || '');
         setClinicAddress(pharmacy.clinic_address || '');
         setWorkingHours(pharmacy.working_hours || '');
-        setAvatar(pharmacy.avatar || '');
-        setOriginalAvatar(pharmacy.avatar || '');
+        const incoming = pharmacy.avatar || (pharmacy as any).clinic_logo || '';
+        setAvatar(incoming);
+        setOriginalAvatar(incoming);
     }, [pharmacy]);
 
     if (loading) {
@@ -92,13 +103,58 @@ export default function PharmacyProfile() {
             toast({ variant: 'destructive', title: 'حجم الصورة كبير جداً (الحد الأقصى 5 ميجا)' });
             return;
         }
+
+        const token = localStorage.getItem('pharmacy_token');
+        if (!token) {
+            toast({
+                variant: 'destructive',
+                title: 'انتهت الجلسة',
+                description: 'يرجى تسجيل الدخول مجدداً',
+            });
+            return;
+        }
+
         setUploading(true);
         try {
-            const dataUrl = await compressImage(file);
-            setAvatar(dataUrl);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : 'فشل تحميل الصورة';
-            toast({ variant: 'destructive', title: 'فشل تحميل الصورة', description: message });
+            const compressed = await compressImage(file);
+            const formData = new FormData();
+            formData.append('file', compressed);
+
+            const res = await axios.post(`${API_URL}/pharmacy/upload-logo`, formData, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                },
+            });
+
+            const data = (res.data || {}) as { avatar?: string; url?: string; pharmacy?: any };
+            const url = data.avatar || data.url;
+            if (!url) throw new Error('استجابة الخادم لم تتضمن رابط الصورة');
+
+            setAvatar(url);
+            setOriginalAvatar(url);
+
+            const merged = {
+                ...pharmacy,
+                ...(data.pharmacy && typeof data.pharmacy === 'object' ? data.pharmacy : {}),
+                avatar: url,
+            };
+            setPharmacy(merged);
+
+            toast({ title: '✅ تم رفع الشعار بنجاح' });
+        } catch (err: unknown) {
+            const axiosErr = err as { response?: { data?: { message?: string | string[] } }; message?: string; code?: string };
+            let description = 'فشل تحميل الصورة';
+            if (axiosErr?.response?.data?.message) {
+                const msg = axiosErr.response.data.message;
+                description = Array.isArray(msg) ? msg.join('، ') : msg;
+            } else if (axiosErr?.code === 'ERR_NETWORK') {
+                description = 'تعذّر الاتصال بالخادم — تحقّق من الإنترنت';
+            } else if (axiosErr?.message) {
+                description = axiosErr.message;
+            }
+            console.error('[PharmacyProfile] Upload failed', err, { description });
+            toast({ variant: 'destructive', title: 'فشل رفع الشعار', description });
         } finally {
             setUploading(false);
             if (fileRef.current) fileRef.current.value = '';
@@ -121,34 +177,45 @@ export default function PharmacyProfile() {
             if (!token) {
                 throw new Error('لم يتم العثور على رمز الدخول — يرجى تسجيل الدخول مجدداً');
             }
-            const payload = {
+            const payload: Record<string, string | null> = {
                 name: name.trim(),
                 phone: phone.trim() || null,
                 clinic_phone: clinicPhone.trim() || null,
                 clinic_address: clinicAddress.trim() || null,
                 working_hours: workingHours.trim() || null,
-                avatar: avatar || null,
             };
-            console.debug('[PharmacyProfile] Saving settings', { ...payload, avatar: payload.avatar ? `[base64 ${payload.avatar.length} chars]` : null });
+
+            // Only persist the avatar when it's an URL/path (uploaded). Never send base64.
+            if (avatar && !avatar.startsWith('data:')) {
+                payload.avatar = avatar;
+            } else if (!avatar && originalAvatar) {
+                payload.avatar = null;
+            }
+
+            console.debug('[PharmacyProfile] Saving settings', payload);
             const res = await axios.post(`${API_URL}/pharmacy/settings`, payload, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                },
             });
             console.debug('[PharmacyProfile] Save response', res.data);
 
             const responseData = (res.data && typeof res.data === 'object' ? res.data : {}) as Record<string, unknown>;
-            const newAvatar = responseData.avatar !== undefined && responseData.avatar !== null
+            const responseAvatar = responseData.avatar !== undefined && responseData.avatar !== null
                 ? String(responseData.avatar)
-                : (payload.avatar || '');
+                : (typeof payload.avatar === 'string' ? payload.avatar : '');
 
             const updated: any = {
                 ...pharmacy,
                 ...responseData,
-                avatar: newAvatar,
+                avatar: responseAvatar,
             };
 
             try {
                 setPharmacy(updated);
-                setOriginalAvatar(newAvatar);
+                setOriginalAvatar(responseAvatar);
+                refresh?.().catch(() => undefined);
             } catch (mergeErr) {
                 console.error('[PharmacyProfile] Failed to merge pharmacy state', mergeErr, { updated });
                 throw new Error('فشل تحديث البيانات المحلية بعد الحفظ في الخادم');
@@ -160,10 +227,10 @@ export default function PharmacyProfile() {
             if (axiosErr?.response?.data?.message) {
                 const msg = axiosErr.response.data.message;
                 description = Array.isArray(msg) ? msg.join('، ') : msg;
-            } else if (axiosErr?.message) {
-                description = axiosErr.message;
             } else if (axiosErr?.code === 'ERR_NETWORK') {
                 description = 'تعذّر الاتصال بالخادم — تحقّق من الإنترنت';
+            } else if (axiosErr?.message) {
+                description = axiosErr.message;
             }
             console.error('[PharmacyProfile] Save failed', err, { description });
             toast({

@@ -452,7 +452,164 @@ export class InternalChatService {
         return this.prisma.internalMessage.count({
             where: {
                 conversation: { patientId },
-                senderType: { in: [InternalSenderType.DOCTOR, InternalSenderType.BOT] },
+                senderType: { in: [InternalSenderType.DOCTOR, InternalSenderType.PHARMACY, InternalSenderType.BOT] },
+                isRead: false,
+            },
+        });
+    }
+
+    // ════════════════════════════════════════════════════════════════════════
+    // ─── PHARMACY CHAT (يعيد استخدام جدول internal_conversations) ───────────
+    // ════════════════════════════════════════════════════════════════════════
+    // يخزّن معرّف الصيدلية في حقل clinicId (العلاقة منطقية لا تفرض ذلك)
+    // ويستخدم InternalSenderType.PHARMACY للتمييز عن رسائل الطبيب/العيادة.
+
+    /** قائمة المرضى الذين أرسلوا وصفات إلى هذه الصيدلية (أو لديهم محادثة معها) */
+    async getPharmacyPatients(pharmacyId: number) {
+        const prescriptions = await this.prisma.prescription.findMany({
+            where: { pharmacyId },
+            select: { patientId: true, createdAt: true, status: true },
+            orderBy: { createdAt: 'desc' },
+        });
+
+        const patientIds = Array.from(new Set(prescriptions.map(p => p.patientId)));
+        if (patientIds.length === 0) return [];
+
+        const patients = await this.prisma.patient.findMany({
+            where: { id: { in: patientIds } },
+            select: { id: true, fullName: true, phone: true, avatar: true },
+        });
+
+        const conversations = await this.prisma.internalConversation.findMany({
+            where: { clinicId: pharmacyId, patientId: { in: patientIds } },
+            include: { messages: { orderBy: { createdAt: 'desc' }, take: 1 } },
+        });
+
+        const convMap = new Map(conversations.map(c => [c.patientId, c]));
+
+        return patients.map(p => {
+            const conv = convMap.get(p.id);
+            const lastMsg = conv?.messages?.[0];
+            const lastPrescription = prescriptions.find(rx => rx.patientId === p.id);
+            return {
+                patient: p,
+                conversationId: conv?.id ?? null,
+                lastMessage: lastMsg
+                    ? { id: lastMsg.id, content: lastMsg.content, senderType: lastMsg.senderType, createdAt: lastMsg.createdAt }
+                    : null,
+                lastPrescriptionAt: lastPrescription?.createdAt ?? null,
+            };
+        }).sort((a, b) => {
+            const aTime = a.lastMessage?.createdAt || a.lastPrescriptionAt || 0;
+            const bTime = b.lastMessage?.createdAt || b.lastPrescriptionAt || 0;
+            return new Date(bTime as any).getTime() - new Date(aTime as any).getTime();
+        });
+    }
+
+    /** قائمة محادثات الصيدلية (تحتوي على آخر رسالة + بيانات المريض) */
+    async getPharmacyConversations(pharmacyId: number) {
+        const conversations = await this.prisma.internalConversation.findMany({
+            where: { clinicId: pharmacyId },
+            include: {
+                patient: { select: { id: true, fullName: true, phone: true, avatar: true } },
+                messages: { orderBy: { createdAt: 'desc' }, take: 1 },
+            },
+            orderBy: { updatedAt: 'desc' },
+        });
+
+        return conversations.map(conv => {
+            const lastMsg = conv.messages?.[0];
+            return {
+                id: conv.id,
+                patient: conv.patient,
+                updatedAt: conv.updatedAt,
+                lastMessage: lastMsg
+                    ? { id: lastMsg.id, content: lastMsg.content, senderType: lastMsg.senderType, isRead: lastMsg.isRead, createdAt: lastMsg.createdAt }
+                    : null,
+            };
+        });
+    }
+
+    /** الحصول على أو إنشاء محادثة بين الصيدلية والمريض */
+    async getOrCreatePharmacyConversation(pharmacyId: number, patientId: number) {
+        const patient = await this.prisma.patient.findUnique({ where: { id: patientId } });
+        if (!patient) {
+            throw new NotFoundException('المريض غير موجود');
+        }
+
+        let conversation = await this.prisma.internalConversation.findUnique({
+            where: { clinicId_patientId: { clinicId: pharmacyId, patientId } },
+            include: {
+                patient: { select: { id: true, fullName: true, phone: true, avatar: true } },
+                messages: { orderBy: { createdAt: 'asc' } },
+            },
+        });
+
+        if (!conversation) {
+            conversation = await this.prisma.internalConversation.create({
+                data: { clinicId: pharmacyId, patientId },
+                include: {
+                    patient: { select: { id: true, fullName: true, phone: true, avatar: true } },
+                    messages: { orderBy: { createdAt: 'asc' } },
+                },
+            });
+        }
+
+        return conversation;
+    }
+
+    /** إرسال رسالة من الصيدلية إلى المريض */
+    async sendMessageAsPharmacy(
+        conversationId: number,
+        pharmacyId: number,
+        content: string,
+    ) {
+        const conversation = await this.prisma.internalConversation.findUnique({
+            where: { id: conversationId },
+        });
+
+        if (!conversation) throw new NotFoundException('المحادثة غير موجودة');
+        if (conversation.clinicId !== pharmacyId)
+            throw new ForbiddenException('غير مصرح لك');
+
+        const message = await this.prisma.internalMessage.create({
+            data: {
+                conversationId,
+                content,
+                senderType: InternalSenderType.PHARMACY,
+                senderId: pharmacyId,
+            },
+        });
+
+        await this.prisma.internalConversation.update({
+            where: { id: conversationId },
+            data: { updatedAt: new Date() },
+        });
+
+        // إشعار المريض برسالة الصيدلية
+        this.notificationsGateway.sendNotificationToPatient(conversation.patientId, {
+            type: 'PHARMACY_MESSAGE',
+            title: 'رسالة جديدة من الصيدلية',
+            message: content,
+            conversationId,
+        });
+
+        // تحديث قائمة محادثات الصيدلية في الواجهة (real-time)
+        this.notificationsGateway.sendNotificationToUser(pharmacyId, {
+            type: 'PHARMACY_MESSAGE_ECHO',
+            conversationId,
+            message,
+        });
+
+        return message;
+    }
+
+    /** عدد الرسائل غير المقروءة للصيدلية */
+    async getUnreadCountForPharmacy(pharmacyId: number): Promise<number> {
+        return this.prisma.internalMessage.count({
+            where: {
+                conversation: { clinicId: pharmacyId },
+                senderType: InternalSenderType.PATIENT,
                 isRead: false,
             },
         });
