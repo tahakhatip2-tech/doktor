@@ -364,7 +364,39 @@ export default function PatientClinicDetail() {
             {/* ── Container for the rest ── */}
             <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-6 mt-4">
 
-            {/* ── قسم الحجز ── */}
+                {/* ── طاقم العيادة (الأطباء) ── */}
+                {clinic.clinicDoctors && clinic.clinicDoctors.length > 0 && clinic.role !== 'PHARMACY' && (
+                    <div className="space-y-3">
+                        <h3 className="font-bold text-lg flex items-center gap-2 text-slate-800">
+                            <User className="w-5 h-5 text-blue-500" />
+                            طاقم العيادة
+                        </h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {clinic.clinicDoctors.map((doctor: any) => (
+                                <Card key={doctor.id} className="shadow-sm hover:shadow-md transition-shadow border-slate-100">
+                                    <CardContent className="p-4 flex items-center gap-4">
+                                        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-100 shrink-0">
+                                            {doctor.avatar ? (
+                                                <img src={doctor.avatar.startsWith('http') ? doctor.avatar : `${BASE_URL}${doctor.avatar}`} alt={doctor.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-lg">
+                                                    {doctor.name.charAt(0)}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <p className="font-bold text-slate-800 truncate">{doctor.name}</p>
+                                            {doctor.specialty && (
+                                                <p className="text-xs text-slate-500 truncate">{doctor.specialty}</p>
+                                            )}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
             {/* ── قسم الحجز أو صرف الوصفات ── */}
             {clinic.role === 'PHARMACY' ? (
                 <Card className="shadow-card border-green-100">

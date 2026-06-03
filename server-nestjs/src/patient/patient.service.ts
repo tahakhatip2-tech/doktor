@@ -284,6 +284,15 @@ export class PatientService {
                     },
                     select: { key: true, value: true },
                 },
+                clinicDoctors: {
+                    where: { isActive: true },
+                    select: {
+                        id: true,
+                        name: true,
+                        specialty: true,
+                        avatar: true,
+                    }
+                }
             },
         });
 
