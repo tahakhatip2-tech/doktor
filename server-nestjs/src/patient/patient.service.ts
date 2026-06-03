@@ -291,6 +291,8 @@ export class PatientService {
                         name: true,
                         specialty: true,
                         avatar: true,
+                        workingHours: true,
+                        workingDays: true,
                     }
                 }
             },

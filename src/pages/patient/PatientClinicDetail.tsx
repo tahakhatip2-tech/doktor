@@ -371,23 +371,48 @@ export default function PatientClinicDetail() {
                             <User className="w-5 h-5 text-blue-500" />
                             طاقم العيادة
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             {clinic.clinicDoctors.map((doctor: any) => (
                                 <Card key={doctor.id} className="shadow-sm hover:shadow-md transition-shadow border-slate-100">
-                                    <CardContent className="p-4 flex items-center gap-4">
-                                        <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-100 shrink-0">
+                                    <CardContent className="p-4 flex gap-4">
+                                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-100 shrink-0 bg-blue-50">
                                             {doctor.avatar ? (
-                                                <img src={doctor.avatar.startsWith('http') ? doctor.avatar : `${BASE_URL}${doctor.avatar}`} alt={doctor.name} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full bg-blue-50 flex items-center justify-center text-blue-500 font-bold text-lg">
-                                                    {doctor.name.charAt(0)}
-                                                </div>
-                                            )}
+                                                <img 
+                                                    src={doctor.avatar.startsWith('http') ? doctor.avatar : `${BASE_URL}${doctor.avatar.startsWith('/') ? '' : '/'}${doctor.avatar}`} 
+                                                    alt={doctor.name} 
+                                                    className="w-full h-full object-cover" 
+                                                    onError={(e) => {
+                                                        // Fallback if image fails to load
+                                                        const target = e.target as HTMLImageElement;
+                                                        target.style.display = 'none';
+                                                        target.nextElementSibling?.classList.remove('hidden');
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <div className={cn("w-full h-full bg-blue-50 items-center justify-center text-blue-600 font-bold text-xl", doctor.avatar ? "hidden flex" : "flex")}>
+                                                {doctor.name.charAt(0)}
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col min-w-0">
-                                            <p className="font-bold text-slate-800 truncate">{doctor.name}</p>
+                                        <div className="flex flex-col flex-1 min-w-0 justify-center">
+                                            <p className="font-bold text-slate-800 text-sm truncate">{doctor.name}</p>
                                             {doctor.specialty && (
-                                                <p className="text-xs text-slate-500 truncate">{doctor.specialty}</p>
+                                                <p className="text-xs text-blue-600 font-medium truncate mb-1">{doctor.specialty}</p>
+                                            )}
+                                            {(doctor.workingHours || doctor.workingDays) && (
+                                                <div className="flex flex-col gap-0.5 mt-1">
+                                                    {doctor.workingDays && (
+                                                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                                            <Calendar className="w-3 h-3 text-orange-400" />
+                                                            <span className="truncate">{doctor.workingDays}</span>
+                                                        </div>
+                                                    )}
+                                                    {doctor.workingHours && (
+                                                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                                                            <Clock className="w-3 h-3 text-orange-400" />
+                                                            <span className="truncate">{doctor.workingHours}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
                                     </CardContent>
