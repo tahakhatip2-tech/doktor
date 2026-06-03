@@ -378,7 +378,7 @@ export default function PatientClinicDetail() {
                                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-100 shrink-0 bg-blue-50">
                                             {doctor.avatar ? (
                                                 <img 
-                                                    src={doctor.avatar.startsWith('http') ? doctor.avatar : `${BASE_URL}${doctor.avatar.startsWith('/') ? '' : '/'}${doctor.avatar}`} 
+                                                    src={doctor.avatar.startsWith('http') || doctor.avatar.startsWith('data:') ? doctor.avatar : `${BASE_URL}${doctor.avatar.startsWith('/') ? '' : '/'}${doctor.avatar}`} 
                                                     alt={doctor.name} 
                                                     className="w-full h-full object-cover" 
                                                     onError={(e) => {
