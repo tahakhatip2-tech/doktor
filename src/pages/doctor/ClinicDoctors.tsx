@@ -509,48 +509,50 @@ export default function ClinicDoctors() {
                                         </div>
 
                                         {form.role === 'doctor' && (
-                                            <div className="grid grid-cols-2 gap-3 mt-3">
-                                                <div>
-                                                    <label className="text-xs font-bold text-slate-600 mb-1 block">
-                                                        <Clock className="h-3 w-3 inline ml-1" />
-                                                        من الساعة
-                                                    </label>
-                                                    <Input
-                                                        type="time"
-                                                        value={form.workingHoursFrom}
-                                                        onChange={e => setForm(f => ({ ...f, workingHoursFrom: e.target.value }))}
-                                                        className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
-                                                    />
+                                            <>
+                                                <div className="grid grid-cols-2 gap-3 mt-3">
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-600 mb-1 block">
+                                                            <Clock className="h-3 w-3 inline ml-1" />
+                                                            من الساعة
+                                                        </label>
+                                                        <Input
+                                                            type="time"
+                                                            value={form.workingHoursFrom}
+                                                            onChange={e => setForm(f => ({ ...f, workingHoursFrom: e.target.value }))}
+                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-600 mb-1 block">
+                                                            <Clock className="h-3 w-3 inline ml-1 text-transparent" />
+                                                            إلى الساعة
+                                                        </label>
+                                                        <Input
+                                                            type="time"
+                                                            value={form.workingHoursTo}
+                                                            onChange={e => setForm(f => ({ ...f, workingHoursTo: e.target.value }))}
+                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                        />
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <label className="text-xs font-bold text-slate-600 mb-1 block">
-                                                        <Clock className="h-3 w-3 inline ml-1 text-transparent" />
-                                                        إلى الساعة
-                                                    </label>
-                                                    <Input
-                                                        type="time"
-                                                        value={form.workingHoursTo}
-                                                        onChange={e => setForm(f => ({ ...f, workingHoursTo: e.target.value }))}
-                                                        className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
-                                                    />
+                                                <div className="grid grid-cols-2 gap-3 mt-3">
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-600 mb-1 block">
+                                                            <DollarSign className="h-3 w-3 inline ml-1" />
+                                                            أجر الكشف (دينار)
+                                                        </label>
+                                                        <Input
+                                                            type="number"
+                                                            min="0"
+                                                            placeholder="0.00"
+                                                            value={form.hourlyRate}
+                                                            onChange={e => setForm(f => ({ ...f, hourlyRate: e.target.value }))}
+                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                        />
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div className="grid grid-cols-2 gap-3 mt-3">
-                                                <div>
-                                                    <label className="text-xs font-bold text-slate-600 mb-1 block">
-                                                        <DollarSign className="h-3 w-3 inline ml-1" />
-                                                        أجر الكشف (دينار)
-                                                    </label>
-                                                    <Input
-                                                        type="number"
-                                                        min="0"
-                                                        placeholder="0.00"
-                                                        value={form.hourlyRate}
-                                                        onChange={e => setForm(f => ({ ...f, hourlyRate: e.target.value }))}
-                                                        className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
-                                                    />
-                                                </div>
-                                            </div>
+                                            </>
                                         )}
 
                                         <div className="grid grid-cols-1 gap-3 mt-3">
