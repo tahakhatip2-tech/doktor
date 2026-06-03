@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, Outlet, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { usePatientAuth } from '@/hooks/usePatientAuth';
 import { usePatientSocketNotifications } from '@/hooks/usePatientSocketNotifications';
@@ -32,6 +32,13 @@ import Footer from '@/components/Footer';
 import PatientAIAssistant from '@/components/PatientAIAssistant';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
+
+const getAvatarUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('http') || url.startsWith('data:')) return url;
+    return `${BASE_URL}${url.startsWith('/') ? '' : '/'}${url}`;
+};
 
 export default function PatientLayout() {
     const navigate = useNavigate();
@@ -102,7 +109,11 @@ export default function PatientLayout() {
                                         <div className="relative">
                                             <div className="absolute -inset-1.5 bg-gradient-to-tr from-blue-600 to-blue-400 rounded-full blur-md opacity-20 group-hover:opacity-40 transition duration-500" />
                                             <div className="relative h-11 w-11 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white overflow-hidden shadow-xl border-2 border-white/50">
-                                                <span className="font-bold text-lg">{patient?.fullName?.charAt(0) || 'م'}</span>
+                                                {patient?.avatar ? (
+                                                    <img src={getAvatarUrl(patient.avatar)} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <span className="font-bold text-lg">{patient?.fullName?.charAt(0) || 'م'}</span>
+                                                )}
                                             </div>
                                             {/* Hamburger/Menu Badge */}
                                             <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-white rounded-full flex flex-col items-center justify-center gap-0.5 border-2 border-blue-50 shadow-lg group-hover:scale-110 transition-transform">
@@ -129,8 +140,12 @@ export default function PatientLayout() {
                                     <div className="flex flex-col items-center p-6 bg-gradient-to-b from-blue-50/50 to-transparent mb-2 rounded-t-[2rem] border-b border-blue-100/20">
                                         <div className="relative group mb-3">
                                             <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-orange-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
-                                            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-2xl font-black shadow-lg">
-                                                {patient?.fullName?.charAt(0) || 'م'}
+                                            <div className="relative h-16 w-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white text-2xl font-black shadow-lg overflow-hidden">
+                                                {patient?.avatar ? (
+                                                    <img src={getAvatarUrl(patient.avatar)} alt="Profile" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <>{patient?.fullName?.charAt(0) || 'م'}</>
+                                                )}
                                             </div>
                                         </div>
                                         <h2 className="text-xl font-black tracking-tighter text-blue-900">
@@ -309,6 +324,7 @@ export default function PatientLayout() {
                                 <DropdownMenuTrigger asChild>
                                     <button className="relative h-10 w-10 rounded-full border-2 border-blue-100 p-0.5 active:scale-95 transition-transform overflow-hidden">
                                         <Avatar className="h-full w-full">
+                                            {patient?.avatar && <AvatarImage src={getAvatarUrl(patient.avatar)} alt="Profile" className="object-cover" />}
                                             <AvatarFallback className="bg-blue-700 text-white font-bold text-xs">
                                                 {patient.fullName?.charAt(0) || 'م'}
                                             </AvatarFallback>
