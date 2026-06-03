@@ -55,6 +55,10 @@ export class UpdatePatientProfileDto {
   phone?: string;
 
   @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
   @IsDateString()
   dateOfBirth?: string;
 

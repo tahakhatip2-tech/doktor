@@ -1,19 +1,62 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { usePatientAuth } from "@/hooks/usePatientAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { toastWithSound } from "@/lib/toast-with-sound";
-import { Loader2, User, Phone, Mail, FileText, Droplets, AlertTriangle, AlertCircle, HeartPulse, MapPin, Calendar, Check } from "lucide-react";
+import { Loader2, User, Phone, Mail, FileText, Droplets, AlertTriangle, AlertCircle, HeartPulse, MapPin, Calendar, Check, Camera } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { API_URL } from "@/lib/api";
+
+const API_ORIGIN = API_URL.replace(/\/api\/?$/, "");
+
+const getAvatarSrc = (avatar?: string) => {
+    if (!avatar) return "";
+    if (avatar.startsWith("http") || avatar.startsWith("data:image") || avatar.startsWith("blob:")) return avatar;
+    return `${API_ORIGIN}${avatar.startsWith("/") ? "" : "/"}${avatar}`;
+};
+
+const compressImage = (file: File, maxSize = 512, quality = 0.85): Promise<File> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("فشل قراءة الملف"));
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onerror = () => reject(new Error("فشل تحميل الصورة"));
+            img.onload = () => {
+                const scale = Math.min(maxSize / img.width, maxSize / img.height, 1);
+                const w = Math.round(img.width * scale);
+                const h = Math.round(img.height * scale);
+                const canvas = document.createElement("canvas");
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) return reject(new Error("فشل معالجة الصورة"));
+                ctx.drawImage(img, 0, 0, w, h);
+                canvas.toBlob(
+                    (blob) => {
+                        if (!blob) return reject(new Error("فشل ضغط الصورة"));
+                        const safeName = (file.name || "avatar").replace(/\.[^.]+$/, "") + ".jpg";
+                        resolve(new File([blob], safeName, { type: "image/jpeg" }));
+                    },
+                    "image/jpeg",
+                    quality,
+                );
+            };
+            img.src = ev.target?.result as string;
+        };
+        reader.readAsDataURL(file);
+    });
 
 export default function PatientProfile() {
     const { patient, loading, token } = usePatientAuth(true);
     const [isEditing, setIsEditing] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+    const [avatarUrl, setAvatarUrl] = useState<string>("");
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -43,6 +86,7 @@ export default function PatientProfile() {
                 emergencyContact: patient.emergencyContact || "",
                 address: patient.address || "",
             });
+            setAvatarUrl(patient.avatar || "");
         }
     }, [patient]);
 
@@ -62,13 +106,16 @@ export default function PatientProfile() {
     const handleSave = async () => {
         try {
             setIsSaving(true);
-            
-            // Clean payload
-            const payload = { ...formData };
-            if (!payload.dateOfBirth) delete payload.dateOfBirth;
-            
+
+            // Clean payload — drop empty optional fields
+            const payload: Record<string, string> = {};
+            (Object.keys(formData) as Array<keyof typeof formData>).forEach((k) => {
+                const v = formData[k];
+                if (v) payload[k as string] = v;
+            });
+
             const response = await axios.put(`${API_URL}/patient/profile`, payload, {
-                headers: { 
+                headers: {
                     Authorization: `Bearer ${token}`,
                     'ngrok-skip-browser-warning': 'true'
                 }
@@ -83,13 +130,84 @@ export default function PatientProfile() {
 
             // Reload page to reflect changes in layout and context if needed
             window.location.reload();
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error("Profile update error:", error);
-            const errMsg = error.response?.data?.message;
+            const err = error as { response?: { data?: { message?: string | string[] } } };
+            const errMsg = err?.response?.data?.message;
             toastWithSound.error(Array.isArray(errMsg) ? errMsg[0] : (errMsg || "حدث خطأ أثناء تحديث الملف الشخصي"));
         } finally {
             setIsSaving(false);
         }
+    };
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith("image/")) {
+            toastWithSound.error("الرجاء اختيار صورة فقط");
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            toastWithSound.error("حجم الصورة كبير جداً (الحد الأقصى 5 ميجا)");
+            if (fileInputRef.current) fileInputRef.current.value = "";
+            return;
+        }
+        if (!token) {
+            toastWithSound.error("انتهت الجلسة — يرجى تسجيل الدخول مجدداً");
+            return;
+        }
+
+        setIsUploadingAvatar(true);
+        try {
+            const compressed = await compressImage(file);
+            const fd = new FormData();
+            fd.append("file", compressed);
+
+            const res = await axios.post(`${API_URL}/patient/profile/avatar`, fd, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                },
+            });
+
+            const data = (res.data || {}) as { avatar?: string; url?: string; patient?: unknown };
+            const url = data.avatar || data.url;
+            if (!url) throw new Error("استجابة الخادم لم تتضمن رابط الصورة");
+
+            setAvatarUrl(url);
+
+            const stored = localStorage.getItem("patient_user");
+            if (stored) {
+                try {
+                    const parsed: Record<string, unknown> = JSON.parse(stored);
+                    parsed.avatar = url;
+                    localStorage.setItem("patient_user", JSON.stringify(parsed));
+                } catch {
+                    /* ignore */
+                }
+            }
+
+            toastWithSound.success("تم تحديث الصورة الشخصية بنجاح");
+        } catch (err: unknown) {
+            console.error("Avatar upload error:", err);
+            const e = err as { response?: { data?: { message?: string | string[] } }; code?: string; message?: string };
+            let description = "فشل رفع الصورة";
+            const msg = e?.response?.data?.message;
+            if (Array.isArray(msg)) description = msg.join("، ");
+            else if (typeof msg === "string") description = msg;
+            else if (e?.code === "ERR_NETWORK") description = "تعذّر الاتصال بالخادم — تحقّق من الإنترنت";
+            else if (e?.message) description = e.message;
+            toastWithSound.error(description);
+        } finally {
+            setIsUploadingAvatar(false);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
+    };
+
+    const triggerAvatarPicker = () => {
+        fileInputRef.current?.click();
     };
 
     // Helper for rendering form fields
@@ -126,11 +244,41 @@ export default function PatientProfile() {
             {/* Header Section */}
             <div className="flex flex-col md:flex-row items-center md:justify-between gap-6 mb-8">
                 <div className="flex items-center gap-4">
-                    <div className="relative">
+                    <div className="relative group">
                         <div className="absolute -inset-1 bg-gradient-to-tr from-blue-600 to-orange-500 rounded-full blur-sm opacity-30" />
                         <div className="relative h-20 w-20 rounded-full bg-gradient-to-br from-blue-600 to-blue-700 flex items-center justify-center text-white overflow-hidden shadow-xl border-4 border-white">
-                            <span className="text-3xl font-black">{patient.fullName?.charAt(0) || 'م'}</span>
+                            {getAvatarSrc(avatarUrl) ? (
+                                <img
+                                    src={getAvatarSrc(avatarUrl)}
+                                    alt={patient.fullName || "الصورة الشخصية"}
+                                    className="h-full w-full object-cover"
+                                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                                />
+                            ) : (
+                                <span className="text-3xl font-black">{patient.fullName?.charAt(0) || 'م'}</span>
+                            )}
+                            {isUploadingAvatar && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <Loader2 className="h-6 w-6 text-white animate-spin" />
+                                </div>
+                            )}
                         </div>
+                        <button
+                            type="button"
+                            onClick={triggerAvatarPicker}
+                            disabled={isUploadingAvatar}
+                            className="absolute -bottom-1 -left-1 h-8 w-8 rounded-full bg-white border-2 border-blue-100 shadow-md flex items-center justify-center text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition disabled:opacity-50"
+                            title="تغيير الصورة"
+                        >
+                            <Camera className="h-4 w-4" />
+                        </button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                            className="hidden"
+                            onChange={handleAvatarChange}
+                        />
                     </div>
                     <div>
                         <h1 className="text-3xl font-black tracking-tighter bg-gradient-to-r from-blue-800 to-blue-600 bg-clip-text text-transparent">
@@ -139,6 +287,15 @@ export default function PatientProfile() {
                         <p className="text-sm font-bold text-slate-500 mt-1">
                             إدارة بياناتك الشخصية والطبية لمتابعة أفضل
                         </p>
+                        <button
+                            type="button"
+                            onClick={triggerAvatarPicker}
+                            disabled={isUploadingAvatar}
+                            className="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 disabled:opacity-50"
+                        >
+                            <Camera className="h-3.5 w-3.5" />
+                            {avatarUrl ? "تغيير الصورة" : "إضافة صورة شخصية"}
+                        </button>
                     </div>
                 </div>
 

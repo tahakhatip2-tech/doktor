@@ -1,14 +1,20 @@
-import { Controller, Post, Get, Put, Body, UseGuards, Request, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Post, Get, Put, Body, UseGuards, Request, Param, ParseIntPipe, Query, UseInterceptors, UploadedFile, BadRequestException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { PatientService } from './patient.service';
 import { RegisterPatientDto, LoginPatientDto, UpdatePatientProfileDto } from './patient.dto';
 import { PatientAuthGuard } from './patient-auth.guard';
 import { AppointmentsService } from '../appointments/appointments.service';
+import { SupabaseService } from '../storage/supabase.service';
 
 @Controller('patient')
 export class PatientController {
+    private readonly logger = new Logger(PatientController.name);
+
     constructor(
         private readonly patientService: PatientService,
         private readonly appointmentsService: AppointmentsService,
+        private readonly supabaseService: SupabaseService,
     ) { }
 
     @Post('auth/register')
@@ -31,6 +37,38 @@ export class PatientController {
     @UseGuards(PatientAuthGuard)
     async updateProfile(@Request() req, @Body() dto: UpdatePatientProfileDto) {
         return this.patientService.updateProfile(req.user.id, dto);
+    }
+
+    @Post('profile/avatar')
+    @UseGuards(PatientAuthGuard)
+    @UseInterceptors(
+        FileInterceptor('file', {
+            storage: memoryStorage(),
+            limits: { fileSize: 5 * 1024 * 1024 },
+            fileFilter: (_req, file, cb) => {
+                if (!/\.(jpg|jpeg|png|gif|webp)$/i.test(file.originalname)) {
+                    return cb(new BadRequestException('صيغة الملف غير مدعومة. الرجاء اختيار صورة JPG/PNG/WEBP/GIF.'), false);
+                }
+                cb(null, true);
+            },
+        }),
+    )
+    async uploadAvatar(@Request() req, @UploadedFile() file: Express.Multer.File) {
+        if (!file) {
+            throw new BadRequestException('لم يتم اختيار ملف');
+        }
+
+        try {
+            const url = await this.supabaseService.uploadFile(file, 'patient-avatars');
+            const updated = await this.patientService.updateAvatar(req.user.id, url);
+            return { avatar: url, url, patient: updated };
+        } catch (err: unknown) {
+            const e = err as Error;
+            this.logger.error(`Patient avatar upload failed: ${e?.message || err}`, e?.stack);
+            throw new InternalServerErrorException(
+                e?.message || 'فشل رفع الصورة. حاول مرة أخرى.',
+            );
+        }
     }
 
     @Get('clinics')

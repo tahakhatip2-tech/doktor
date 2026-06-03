@@ -148,6 +148,18 @@ export class PatientService {
             }
         }
 
+        if (dto.email) {
+            const existingEmail = await this.prisma.patient.findFirst({
+                where: {
+                    email: dto.email,
+                    NOT: { id: patientId },
+                },
+            });
+            if (existingEmail) {
+                throw new ConflictException('البريد الإلكتروني مستخدم بالفعل');
+            }
+        }
+
         const updatedPatient = await this.prisma.patient.update({
             where: { id: patientId },
             data: {
@@ -173,6 +185,19 @@ export class PatientService {
         });
 
         return updatedPatient;
+    }
+
+    async updateAvatar(patientId: number, avatarUrl: string) {
+        const updated = await this.prisma.patient.update({
+            where: { id: patientId },
+            data: { avatar: avatarUrl },
+            select: {
+                id: true,
+                avatar: true,
+                updatedAt: true,
+            },
+        });
+        return updated;
     }
 
     async getClinics() {

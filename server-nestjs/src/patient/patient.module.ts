@@ -11,6 +11,7 @@ import { PatientNotificationService } from './patient-notification.service';
 import { PatientReviewsController } from './patient-reviews.controller';
 import { PatientReviewsService } from './patient-reviews.service';
 import { PublicClinicController } from './public-clinic.controller';
+import { SupabaseService } from '../storage/supabase.service';
 
 import { PrismaModule } from '../prisma/prisma.module';
 import { AppointmentsModule } from '../appointments/appointments.module';
@@ -45,8 +46,9 @@ import { AiService } from '../whatsapp/ai.service';
         PatientNotificationService,
         PatientAuthGuard,
         PatientReviewsService,
+        SupabaseService,
     ],
-    exports: [PatientService, PatientAppointmentService, PatientNotificationService],
+    exports: [PatientService, PatientAppointmentService, PatientNotificationService, SupabaseService],
 })
 export class PatientModule { }
 

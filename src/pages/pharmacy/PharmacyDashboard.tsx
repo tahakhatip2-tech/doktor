@@ -75,33 +75,80 @@ export default function PharmacyDashboard() {
             <h1 className="text-2xl font-bold text-slate-800">لوحة التحكم</h1>
 
             {/* إحصائيات */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Card className="shadow-sm border-green-100">
-                    <CardContent className="p-6 flex flex-col gap-2">
-                        <Pill className="h-8 w-8 text-green-500 mb-2" />
-                        <p className="text-sm text-slate-500 font-medium">إجمالي الوصفات</p>
-                        <p className="text-3xl font-bold text-slate-800">{stats?.totalPrescriptions || 0}</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {/* إجمالي الوصفات */}
+                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-95 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
+                    <CardContent className="relative p-6">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-3">
+                                <p className="text-emerald-50 font-medium text-sm">إجمالي الوصفات</p>
+                                <div className="flex items-baseline gap-2">
+                                    <h3 className="text-4xl font-black text-white">{stats?.totalPrescriptions || 0}</h3>
+                                </div>
+                            </div>
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                                <Pill className="h-6 w-6 text-white" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="shadow-sm border-slate-100">
-                    <CardContent className="p-6 flex flex-col gap-2">
-                        <Clock className="h-8 w-8 text-amber-500 mb-2" />
-                        <p className="text-sm text-slate-500 font-medium">قيد الانتظار</p>
-                        <p className="text-3xl font-bold text-slate-800">{stats?.pendingPrescriptions || 0}</p>
+
+                {/* قيد الانتظار */}
+                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500 opacity-95 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
+                    <CardContent className="relative p-6">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-3">
+                                <p className="text-amber-50 font-medium text-sm">قيد الانتظار</p>
+                                <div className="flex items-baseline gap-2">
+                                    <h3 className="text-4xl font-black text-white">{stats?.pendingPrescriptions || 0}</h3>
+                                </div>
+                            </div>
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                                <Clock className="h-6 w-6 text-white" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="shadow-sm border-slate-100">
-                    <CardContent className="p-6 flex flex-col gap-2">
-                        <CheckCircle2 className="h-8 w-8 text-blue-500 mb-2" />
-                        <p className="text-sm text-slate-500 font-medium">مصروفة</p>
-                        <p className="text-3xl font-bold text-slate-800">{stats?.dispensedPrescriptions || 0}</p>
+
+                {/* مصروفة */}
+                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-95 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
+                    <CardContent className="relative p-6">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-3">
+                                <p className="text-blue-50 font-medium text-sm">مصروفة</p>
+                                <div className="flex items-baseline gap-2">
+                                    <h3 className="text-4xl font-black text-white">{stats?.dispensedPrescriptions || 0}</h3>
+                                </div>
+                            </div>
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                                <CheckCircle2 className="h-6 w-6 text-white" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
-                <Card className="shadow-sm border-slate-100">
-                    <CardContent className="p-6 flex flex-col gap-2">
-                        <Calendar className="h-8 w-8 text-indigo-500 mb-2" />
-                        <p className="text-sm text-slate-500 font-medium">وصفات اليوم</p>
-                        <p className="text-3xl font-bold text-slate-800">{stats?.todayPrescriptions || 0}</p>
+
+                {/* وصفات اليوم */}
+                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
+                    <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 opacity-95 group-hover:opacity-100 transition-opacity"></div>
+                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
+                    <CardContent className="relative p-6">
+                        <div className="flex justify-between items-start">
+                            <div className="space-y-3">
+                                <p className="text-fuchsia-50 font-medium text-sm">وصفات اليوم</p>
+                                <div className="flex items-baseline gap-2">
+                                    <h3 className="text-4xl font-black text-white">{stats?.todayPrescriptions || 0}</h3>
+                                </div>
+                            </div>
+                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
+                                <Calendar className="h-6 w-6 text-white" />
+                            </div>
+                        </div>
                     </CardContent>
                 </Card>
             </div>
