@@ -332,7 +332,6 @@ export default function PatientOffers() {
                                             >
                                                 <MessageCircle className="h-3.5 w-3.5" />
                                                 التعليقات
-                                                {offer.comments && offer.comments.length > 0 && ` (${offer.comments.length})`}
                                             </button>
 
                                             {/* Share */}
@@ -358,9 +357,13 @@ export default function PatientOffers() {
                                                 <MessageCircle className="h-4 w-4" />
                                                 <span>التعليقات ({offer.comments.length})</span>
                                             </div>
-                                            <div className="space-y-3 max-h-48 overflow-y-auto custom-scrollbar pr-1">
-                                                {offer.comments.map((comment: any) => (
-                                                    <div key={comment.id} className="flex gap-2.5">
+                                            <div className="space-y-3">
+                                                {offer.comments.slice(0, 1).map((comment: any) => (
+                                                    <div 
+                                                        key={comment.id} 
+                                                        className="flex gap-2.5 cursor-pointer" 
+                                                        onClick={() => setSelectedOfferForComments(offer)}
+                                                    >
                                                         <div className="h-7 w-7 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
                                                             {comment.user.avatar ? (
                                                                 <img src={logoSrc(comment.user.avatar) || ''} className="h-full w-full object-cover" />
@@ -381,6 +384,15 @@ export default function PatientOffers() {
                                                         </div>
                                                     </div>
                                                 ))}
+                                                
+                                                {offer.comments.length > 1 && (
+                                                    <button 
+                                                        onClick={() => setSelectedOfferForComments(offer)} 
+                                                        className="text-xs text-blue-500 font-bold hover:underline"
+                                                    >
+                                                        عرض كل التعليقات ({offer.comments.length})
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     )}

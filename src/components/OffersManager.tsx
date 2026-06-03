@@ -86,6 +86,7 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
 
     const [commentText, setCommentText] = useState<{ [key: number]: string }>({});
     const [postingComment, setPostingComment] = useState<{ [key: number]: boolean }>({});
+    const [selectedOfferForComments, setSelectedOfferForComments] = useState<Offer | null>(null);
 
     const isPharmacy = userType === 'pharmacy';
     const tokenKey = isPharmacy ? 'pharmacy_token' : 'token';
@@ -399,7 +400,10 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
                                             <Heart className={cn("h-4 w-4", (offer.isLikedByMe || offer.isLiked) && isPharmacy ? "fill-teal-500" : (offer.isLikedByMe || offer.isLiked) && "fill-orange-500")} />
                                             <span>{offer._count?.likes || 0} إعجاب</span>
                                         </button>
-                                        <div className="flex items-center gap-1.5 text-slate-500">
+                                        <div 
+                                            className="flex items-center gap-1.5 text-slate-500 cursor-pointer hover:text-blue-600 transition-colors"
+                                            onClick={() => setSelectedOfferForComments(offer)}
+                                        >
                                             <MessageCircle className="h-4 w-4" />
                                             <span>{offer._count?.comments || 0} تعليق</span>
                                         </div>
@@ -418,8 +422,12 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
 
                                     {offer.comments && offer.comments.length > 0 && (
                                         <div className="space-y-3 mb-4">
-                                            {offer.comments.map(comment => (
-                                                <div key={comment.id} className="flex gap-2.5">
+                                            {offer.comments.slice(0, 1).map(comment => (
+                                                <div 
+                                                    key={comment.id} 
+                                                    className="flex gap-2.5 cursor-pointer"
+                                                    onClick={() => setSelectedOfferForComments(offer)}
+                                                >
                                                     <div className="h-8 w-8 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
                                                         {comment.user.avatar ? (
                                                             <img src={logoSrc(comment.user.avatar) || ''} className="h-full w-full object-cover" />
@@ -440,45 +448,88 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
                                                     </div>
                                                 </div>
                                             ))}
+
+                                            {offer.comments.length > 1 && (
+                                                <button 
+                                                    onClick={() => setSelectedOfferForComments(offer)} 
+                                                    className="text-xs text-blue-500 font-bold hover:underline mt-1 block"
+                                                >
+                                                    عرض كل التعليقات ({offer.comments.length})
+                                                </button>
+                                            )}
                                         </div>
                                     )}
 
-                                    {/* Add Comment Input */}
-                                    <div className="flex items-center gap-2">
-                                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center overflow-hidden border border-blue-200 flex-shrink-0">
-                                            {currentAuthor?.avatar ? (
-                                                <img src={logoSrc(currentAuthor.avatar) || ''} alt="avatar" className="h-full w-full object-cover" />
-                                            ) : (
-                                                <Building2 className="h-4 w-4 text-blue-700" />
-                                            )}
-                                        </div>
-                                        <div className="flex-1 relative">
-                                            <Input
-                                                placeholder="اكتب تعليقاً..."
-                                                value={commentText[offer.id] || ''}
-                                                onChange={e => setCommentText(prev => ({ ...prev, [offer.id]: e.target.value }))}
-                                                className="rounded-full bg-white border-slate-200 pr-4 pl-10 h-10 text-sm focus-visible:ring-1 focus-visible:ring-blue-500"
-                                                onKeyDown={e => {
-                                                    if (e.key === 'Enter') handleAddComment(offer.id);
-                                                }}
-                                            />
-                                            <Button
-                                                size="icon"
-                                                variant="ghost"
-                                                className="absolute left-1 top-1 h-8 w-8 rounded-full text-blue-600 hover:bg-blue-50"
-                                                onClick={() => handleAddComment(offer.id)}
-                                                disabled={postingComment[offer.id] || !commentText[offer.id]?.trim()}
-                                            >
-                                                <Send className="h-4 w-4" dir="ltr" />
-                                            </Button>
-                                        </div>
-                                    </div>
+
                                 </div>
                             </CardContent>
                         </Card>
                     )})}
                 </div>
             )}
+
+            {/* Comments Modal */}
+            <Dialog open={!!selectedOfferForComments} onOpenChange={(open) => !open && setSelectedOfferForComments(null)}>
+                <DialogContent className="sm:max-w-md max-h-[80vh] flex flex-col p-0 overflow-hidden" dir="rtl">
+                    <DialogHeader className="px-4 py-3 border-b bg-slate-50/50">
+                        <DialogTitle className="text-lg flex items-center gap-2 text-slate-800">
+                            <MessageCircle className="h-5 w-5 text-blue-500" />
+                            التعليقات
+                        </DialogTitle>
+                    </DialogHeader>
+                    
+                    <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 custom-scrollbar">
+                        {(!selectedOfferForComments?.comments || selectedOfferForComments.comments.length === 0) ? (
+                            <div className="text-center py-8 text-slate-500">
+                                لا توجد تعليقات بعد. كن أول من يعلق!
+                            </div>
+                        ) : (
+                            selectedOfferForComments.comments.map((comment: any) => (
+                                <div key={comment.id} className="flex gap-3">
+                                    <div className="h-8 w-8 rounded-full bg-slate-200 overflow-hidden flex-shrink-0">
+                                        {comment.user?.avatar ? (
+                                            <img src={logoSrc(comment.user.avatar) || ''} className="h-full w-full object-cover" />
+                                        ) : (
+                                            <div className="h-full w-full flex items-center justify-center bg-blue-100 text-blue-700 font-bold text-xs">
+                                                {comment.user?.name?.charAt(0) || '?'}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="bg-white border border-slate-200 rounded-2xl rounded-tr-none px-3 py-2 shadow-sm inline-block min-w-[120px]">
+                                            <p className="font-bold text-[13px] text-slate-900">{comment.user?.name || 'مستخدم'}</p>
+                                            <p className="text-[14px] text-slate-700 mt-0.5 whitespace-pre-wrap">{comment.content}</p>
+                                        </div>
+                                        <p className="text-[10px] text-slate-400 mt-1 mr-2">
+                                            {formatDistanceToNow(new Date(comment.createdAt), { locale: ar, addSuffix: true })}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    
+                    <div className="p-3 bg-white border-t flex items-center gap-2 shadow-[0_-4px_10px_rgba(0,0,0,0.02)]">
+                        <Input 
+                            placeholder="اكتب تعليقك هنا..."
+                            value={selectedOfferForComments ? (commentText[selectedOfferForComments.id] || '') : ''}
+                            onChange={(e) => setCommentText(prev => ({ ...prev, [selectedOfferForComments!.id]: e.target.value }))}
+                            className="flex-1 rounded-full bg-slate-100 border-transparent focus-visible:ring-1 focus-visible:ring-blue-500 px-4"
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleAddComment(selectedOfferForComments!.id);
+                            }}
+                        />
+                        <Button 
+                            size="icon"
+                            className="rounded-full bg-blue-600 hover:bg-blue-700 text-white shadow-sm flex-shrink-0"
+                            onClick={() => handleAddComment(selectedOfferForComments!.id)}
+                            disabled={!selectedOfferForComments || postingComment[selectedOfferForComments.id] || !(commentText[selectedOfferForComments.id]?.trim())}
+                        >
+                            <Send className="h-4 w-4" dir="ltr" />
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
