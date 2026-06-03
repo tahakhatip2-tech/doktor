@@ -47,7 +47,8 @@ const emptyForm = {
     specialty: '',
     phone: '',
     email: '',
-    workingHours: '',
+    workingHoursFrom: '',
+    workingHoursTo: '',
     hourlyRate: '',
     username: '',
     password: '',
@@ -103,13 +104,27 @@ export default function ClinicDoctors() {
 
     const openEdit = (doc: ClinicDoctor) => {
         setEditId(doc.id);
+        
+        let fromTime = '';
+        let toTime = '';
+        if (doc.workingHours) {
+            const parts = doc.workingHours.split('-');
+            if (parts.length === 2) {
+                fromTime = parts[0].trim();
+                toTime = parts[1].trim();
+            } else {
+                fromTime = doc.workingHours;
+            }
+        }
+
         setForm({
             name: doc.name,
             role: doc.role || 'doctor',
             specialty: doc.specialty || '',
             phone: doc.phone || '',
             email: doc.email || '',
-            workingHours: doc.workingHours || '',
+            workingHoursFrom: fromTime,
+            workingHoursTo: toTime,
             hourlyRate: doc.hourlyRate ? String(doc.hourlyRate) : '',
             username: doc.username || '',
             password: '',
@@ -130,11 +145,18 @@ export default function ClinicDoctors() {
         }
         setSaving(true);
         try {
+            const workingHoursStr = (form.workingHoursFrom || form.workingHoursTo) 
+                ? `${form.workingHoursFrom || ''} - ${form.workingHoursTo || ''}`.trim() 
+                : undefined;
+                
             const payload: any = {
                 ...form,
+                workingHours: workingHoursStr,
                 hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : undefined,
                 experienceYears: form.experienceYears ? parseInt(form.experienceYears, 10) : undefined,
             };
+            delete payload.workingHoursFrom;
+            delete payload.workingHoursTo;
             if (!payload.password) delete payload.password;
 
             if (editId) {
@@ -487,19 +509,33 @@ export default function ClinicDoctors() {
                                         </div>
 
                                         {form.role === 'doctor' && (
-                                            <div className="grid grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-2 gap-3 mt-3">
                                                 <div>
                                                     <label className="text-xs font-bold text-slate-600 mb-1 block">
                                                         <Clock className="h-3 w-3 inline ml-1" />
-                                                        ساعات العمل
+                                                        من الساعة
                                                     </label>
                                                     <Input
-                                                        placeholder="مثال: 9ص - 5م"
-                                                        value={form.workingHours}
-                                                        onChange={e => setForm(f => ({ ...f, workingHours: e.target.value }))}
+                                                        type="time"
+                                                        value={form.workingHoursFrom}
+                                                        onChange={e => setForm(f => ({ ...f, workingHoursFrom: e.target.value }))}
                                                         className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
                                                     />
                                                 </div>
+                                                <div>
+                                                    <label className="text-xs font-bold text-slate-600 mb-1 block">
+                                                        <Clock className="h-3 w-3 inline ml-1 text-transparent" />
+                                                        إلى الساعة
+                                                    </label>
+                                                    <Input
+                                                        type="time"
+                                                        value={form.workingHoursTo}
+                                                        onChange={e => setForm(f => ({ ...f, workingHoursTo: e.target.value }))}
+                                                        className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3 mt-3">
                                                 <div>
                                                     <label className="text-xs font-bold text-slate-600 mb-1 block">
                                                         <DollarSign className="h-3 w-3 inline ml-1" />
