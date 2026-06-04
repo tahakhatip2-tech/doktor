@@ -190,6 +190,12 @@ export class PatientAppointmentService {
                     },
                 },
                 medicalRecords: true,
+                prescriptions: {
+                    include: {
+                        pharmacy: { select: { id: true, name: true, clinic_name: true } },
+                        doctor: { select: { id: true, name: true, clinic_name: true } },
+                    }
+                },
             },
         });
 

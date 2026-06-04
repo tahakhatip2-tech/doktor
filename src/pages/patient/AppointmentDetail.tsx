@@ -13,9 +13,17 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import {
     Calendar, Clock, MapPin, Phone, Building2,
     FileText, X, Loader2, ArrowRight, CheckCircle2,
-    AlertCircle, User, Stethoscope, Hash
+    AlertCircle, User, Stethoscope, Hash,
+    Download, Send, Pill, ChevronLeft
 } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -43,6 +51,12 @@ export default function AppointmentDetail() {
     const [loading, setLoading] = useState(true);
     const [cancelOpen, setCancelOpen] = useState(false);
     const [cancelLoading, setCancelLoading] = useState(false);
+    const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
+    const [pharmaciesOpen, setPharmaciesOpen] = useState(false);
+    const [pharmacies, setPharmacies] = useState<any[]>([]);
+    const [pharmaciesLoading, setPharmaciesLoading] = useState(false);
+    const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<number | null>(null);
+    const [sendingPrescription, setSendingPrescription] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -66,6 +80,77 @@ export default function AppointmentDetail() {
             navigate('/patient/appointments');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleGeneratePdf = async (docType: string) => {
+        setGeneratingPdf(docType);
+        try {
+            const token = localStorage.getItem('patient_token');
+            const res = await axios.post(
+                `${API_URL}/patient/appointments/${id}/pdf`,
+                { docType },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            
+            // Create a temporary link to download the file
+            const url = `${BASE_URL}${res.data.url}`;
+            const link = document.createElement('a');
+            link.href = url;
+            link.target = '_blank';
+            link.download = `${docType}_${id}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            toast({ title: '✅ تم بنجاح', description: 'تم إنشاء وفتح الملف بنجاح.' });
+        } catch (err: any) {
+            toast({ variant: 'destructive', title: 'خطأ', description: err.response?.data?.message || 'فشل في إنشاء الملف' });
+        } finally {
+            setGeneratingPdf(null);
+        }
+    };
+
+    const fetchPharmacies = async () => {
+        setPharmaciesLoading(true);
+        try {
+            const token = localStorage.getItem('patient_token');
+            const res = await axios.get(`${API_URL}/patient/pharmacies`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setPharmacies(res.data);
+        } catch (err) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'لم نتمكن من جلب قائمة الصيدليات' });
+        } finally {
+            setPharmaciesLoading(false);
+        }
+    };
+
+    const openPharmacyDialog = (prescriptionId: number) => {
+        setSelectedPrescriptionId(prescriptionId);
+        setPharmaciesOpen(true);
+        if (pharmacies.length === 0) {
+            fetchPharmacies();
+        }
+    };
+
+    const sendToPharmacy = async (pharmacyId: number) => {
+        if (!selectedPrescriptionId) return;
+        setSendingPrescription(true);
+        try {
+            const token = localStorage.getItem('patient_token');
+            await axios.post(
+                `${API_URL}/patient/prescriptions/${selectedPrescriptionId}/send-to-pharmacy`,
+                { pharmacyId },
+                { headers: { Authorization: `Bearer ${token}` } }
+            );
+            toast({ title: '✅ تم الإرسال', description: 'تم إرسال وصفتك إلى الصيدلية بنجاح.' });
+            setPharmaciesOpen(false);
+            fetchAppointment(); // Refresh to update status
+        } catch (err: any) {
+            toast({ variant: 'destructive', title: 'خطأ', description: err.response?.data?.message || 'حدث خطأ أثناء الإرسال' });
+        } finally {
+            setSendingPrescription(false);
         }
     };
 
@@ -247,42 +332,199 @@ export default function AppointmentDetail() {
                     </div>
                 )}
 
-                {/* ── 4. Medical Records (Modern Compact) ── */}
+                {/* ── 4. Medical Documents (Prescription, Sick Leave, Referral) ── */}
                 {appointment.medicalRecords?.length > 0 && (
-                    <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] p-4 sm:p-5 overflow-hidden relative">
-                        {/* Decorative background element */}
-                        <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-teal-50 to-emerald-50 rounded-br-full -z-0 opacity-50" />
-                        
-                        <h2 className="text-xs font-black text-teal-600 uppercase tracking-wider mb-3 flex items-center gap-1.5 relative z-10">
-                            <Stethoscope className="h-4 w-4" /> السجل الطبي للزيارة
+                    <div className="space-y-4">
+                        <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5 px-1">
+                            <FileText className="h-4 w-4 text-slate-300" /> الوثائق الطبية
                         </h2>
                         
-                        <div className="space-y-3 relative z-10">
-                            {appointment.medicalRecords.map((rec: any) => (
-                                <div key={rec.id} className="space-y-3">
-                                    {rec.diagnosis && (
-                                        <div>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase mb-1">التشخيص</p>
-                                            <p className="text-sm font-bold text-slate-800 bg-slate-50 p-2.5 rounded-lg border border-slate-100">{rec.diagnosis}</p>
+                        {appointment.medicalRecords.map((rec: any) => {
+                            let parsedMeds: any[] = [];
+                            try {
+                                if (rec.medications) {
+                                    parsedMeds = typeof rec.medications === 'string' ? JSON.parse(rec.medications) : rec.medications;
+                                }
+                            } catch(e) { /* ignore parse errors */ }
+
+                            const prescription = appointment.prescriptions?.find((p: any) => p.appointmentId === appointment.id);
+                            const prescriptionStatus = prescription?.status || null;
+
+                            const STATUS_LABELS: Record<string, { label: string; color: string; bg: string; icon: string }> = {
+                                'PENDING': { label: 'بانتظار الإرسال', color: 'text-amber-700', bg: 'bg-amber-50 border-amber-200', icon: '⏳' },
+                                'SENT_TO_PHARMACY': { label: 'تم الإرسال للصيدلية', color: 'text-blue-700', bg: 'bg-blue-50 border-blue-200', icon: '📤' },
+                                'DISPENSED': { label: 'تم الصرف', color: 'text-emerald-700', bg: 'bg-emerald-50 border-emerald-200', icon: '✅' },
+                                'REJECTED': { label: 'مرفوضة', color: 'text-red-700', bg: 'bg-red-50 border-red-200', icon: '❌' },
+                            };
+
+                            return (
+                                <div key={rec.id} className="space-y-4">
+                                    {/* ─── 1. Prescription Card ─── */}
+                                    {(parsedMeds.length > 0 || rec.treatment || rec.diagnosis) && (
+                                        <div className="bg-white rounded-2xl border border-blue-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden">
+                                            {/* Header */}
+                                            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-3 sm:p-4 flex items-center justify-between text-white">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                                        <Pill className="h-5 w-5 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-black text-sm sm:text-base">الوصفة الطبية</h3>
+                                                        <p className="text-blue-100 text-[10px] sm:text-xs font-medium">د. {doctorName} — {clinicName}</p>
+                                                    </div>
+                                                </div>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="secondary" 
+                                                    className="h-8 rounded-lg bg-white/15 hover:bg-white/25 text-white border-none text-xs font-bold backdrop-blur-sm"
+                                                    onClick={() => handleGeneratePdf('prescription')}
+                                                    disabled={generatingPdf === 'prescription'}
+                                                >
+                                                    {generatingPdf === 'prescription' ? <Loader2 className="h-3 w-3 animate-spin ml-1" /> : <Download className="h-3 w-3 ml-1" />}
+                                                    PDF
+                                                </Button>
+                                            </div>
+                                            
+                                            <div className="p-4 sm:p-5 space-y-4">
+                                                {/* Prescription Status Badge */}
+                                                {prescriptionStatus && STATUS_LABELS[prescriptionStatus] && (
+                                                    <div className={`flex items-center gap-2 px-3 py-2 rounded-xl border ${STATUS_LABELS[prescriptionStatus].bg}`}>
+                                                        <span className="text-sm">{STATUS_LABELS[prescriptionStatus].icon}</span>
+                                                        <span className={`text-xs font-black ${STATUS_LABELS[prescriptionStatus].color}`}>
+                                                            {STATUS_LABELS[prescriptionStatus].label}
+                                                        </span>
+                                                        {prescriptionStatus === 'SENT_TO_PHARMACY' && prescription?.pharmacy && (
+                                                            <span className="text-xs font-bold text-blue-600 mr-auto flex items-center gap-1">
+                                                                <Building2 className="h-3 w-3" />
+                                                                {prescription.pharmacy.clinic_name || prescription.pharmacy.name}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                {rec.diagnosis && (
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase mb-1">التشخيص</p>
+                                                        <p className="text-sm font-bold text-slate-800">{rec.diagnosis}</p>
+                                                    </div>
+                                                )}
+
+                                                {parsedMeds.length > 0 ? (
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase mb-2">الأدوية الموصوفة ({parsedMeds.length})</p>
+                                                        <div className="space-y-2">
+                                                            {parsedMeds.map((med: any, idx: number) => (
+                                                                <div key={idx} className="bg-slate-50 border border-slate-100 rounded-xl p-3 flex items-start justify-between gap-2">
+                                                                    <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                                                                        <div className="h-7 w-7 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                                            <Pill className="h-3.5 w-3.5" />
+                                                                        </div>
+                                                                        <div className="min-w-0">
+                                                                            <p className="text-sm font-black text-blue-900 truncate">{med.name}</p>
+                                                                            <p className="text-[10px] font-bold text-slate-500 mt-0.5">{med.type} • {med.frequency}</p>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="bg-blue-100 text-blue-700 px-2.5 py-1 rounded-lg text-[10px] font-black whitespace-nowrap flex-shrink-0">
+                                                                        {med.duration}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : rec.treatment ? (
+                                                    <div>
+                                                        <p className="text-[10px] font-black text-slate-400 uppercase mb-1">خطة العلاج</p>
+                                                        <p className="text-sm font-medium text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-100">{rec.treatment}</p>
+                                                    </div>
+                                                ) : null}
+
+                                                {rec.aiAdvice && (
+                                                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3.5 rounded-xl border border-indigo-100/50">
+                                                        <p className="text-[10px] font-black text-indigo-600 uppercase mb-1.5 flex items-center gap-1">
+                                                            <span>✨</span> نصيحة الذكاء الاصطناعي
+                                                        </p>
+                                                        <p className="text-xs font-bold text-slate-700 leading-relaxed">{rec.aiAdvice}</p>
+                                                    </div>
+                                                )}
+
+                                                {/* Send to Pharmacy CTA */}
+                                                {prescription && prescriptionStatus === 'PENDING' && (
+                                                    <Button 
+                                                        className="w-full mt-2 rounded-xl h-11 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white font-black shadow-lg shadow-slate-900/20 transition-all active:scale-[0.98]"
+                                                        onClick={() => openPharmacyDialog(prescription.id)}
+                                                    >
+                                                        <Send className="h-4 w-4 ml-2" />
+                                                        إرسال إلى صيدلية
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
                                     )}
-                                    {rec.treatment && (
-                                        <div>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase mb-1">خطة العلاج / الأدوية</p>
-                                            <p className="text-sm font-medium text-slate-700 bg-slate-50 p-2.5 rounded-lg border border-slate-100 leading-relaxed">{rec.treatment}</p>
+
+                                    {/* ─── 2. Sick Leave Card ─── */}
+                                    {rec.sickLeaveDays && (
+                                        <div className="bg-white rounded-2xl border border-emerald-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden">
+                                            <div className="bg-gradient-to-r from-emerald-500 to-teal-400 p-3 sm:p-4 flex items-center justify-between text-white">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                                        <FileText className="h-5 w-5 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-black text-sm sm:text-base">إجازة مرضية</h3>
+                                                        <p className="text-emerald-50 text-[10px] sm:text-xs font-medium">{rec.sickLeaveDays} أيام</p>
+                                                    </div>
+                                                </div>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="secondary" 
+                                                    className="h-8 rounded-lg bg-white/20 hover:bg-white/30 text-white border-none text-xs font-bold backdrop-blur-sm"
+                                                    onClick={() => handleGeneratePdf('sick_leave')}
+                                                    disabled={generatingPdf === 'sick_leave'}
+                                                >
+                                                    {generatingPdf === 'sick_leave' ? <Loader2 className="h-3 w-3 animate-spin ml-1" /> : <Download className="h-3 w-3 ml-1" />}
+                                                    تصدير
+                                                </Button>
+                                            </div>
+                                            <div className="p-4 sm:p-5">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">السبب الطبي</p>
+                                                <p className="text-sm font-bold text-slate-800">{rec.sickLeaveReason || rec.diagnosis || 'لم يتم تحديد سبب'}</p>
+                                            </div>
                                         </div>
                                     )}
-                                    {rec.aiAdvice && (
-                                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-3 rounded-xl border border-blue-100/50">
-                                            <p className="text-[10px] font-black text-blue-600 uppercase mb-1.5 flex items-center gap-1">
-                                                <span>✨</span> نصيحة الذكاء الاصطناعي
-                                            </p>
-                                            <p className="text-xs font-medium text-slate-700 leading-relaxed">{rec.aiAdvice}</p>
+
+                                    {/* ─── 3. Referral Card ─── */}
+                                    {rec.referralTo && (
+                                        <div className="bg-white rounded-2xl border border-purple-100 shadow-[0_8px_30px_rgba(0,0,0,0.04)] overflow-hidden">
+                                            <div className="bg-gradient-to-r from-purple-600 to-indigo-500 p-3 sm:p-4 flex items-center justify-between text-white">
+                                                <div className="flex items-center gap-2.5">
+                                                    <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                                                        <ArrowRight className="h-5 w-5 text-white" />
+                                                    </div>
+                                                    <div>
+                                                        <h3 className="font-black text-sm sm:text-base">تحويل طبي</h3>
+                                                        <p className="text-purple-100 text-[10px] sm:text-xs font-medium line-clamp-1">{rec.referralTo}</p>
+                                                    </div>
+                                                </div>
+                                                <Button 
+                                                    size="sm" 
+                                                    variant="secondary" 
+                                                    className="h-8 rounded-lg bg-white/20 hover:bg-white/30 text-white border-none text-xs font-bold backdrop-blur-sm"
+                                                    onClick={() => handleGeneratePdf('referral')}
+                                                    disabled={generatingPdf === 'referral'}
+                                                >
+                                                    {generatingPdf === 'referral' ? <Loader2 className="h-3 w-3 animate-spin ml-1" /> : <Download className="h-3 w-3 ml-1" />}
+                                                    تصدير
+                                                </Button>
+                                            </div>
+                                            <div className="p-4 sm:p-5">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase mb-1">سبب التحويل / الملاحظات</p>
+                                                <p className="text-sm font-bold text-slate-800">{rec.referralReason || 'لم يتم التحديد'}</p>
+                                            </div>
                                         </div>
                                     )}
                                 </div>
-                            ))}
-                        </div>
+                            );
+                        })}
                     </div>
                 )}
 
@@ -361,6 +603,56 @@ export default function AppointmentDetail() {
                     </AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
+
+            {/* Pharmacies Dialog */}
+            <Dialog open={pharmaciesOpen} onOpenChange={setPharmaciesOpen}>
+                <DialogContent className="rounded-2xl sm:rounded-2xl max-w-[90vw] sm:max-w-md max-h-[85vh] overflow-hidden flex flex-col font-sans" dir="rtl">
+                    <DialogHeader className="pb-4 border-b border-slate-100 flex-shrink-0">
+                        <DialogTitle className="flex items-center gap-2 text-blue-900 font-black">
+                            <Building2 className="h-5 w-5 text-blue-600" />
+                            اختر صيدلية لعملية الصرف
+                        </DialogTitle>
+                        <DialogDescription className="text-xs font-bold text-slate-500 mt-2">
+                            اختر إحدى الصيدليات المعتمدة لإرسال الوصفة الطبية إليها، ليتم تجهيز الأدوية مسبقاً.
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-y-auto py-4 space-y-3 pr-1">
+                        {pharmaciesLoading ? (
+                            <div className="flex flex-col items-center justify-center py-10 space-y-3">
+                                <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+                                <p className="text-sm font-bold text-slate-500">جاري تحميل الصيدليات...</p>
+                            </div>
+                        ) : pharmacies.length === 0 ? (
+                            <div className="text-center py-10 bg-slate-50 rounded-xl border border-slate-100">
+                                <p className="text-sm font-bold text-slate-500">لا توجد صيدليات متاحة حالياً</p>
+                            </div>
+                        ) : (
+                            pharmacies.map((pharmacy) => (
+                                <div key={pharmacy.id} className="bg-white border border-slate-200 rounded-xl p-3 hover:border-blue-300 hover:shadow-md transition-all cursor-pointer group"
+                                     onClick={() => sendToPharmacy(pharmacy.id)}>
+                                    <div className="flex items-center gap-3">
+                                        <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-lg flex items-center justify-center border border-blue-100 flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                            <Building2 className="h-5 w-5" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-black text-slate-800 truncate">{pharmacy.clinic_name || pharmacy.name}</p>
+                                            <p className="text-[10px] font-bold text-slate-500 flex items-center gap-1 mt-0.5 truncate">
+                                                <MapPin className="h-3 w-3" /> {pharmacy.clinic_address || 'غير محدد'}
+                                            </p>
+                                        </div>
+                                        <div className="flex-shrink-0">
+                                            <Button size="sm" disabled={sendingPrescription} className="h-8 rounded-lg font-bold bg-slate-100 text-blue-700 hover:bg-blue-600 hover:text-white group-hover:bg-blue-600 group-hover:text-white transition-all shadow-sm">
+                                                إرسال
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

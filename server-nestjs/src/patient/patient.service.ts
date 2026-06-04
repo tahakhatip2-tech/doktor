@@ -381,8 +381,12 @@ export class PatientService {
     }
 
     async sendPrescriptionToPharmacy(patientId: number, prescriptionId: number, pharmacyId: number) {
+        // 1. Verify the prescription belongs to this patient and is in PENDING status
         const prescription = await this.prisma.prescription.findFirst({
-            where: { id: prescriptionId, patientId }
+            where: { id: prescriptionId, patientId },
+            include: {
+                doctor: { select: { id: true, name: true, clinic_name: true } },
+            }
         });
 
         if (!prescription) {
@@ -393,12 +397,50 @@ export class PatientService {
             throw new ConflictException('هذه الوصفة تم إرسالها مسبقاً أو تم صرفها');
         }
 
-        return this.prisma.prescription.update({
-            where: { id: prescriptionId },
-            data: {
-                pharmacyId,
-                status: 'SENT_TO_PHARMACY'
-            }
+        // 2. Verify the pharmacy exists and is active
+        const pharmacy = await this.prisma.user.findFirst({
+            where: { id: pharmacyId, role: 'PHARMACY', status: 'active' },
+            select: { id: true, name: true, clinic_name: true }
         });
+
+        if (!pharmacy) {
+            throw new NotFoundException('الصيدلية غير موجودة أو غير نشطة');
+        }
+
+        // 3. Get patient info for notification
+        const patient = await this.prisma.patient.findUnique({
+            where: { id: patientId },
+            select: { fullName: true }
+        });
+
+        // 4. Update prescription atomically
+        const updatedPrescription = await this.prisma.$transaction(async (tx) => {
+            const updated = await tx.prescription.update({
+                where: { id: prescriptionId },
+                data: {
+                    pharmacyId,
+                    status: 'SENT_TO_PHARMACY'
+                },
+                include: {
+                    doctor: { select: { id: true, name: true, clinic_name: true } },
+                    pharmacy: { select: { id: true, name: true, clinic_name: true } },
+                }
+            });
+
+            // 5. Create notification for the pharmacy
+            await tx.notification.create({
+                data: {
+                    userId: pharmacyId,
+                    type: 'NEW_PRESCRIPTION',
+                    title: 'وصفة طبية جديدة',
+                    message: `وصفة طبية جديدة من د. ${prescription.doctor?.name || 'طبيب'} للمريض ${patient?.fullName || 'مريض'} بانتظار الصرف.`,
+                    priority: 'HIGH',
+                }
+            });
+
+            return updated;
+        });
+
+        return updatedPrescription;
     }
 }

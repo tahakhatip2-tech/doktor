@@ -1,12 +1,16 @@
 import { Controller, Post, Get, Delete, Body, UseGuards, Request, Param, ParseIntPipe, Query } from '@nestjs/common';
 import { PatientAppointmentService } from './patient-appointment.service';
+import { AppointmentsService } from '../appointments/appointments.service';
 import { CreatePatientAppointmentDto, CancelAppointmentDto } from './patient-appointment.dto';
 import { PatientAuthGuard } from './patient-auth.guard';
 
 @Controller('patient/appointments')
 @UseGuards(PatientAuthGuard)
 export class PatientAppointmentController {
-    constructor(private readonly appointmentService: PatientAppointmentService) { }
+    constructor(
+        private readonly appointmentService: PatientAppointmentService,
+        private readonly apptsService: AppointmentsService
+    ) { }
 
     // ─── المسارات الثابتة أولاً (قبل :id الديناميكي) ───────────────────────
 
@@ -40,6 +44,12 @@ export class PatientAppointmentController {
     @Get(':id')
     async getAppointmentById(@Request() req, @Param('id', ParseIntPipe) id: number) {
         return this.appointmentService.getAppointmentById(req.user.id, id);
+    }
+
+    @Post(':id/pdf')
+    async generatePdf(@Request() req, @Param('id', ParseIntPipe) id: number, @Body() data: any) {
+        // asPatient = true
+        return this.apptsService.generatePrescription(id, req.user.id, data?.docType, true);
     }
 
     @Delete(':id')

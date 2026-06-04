@@ -583,13 +583,14 @@ export class AppointmentsService {
         ...(treatingDoctorId ? { treatingDoctorId: Number(treatingDoctorId) } : {}),
       };
 
+      let savedRecord;
       if (existing) {
-        return tx.medicalRecord.update({
+        savedRecord = await tx.medicalRecord.update({
           where: { id: existing.id },
           data: recordData,
         });
       } else {
-        return tx.medicalRecord.create({
+        savedRecord = await tx.medicalRecord.create({
           data: {
             appointmentId,
             patientId: resolvedContactId,         // contact.id
@@ -598,12 +599,48 @@ export class AppointmentsService {
           },
         });
       }
+
+      // ─── حفظ أو تحديث الوصفة في جدول Prescription إذا توفرت الأدوية والمريض مسجل ───
+      if (medications && Array.isArray(medications) && medications.length > 0 && resolvedPatientUserId) {
+        const existingPrescription = await tx.prescription.findFirst({
+          where: { appointmentId }
+        });
+
+        const medsString = JSON.stringify(medications);
+
+        if (existingPrescription) {
+          await tx.prescription.update({
+            where: { id: existingPrescription.id },
+            data: { medications: medsString, notes: treatment }
+          });
+        } else {
+          await tx.prescription.create({
+            data: {
+              appointmentId,
+              patientId: resolvedPatientUserId,
+              doctorId: userId,
+              medications: medsString,
+              notes: treatment,
+              status: 'PENDING'
+            }
+          });
+        }
+      }
+
+      return savedRecord;
     });
   }
 
-  async generatePrescription(appointmentId: number, userId: number, docType: string = 'prescription') {
+  async generatePrescription(appointmentId: number, userId: number, docType: string = 'prescription', asPatient: boolean = false) {
+    const whereClause: any = { id: appointmentId };
+    if (asPatient) {
+      whereClause.patientUserId = userId;
+    } else {
+      whereClause.userId = userId;
+    }
+
     const appointment = await this.prisma.appointment.findFirst({
-      where: { id: appointmentId, userId },
+      where: whereClause,
       include: {
         contact: true,
         medicalRecords: true,
@@ -618,14 +655,15 @@ export class AppointmentsService {
       );
 
     // Fetch clinic settings for branding
+    const clinicUserId = appointment.userId || 0;
     const clinicName =
       (
         await this.prisma.setting.findFirst({
-          where: { userId, key: 'clinic_name' },
+          where: { userId: clinicUserId, key: 'clinic_name' },
         })
       )?.value || 'عيادتي';
     const clinicPhone =
-      (await this.prisma.setting.findFirst({ where: { userId, key: 'phone' } }))
+      (await this.prisma.setting.findFirst({ where: { userId: clinicUserId, key: 'phone' } }))
         ?.value || '';
 
     let mainTitle = '';
@@ -652,6 +690,42 @@ export class AppointmentsService {
       section1Content = record.diagnosis || 'لم يحدد';
       section2Title = 'العلاج والتعليمات';
       section2Content = record.treatment || 'لم يحدد';
+    }
+
+    let medicationsHtml = '';
+    if (docType === 'prescription' && record.medications) {
+      try {
+        const meds = typeof record.medications === 'string' ? JSON.parse(record.medications as string) : record.medications;
+        if (Array.isArray(meds) && meds.length > 0) {
+          medicationsHtml = `
+            <div style="margin-bottom: 30px;">
+              <h3 style="color: #1d4ed8; border-right: 4px solid #1d4ed8; padding-right: 15px; margin-bottom: 15px;">الأدوية الموصوفة</h3>
+              <table style="width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                <thead style="background: #1d4ed8; color: white;">
+                  <tr>
+                    <th style="padding: 12px; text-align: right;">اسم الدواء</th>
+                    <th style="padding: 12px; text-align: right;">النوع</th>
+                    <th style="padding: 12px; text-align: right;">الجرعة / التكرار</th>
+                    <th style="padding: 12px; text-align: right;">المدة</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${meds.map((m: any, i: number) => `
+                    <tr style="border-bottom: 1px solid #e2e8f0; ${i % 2 === 0 ? 'background: #f8fafc;' : 'background: #fff;'}">
+                      <td style="padding: 12px; font-weight: bold; color: #1e293b;">${m.name}</td>
+                      <td style="padding: 12px; color: #475569;">${m.type}</td>
+                      <td style="padding: 12px; color: #475569;">${m.frequency}</td>
+                      <td style="padding: 12px; color: #475569;">${m.duration}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        }
+      } catch (e) {
+        console.error('Failed to parse medications for PDF', e);
+      }
     }
 
     const htmlContent = `
@@ -682,6 +756,8 @@ export class AppointmentsService {
                     <h3 style="color: #1d4ed8; border-right: 4px solid #1d4ed8; padding-right: 15px; margin-bottom: 15px;">${section1Title}</h3>
                     <p style="white-space: pre-wrap; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;">${section1Content}</p>
                 </div>
+
+                ${medicationsHtml}
 
                 <div style="margin-bottom: 50px;">
                     <h3 style="color: #1d4ed8; border-right: 4px solid #1d4ed8; padding-right: 15px; margin-bottom: 15px;">${section2Title}</h3>
