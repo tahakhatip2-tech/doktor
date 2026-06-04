@@ -10,6 +10,8 @@ import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import PatientHero from '@/components/patient/PatientHero';
 import { cn } from '@/lib/utils';
+import DispensePrescriptionDialog from '@/components/patient/DispensePrescriptionDialog';
+import { Pill } from 'lucide-react';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -18,6 +20,7 @@ export default function PatientDashboard() {
     const [upcomingAppointments, setUpcomingAppointments] = useState<any[]>([]);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [user, setUser] = useState<any>(null);
+    const [isDispenseDialogOpen, setIsDispenseDialogOpen] = useState(false);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('patient_user');
@@ -73,6 +76,30 @@ export default function PatientDashboard() {
             />
 
             <div className="px-4 sm:px-0 flex flex-col gap-6 -mt-4 relative z-20">
+                {/* Quick Actions */}
+                <div className="grid grid-cols-2 gap-4">
+                    <Button 
+                        onClick={() => setIsDispenseDialogOpen(true)}
+                        className="h-auto py-4 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-lg shadow-blue-600/20 flex flex-col items-center gap-2 group border-0"
+                    >
+                        <div className="p-3 rounded-full bg-white/10 group-hover:scale-110 transition-transform duration-300">
+                            <Pill className="h-6 w-6 text-white" />
+                        </div>
+                        <span className="font-black text-sm text-white">صرف وصفة طبية</span>
+                    </Button>
+                    <Link to="/patient/clinics" className="w-full">
+                        <Button 
+                            variant="outline"
+                            className="w-full h-auto py-4 rounded-2xl border-orange-200 hover:border-orange-500 hover:bg-orange-50 text-orange-700 flex flex-col items-center gap-2 group transition-all"
+                        >
+                            <div className="p-3 rounded-full bg-orange-100 group-hover:scale-110 transition-transform duration-300">
+                                <Plus className="h-6 w-6 text-orange-600" />
+                            </div>
+                            <span className="font-black text-sm">حجز موعد جديد</span>
+                        </Button>
+                    </Link>
+                </div>
+
                 {/* Upcoming Appointments */}
                 <Card className="relative rounded-2xl border border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-500 overflow-hidden group/card">
                     <div className="p-3 sm:p-4 border-b border-orange-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-orange-50/30 to-transparent">
@@ -237,6 +264,11 @@ export default function PatientDashboard() {
                     </CardContent>
                 </Card>
             </div>
+
+            <DispensePrescriptionDialog 
+                open={isDispenseDialogOpen} 
+                onOpenChange={setIsDispenseDialogOpen} 
+            />
         </div >
     );
 }
