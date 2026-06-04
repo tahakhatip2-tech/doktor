@@ -427,8 +427,8 @@ export default function PatientClinicDetail() {
                 <Card className="shadow-card border-green-100">
                     <CardHeader className="bg-green-50/50">
                         <CardTitle className="text-lg flex items-center gap-2 text-green-700">
-                            <Plus className="h-5 w-5" />
-                            إرسال وصفة طبية
+                            <Pill className="h-5 w-5" />
+                            صرف وصفة طبية
                         </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6">
@@ -440,8 +440,8 @@ export default function PatientClinicDetail() {
                         ) : prescriptions.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-10 text-center">
                                 <AlertCircle className="h-12 w-12 text-slate-300 mb-3" />
-                                <p className="text-slate-500 font-medium">لا توجد لديك وصفات طبية قيد الانتظار</p>
-                                <p className="text-sm text-slate-400 mt-1">عندما يكتب لك الطبيب وصفة، ستظهر هنا لإرسالها للصيدلية</p>
+                                <p className="text-slate-500 font-bold text-lg">لا توجد وصفات قيد الانتظار</p>
+                                <p className="text-sm text-slate-400 mt-2 max-w-sm">لصرف دواء من هذه الصيدلية، يجب أن يكتب لك الطبيب وصفة طبية أولاً لتظهر هنا.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
