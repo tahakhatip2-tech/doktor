@@ -527,6 +527,7 @@ export class AppointmentsService {
       sickLeaveReason,
       referralTo,
       referralReason,
+      medications,
     } = data;
 
     // ─── جلب بيانات الموعد الكاملة (الموثوقة 100%) ───────────────────────
@@ -578,6 +579,7 @@ export class AppointmentsService {
         sickLeaveReason,
         referralTo,
         referralReason,
+        medications,
         ...(treatingDoctorId ? { treatingDoctorId: Number(treatingDoctorId) } : {}),
       };
 

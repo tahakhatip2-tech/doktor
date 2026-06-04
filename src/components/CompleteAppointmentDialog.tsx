@@ -24,7 +24,9 @@ import {
     Pill,
     Save,
     X,
-    Paperclip
+    Paperclip,
+    Plus,
+    Trash2
 } from 'lucide-react';
 import { appointmentsApi, whatsappApi, BASE_URL } from '@/lib/api';
 import { toastWithSound } from '@/lib/toast-with-sound';
@@ -38,6 +40,13 @@ interface ClinicDoctor {
     name: string;
     specialty?: string;
     isActive: boolean;
+}
+
+interface Medication {
+    name: string;
+    type: string;
+    frequency: string;
+    duration: string;
 }
 
 interface CompleteAppointmentDialogProps {
@@ -71,10 +80,7 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
     const [showReferral, setShowReferral] = useState(false);
     const [clinicDoctors, setClinicDoctors] = useState<ClinicDoctor[]>([]);
     const [file, setFile] = useState<File | null>(null);
-    const [pdfUrl, setPdfUrl] = useState<string | null>(null);
-    const [generatingPdf, setGeneratingPdf] = useState(false);
-    const [sendingPdf, setSendingPdf] = useState(false);
-    const [isSaved, setIsSaved] = useState(false);
+    const [medications, setMedications] = useState<Medication[]>([{ name: '', type: 'حبوب', frequency: '', duration: '' }]);
     const { activeDoctor } = useActiveDoctor();
 
     useEffect(() => {
@@ -97,8 +103,6 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
 
         if (isOpen) {
             loadBranding();
-            setIsSaved(false);
-            setPdfUrl(null);
             setFile(null);
             // جلب أطباء العيادة داخل دالة async منفصلة
             const loadDoctors = async () => {
@@ -129,6 +133,7 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                 });
                 setShowSickLeave(false);
                 setShowReferral(false);
+                setMedications([{ name: '', type: 'حبوب', frequency: '', duration: '' }]);
             }
         }
     }, [isOpen, appointment, activeDoctor]);
@@ -151,6 +156,7 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                 sickLeaveReason: showSickLeave ? formData.sickLeaveReason : undefined,
                 referralTo: showReferral ? formData.referralTo : undefined,
                 referralReason: showReferral ? formData.referralReason : undefined,
+                medications: medications.filter(m => m.name.trim() !== ''),
                 ...(formData.treating_doctor_id ? { treatingDoctorId: Number(formData.treating_doctor_id) } : {}),
             };
 
@@ -158,51 +164,25 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
 
             if (file) {
                 payload = new FormData();
-                Object.keys(data).forEach(key => payload.append(key, data[key]));
+                Object.keys(data).forEach(key => {
+                    if (key === 'medications') {
+                        payload.append(key, JSON.stringify(data[key]));
+                    } else {
+                        payload.append(key, data[key]);
+                    }
+                });
                 payload.append('file', file);
             }
 
             await appointmentsApi.saveMedicalRecord(appointment.id, payload);
-            setIsSaved(true);
-            toastWithSound.success('تم أرشفة الزيارة بنجاح. يمكنك الآن تصدير الوصفة.');
+            toastWithSound.success('تم أرشفة الزيارة بنجاح ورفع السجل.');
+            onSuccess();
+            onClose();
         } catch (error: any) {
             console.error('Failed to save medical record:', error);
             toastWithSound.error('فشل في حفظ البيانات: ' + error.message);
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleGeneratePdf = async (docType: string) => {
-        if (!appointment) return;
-        setGeneratingPdf(true);
-        try {
-            const result = await appointmentsApi.generatePrescription(appointment.id, { docType });
-            setPdfUrl(result.url);
-            toastWithSound.success('تم إنشاء الملف بنجاح');
-            window.open(result.url, '_blank');
-        } catch (error: any) {
-            console.error('PDF Generation failed:', error);
-            toastWithSound.error('فشل في إنشاء ملف PDF');
-        } finally {
-            setGeneratingPdf(false);
-        }
-    };
-
-    const handleSendWhatsApp = async () => {
-        if (!appointment || !pdfUrl) return;
-        setSendingPdf(true);
-        try {
-            await appointmentsApi.sendPrescription(appointment.id, {
-                url: pdfUrl,
-                phone: appointment.phone
-            });
-            toastWithSound.success('تم إرسال الوصفة عبر الواتساب بنجاح');
-        } catch (error: any) {
-            console.error('WhatsApp sending failed:', error);
-            toastWithSound.error('فشل في إرسال الوصفة عبر الواتساب');
-        } finally {
-            setSendingPdf(false);
         }
     };
 
@@ -303,17 +283,111 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                             onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
                                         />
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="font-bold pr-1 flex items-center gap-2 text-amber-600">
-                                            <Pill className="h-4 w-4" />
-                                            العلاج المقترح (الأدوية)
-                                        </Label>
-                                        <Textarea
-                                            placeholder="اكتب العلاج والأدوية هنا..."
-                                            className="min-h-[120px] rounded-2xl bg-muted/20 border-border/50 focus:border-amber-500/50 transition-all text-sm leading-relaxed"
-                                            value={formData.treatment}
-                                            onChange={(e) => setFormData({ ...formData, treatment: e.target.value })}
-                                        />
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <Label className="font-bold pr-1 flex items-center gap-2 text-amber-600">
+                                                <Pill className="h-4 w-4" />
+                                                العلاج والأدوية الموصوفة
+                                            </Label>
+                                            <Button 
+                                                type="button" 
+                                                variant="outline" 
+                                                size="sm"
+                                                className="h-8 rounded-lg text-amber-600 border-amber-200 hover:bg-amber-50"
+                                                onClick={() => setMedications([...medications, { name: '', type: 'حبوب', frequency: '', duration: '' }])}
+                                            >
+                                                <Plus className="h-4 w-4 ml-1" /> إضافة دواء
+                                            </Button>
+                                        </div>
+                                        
+                                        <div className="space-y-3">
+                                            {medications.map((med, index) => (
+                                                <div key={index} className="flex flex-col sm:flex-row gap-2 items-start p-3 bg-muted/20 border border-border/50 rounded-xl relative group">
+                                                    <div className="flex-1 space-y-1 w-full">
+                                                        <Label className="text-[10px] text-muted-foreground font-bold">اسم الدواء</Label>
+                                                        <Input 
+                                                            placeholder="مثال: Panadol" 
+                                                            className="h-9 bg-white/50 text-sm"
+                                                            value={med.name}
+                                                            onChange={(e) => {
+                                                                const newMeds = [...medications];
+                                                                newMeds[index].name = e.target.value;
+                                                                setMedications(newMeds);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="w-full sm:w-[120px] space-y-1">
+                                                        <Label className="text-[10px] text-muted-foreground font-bold">النوع</Label>
+                                                        <select
+                                                            className="w-full h-9 rounded-md border border-input bg-white/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                            value={med.type}
+                                                            onChange={(e) => {
+                                                                const newMeds = [...medications];
+                                                                newMeds[index].type = e.target.value;
+                                                                setMedications(newMeds);
+                                                            }}
+                                                        >
+                                                            <option value="حبوب">حبوب</option>
+                                                            <option value="شرب">شرب</option>
+                                                            <option value="كبسول">كبسول</option>
+                                                            <option value="مرهم/كريم">مرهم/كريم</option>
+                                                            <option value="حقنة">حقنة</option>
+                                                            <option value="قطرة">قطرة</option>
+                                                            <option value="بخاخ">بخاخ</option>
+                                                            <option value="أخرى">أخرى</option>
+                                                        </select>
+                                                    </div>
+                                                    <div className="flex-1 space-y-1 w-full">
+                                                        <Label className="text-[10px] text-muted-foreground font-bold">الجرعة والتكرار</Label>
+                                                        <Input 
+                                                            placeholder="مثال: حبة كل 12 ساعة" 
+                                                            className="h-9 bg-white/50 text-sm"
+                                                            value={med.frequency}
+                                                            onChange={(e) => {
+                                                                const newMeds = [...medications];
+                                                                newMeds[index].frequency = e.target.value;
+                                                                setMedications(newMeds);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <div className="w-full sm:w-[100px] space-y-1">
+                                                        <Label className="text-[10px] text-muted-foreground font-bold">المدة</Label>
+                                                        <Input 
+                                                            placeholder="مثال: 5 أيام" 
+                                                            className="h-9 bg-white/50 text-sm"
+                                                            value={med.duration}
+                                                            onChange={(e) => {
+                                                                const newMeds = [...medications];
+                                                                newMeds[index].duration = e.target.value;
+                                                                setMedications(newMeds);
+                                                            }}
+                                                        />
+                                                    </div>
+                                                    <Button
+                                                        type="button"
+                                                        variant="ghost"
+                                                        size="icon"
+                                                        className="h-9 w-9 mt-5 sm:mt-5 text-red-500 hover:text-red-700 hover:bg-red-50 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                                                        onClick={() => {
+                                                            const newMeds = medications.filter((_, i) => i !== index);
+                                                            setMedications(newMeds.length ? newMeds : [{ name: '', type: 'حبوب', frequency: '', duration: '' }]);
+                                                        }}
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="space-y-2 mt-4 pt-4 border-t border-border/50">
+                                            <Label className="font-bold pr-1 text-muted-foreground text-xs">تعليمات وملاحظات عامة (اختياري)</Label>
+                                            <Textarea
+                                                placeholder="اكتب أي تعليمات عامة للمريض هنا..."
+                                                className="min-h-[60px] rounded-2xl bg-muted/20 border-border/50 focus:border-amber-500/50 transition-all text-sm leading-relaxed"
+                                                value={formData.treatment}
+                                                onChange={(e) => setFormData({ ...formData, treatment: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
                                 </div>
 
@@ -486,68 +560,8 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                 </div>
 
                                 <div className="p-4 bg-blue-50/50 border border-blue-200/50 rounded-2xl text-[11px] text-blue-800 font-medium leading-relaxed">
-                                    <span className="font-bold">ملاحظة:</span> تم أرشفة البيانات طبياً. يمكنك الآن تصدير الوصفة الطبية (PDF) <span className="text-primary font-bold">اختياريًا</span> أو إغلاق النافذة.
+                                    <span className="font-bold">ملاحظة:</span> سيتم أرشفة البيانات طبياً بالكامل لتبقى في سجل المريض.
                                 </div>
-
-                                {isSaved && (
-                                    <div className="grid grid-cols-1 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                                        <Button
-                                            type="button"
-                                            onClick={() => handleGeneratePdf('prescription')}
-                                            disabled={generatingPdf}
-                                            className="h-12 rounded-xl bg-slate-900 border-none hover:bg-slate-800 text-white shadow-lg flex items-center justify-between px-6"
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                {generatingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
-                                                <span className="font-bold text-sm">طباعة الوصفة الطبية</span>
-                                            </div>
-                                        </Button>
-
-                                        {showSickLeave && (
-                                            <Button
-                                                type="button"
-                                                onClick={() => handleGeneratePdf('sick_leave')}
-                                                disabled={generatingPdf}
-                                                className="h-12 rounded-xl bg-green-600 border-none hover:bg-green-700 text-white shadow-lg flex items-center justify-between px-6"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    {generatingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
-                                                    <span className="font-bold text-sm">طباعة الإجازة المرضية</span>
-                                                </div>
-                                            </Button>
-                                        )}
-
-                                        {showReferral && (
-                                            <Button
-                                                type="button"
-                                                onClick={() => handleGeneratePdf('referral')}
-                                                disabled={generatingPdf}
-                                                className="h-12 rounded-xl bg-amber-600 border-none hover:bg-amber-700 text-white shadow-lg flex items-center justify-between px-6"
-                                            >
-                                                <div className="flex items-center gap-3">
-                                                    {generatingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
-                                                    <span className="font-bold text-sm">طباعة التحويل الطبي</span>
-                                                </div>
-                                            </Button>
-                                        )}
-
-                                        <Button
-                                            type="button"
-                                            onClick={handleSendWhatsApp}
-                                            disabled={sendingPdf || !pdfUrl}
-                                            className={`h-14 rounded-2xl border-none shadow-lg flex items-center justify-between px-6 transition-all ${!pdfUrl
-                                                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-primary hover:bg-primary/90 text-white'
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-3">
-                                                {sendingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <Send className="h-5 w-5" />}
-                                                <span className="font-bold">إرسال عبر واتساب المريض</span>
-                                            </div>
-                                            {!pdfUrl && <AlertCircle className="h-5 w-5 opacity-50" />}
-                                        </Button>
-                                    </div>
-                                )}
                             </div>
                         </div>
                     </div>
@@ -565,15 +579,10 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                         <Button
                             type="submit"
                             className="h-12 px-8 rounded-xl font-black shadow-glow transition-all active:scale-95 bg-primary hover:bg-primary/90 text-white"
-                            disabled={loading || isSaved}
+                            disabled={loading}
                         >
                             {loading ? (
                                 <Loader2 className="h-5 w-5 animate-spin" />
-                            ) : isSaved ? (
-                                <>
-                                    <CheckCircle2 className="h-5 w-5 ml-2" />
-                                    تم التوثيق بنجاح
-                                </>
                             ) : (
                                 <>
                                     <Save className="h-5 w-5 ml-2" />
@@ -581,15 +590,6 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                 </>
                             )}
                         </Button>
-                        {isSaved && (
-                            <Button
-                                type="button"
-                                onClick={() => { onSuccess(); onClose(); }}
-                                className="h-12 px-8 rounded-xl font-black bg-blue-600 hover:bg-blue-700 text-white"
-                            >
-                                إغلاق ونافذة المواعيد
-                            </Button>
-                        )}
                     </DialogFooter>
                 </form>
             </DialogContent>

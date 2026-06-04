@@ -217,6 +217,30 @@ export class SaveMedicalRecordDto {
     })
     @IsOptional()
     treatingDoctorId?: number;
+
+    @ApiPropertyOptional({ description: 'مدة الإجازة المرضية', example: '3' })
+    @IsOptional()
+    @IsString()
+    sickLeaveDays?: string;
+
+    @ApiPropertyOptional({ description: 'سبب الإجازة المرضية', example: 'زكام شديد' })
+    @IsOptional()
+    @IsString()
+    sickLeaveReason?: string;
+
+    @ApiPropertyOptional({ description: 'الجهة المحول إليها', example: 'مستشفى الجامعة' })
+    @IsOptional()
+    @IsString()
+    referralTo?: string;
+
+    @ApiPropertyOptional({ description: 'سبب التحويل', example: 'استشارة اختصاصي' })
+    @IsOptional()
+    @IsString()
+    referralReason?: string;
+
+    @ApiPropertyOptional({ description: 'قائمة الأدوية الموصوفة' })
+    @IsOptional()
+    medications?: any;
 }
 
 export class AppointmentResponseDto {

@@ -368,6 +368,7 @@ model MedicalRecord {
   sickLeaveReason  String?
   referralTo       String?
   referralReason   String?
+  medications      Json?
   createdAt        DateTime      @default(now())
   patientUserId    Int?
   aiAdvice         String?

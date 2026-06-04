@@ -264,9 +264,29 @@ export default function PatientMedicalRecords() {
                                                     <p className="text-sm bg-muted/50 rounded-lg p-3 leading-relaxed">{record.diagnosis}</p>
                                                 </div>
                                             )}
+                                            {record.medications && record.medications.length > 0 && (
+                                                <div>
+                                                    <p className="text-xs font-bold text-amber-600 uppercase tracking-wide mb-2 flex items-center gap-1">الأدوية الموصوفة</p>
+                                                    <div className="grid gap-2">
+                                                        {record.medications.map((med, idx) => (
+                                                            <div key={idx} className="bg-amber-50/50 border border-amber-100 rounded-lg p-3 text-sm flex flex-col md:flex-row md:items-center justify-between gap-2">
+                                                                <div>
+                                                                    <span className="font-black text-amber-900">{med.name}</span>
+                                                                    <span className="text-amber-700/80 text-xs mr-2 px-2 py-0.5 bg-amber-100 rounded-full">{med.type}</span>
+                                                                </div>
+                                                                <div className="text-amber-800 text-xs font-medium flex gap-3">
+                                                                    <span>{med.frequency}</span>
+                                                                    <span className="text-amber-600/70">|</span>
+                                                                    <span>{med.duration}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                             {record.treatment && (
                                                 <div>
-                                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">العلاج والتعليمات</p>
+                                                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">تعليمات إضافية</p>
                                                     <p className="text-sm bg-muted/50 rounded-lg p-3 leading-relaxed whitespace-pre-wrap">{record.treatment}</p>
                                                 </div>
                                             )}
