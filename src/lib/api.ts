@@ -151,7 +151,10 @@ export const appointmentsApi = {
     /** تحديث الحالة فقط — يُشغّل إشعار Socket.io للمريض تلقائياً من الباك اند */
     updateStatus: (id: number, status: string) => apiFetch(`/appointments/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
     delete: (id: number) => apiFetch(`/appointments/${id}`, { method: 'DELETE' }),
-    generatePrescription: (id: number) => apiFetch(`/appointments/${id}/prescription`, { method: 'POST' }),
+    generatePrescription: (id: number, data?: any) => apiFetch(`/appointments/${id}/prescription`, { 
+        method: 'POST',
+        body: data ? JSON.stringify(data) : undefined,
+    }),
     sendPrescription: (id: number, data: any) => apiFetch(`/appointments/${id}/prescription/send`, { method: 'POST', body: JSON.stringify(data) }),
     confirm: (id: number) => apiFetch(`/appointments/${id}/confirm`, { method: 'POST' }),
     reject: (id: number, reason?: string) => apiFetch(`/appointments/${id}/reject`, { method: 'POST', body: JSON.stringify({ reason }) }),
@@ -161,7 +164,8 @@ export const appointmentsApi = {
             method: 'POST',
             body: isFormData ? data : JSON.stringify(data)
         });
-    }
+    },
+    updateProcedures: (id: number, data: any) => apiFetch(`/appointments/${id}/procedures`, { method: 'PUT', body: JSON.stringify(data) })
 };
 
 export const notificationsApi = {

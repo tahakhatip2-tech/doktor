@@ -39,6 +39,10 @@ interface MedicalRecord {
     recordType: string;
     pdfUrl: string | null;
     aiAdvice?: string | null;
+    sickLeaveDays?: string | null;
+    sickLeaveReason?: string | null;
+    referralTo?: string | null;
+    referralReason?: string | null;
     appointment: {
         appointmentDate: string;
         customerName: string;
@@ -266,7 +270,25 @@ export default function PatientMedicalRecords() {
                                                     <p className="text-sm bg-muted/50 rounded-lg p-3 leading-relaxed whitespace-pre-wrap">{record.treatment}</p>
                                                 </div>
                                             )}
-                                            {!record.diagnosis && !record.treatment && (
+                                            {record.sickLeaveDays && (
+                                                <div>
+                                                    <p className="text-xs font-bold text-yellow-600 uppercase tracking-wide mb-1 flex items-center gap-1"><Bed className="h-3 w-3" /> إجازة مرضية</p>
+                                                    <p className="text-sm bg-yellow-50 text-yellow-800 rounded-lg p-3 leading-relaxed">
+                                                        <span className="font-bold">المدة:</span> {record.sickLeaveDays} يوم <br/>
+                                                        {record.sickLeaveReason && <><span className="font-bold">السبب:</span> {record.sickLeaveReason}</>}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {record.referralTo && (
+                                                <div>
+                                                    <p className="text-xs font-bold text-green-600 uppercase tracking-wide mb-1 flex items-center gap-1"><ArrowRightLeft className="h-3 w-3" /> تحويل طبي</p>
+                                                    <p className="text-sm bg-green-50 text-green-800 rounded-lg p-3 leading-relaxed">
+                                                        <span className="font-bold">الجهة المحول إليها:</span> {record.referralTo} <br/>
+                                                        {record.referralReason && <><span className="font-bold">سبب التحويل:</span> {record.referralReason}</>}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {!record.diagnosis && !record.treatment && !record.sickLeaveDays && !record.referralTo && (
                                                 <p className="text-sm text-muted-foreground text-center py-2">لا توجد تفاصيل إضافية</p>
                                             )}
 

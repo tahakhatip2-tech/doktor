@@ -6,7 +6,7 @@ import { extname, join } from 'path';
 import { AppointmentsService } from './appointments.service';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CreateAppointmentDto, UpdateAppointmentDto, SaveMedicalRecordDto, AppointmentResponseDto } from './dto/appointment.dto';
+import { CreateAppointmentDto, UpdateAppointmentDto, SaveMedicalRecordDto, AppointmentResponseDto, UpdateProceduresDto } from './dto/appointment.dto';
 
 @ApiTags('Appointments')
 @ApiBearerAuth('JWT-auth')
@@ -90,6 +90,18 @@ export class AppointmentsController {
         return this.appointmentsService.getMedicalRecord(id, req.user.id);
     }
 
+    @Put(':id/procedures')
+    @ApiOperation({ summary: 'تحديث الفحوصات والإجراءات الأولية', description: 'حفظ الفحوصات الأولية والإجراءات الطبية قبل إتمام الكشف' })
+    @ApiParam({ name: 'id', description: 'معرف الموعد' })
+    @ApiResponse({ status: 200, description: 'تم التحديث بنجاح', type: AppointmentResponseDto })
+    updateProcedures(
+        @Param('id', ParseIntPipe) id: number,
+        @Request() req,
+        @Body() updateProceduresDto: UpdateProceduresDto,
+    ) {
+        return this.appointmentsService.updateProcedures(id, req.user.id, updateProceduresDto);
+    }
+
     @Post(':id/medical-record')
     @ApiOperation({ summary: 'حفظ السجل الطبي', description: 'إضافة التشخيص والعلاج ورفع المرفقات للموعد' })
     @ApiConsumes('multipart/form-data')
@@ -133,8 +145,8 @@ export class AppointmentsController {
     @ApiOperation({ summary: 'إنشاء وصفة طبية PDF', description: 'توليد ملف وصفة طبية احترافي بصيغة PDF بناءً على بيانات الموعد' })
     @ApiParam({ name: 'id', description: 'معرف الموعد' })
     @ApiResponse({ status: 200, description: 'تم إنشاء الملف بنجاح وإرجاع الرابط' })
-    generatePrescription(@Param('id', ParseIntPipe) id: number, @Request() req) {
-        return this.appointmentsService.generatePrescription(id, req.user.id);
+    generatePrescription(@Param('id', ParseIntPipe) id: number, @Request() req, @Body() data: any) {
+        return this.appointmentsService.generatePrescription(id, req.user.id, data?.docType);
     }
 
     @Post(':id/prescription/send')

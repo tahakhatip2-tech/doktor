@@ -61,8 +61,14 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
         national_id: '',
         age: '',
         record_type: 'prescription',
+        sickLeaveDays: '',
+        sickLeaveReason: '',
+        referralTo: '',
+        referralReason: '',
         treating_doctor_id: '' as string | number,
     });
+    const [showSickLeave, setShowSickLeave] = useState(false);
+    const [showReferral, setShowReferral] = useState(false);
     const [clinicDoctors, setClinicDoctors] = useState<ClinicDoctor[]>([]);
     const [file, setFile] = useState<File | null>(null);
     const [pdfUrl, setPdfUrl] = useState<string | null>(null);
@@ -115,8 +121,14 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                     national_id: appointment.contact?.nationalId || '',
                     age: appointment.contact?.ageRange || '',
                     record_type: 'prescription',
+                    sickLeaveDays: '',
+                    sickLeaveReason: '',
+                    referralTo: '',
+                    referralReason: '',
                     treating_doctor_id: activeDoctor ? activeDoctor.id.toString() : '',
                 });
+                setShowSickLeave(false);
+                setShowReferral(false);
             }
         }
     }, [isOpen, appointment, activeDoctor]);
@@ -134,7 +146,11 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                 feeDetails: formData.fee_details,
                 nationalId: formData.national_id,
                 age: formData.age,
-                recordType: formData.record_type,
+                recordType: 'prescription', // Always baseline
+                sickLeaveDays: showSickLeave ? formData.sickLeaveDays : undefined,
+                sickLeaveReason: showSickLeave ? formData.sickLeaveReason : undefined,
+                referralTo: showReferral ? formData.referralTo : undefined,
+                referralReason: showReferral ? formData.referralReason : undefined,
                 ...(formData.treating_doctor_id ? { treatingDoctorId: Number(formData.treating_doctor_id) } : {}),
             };
 
@@ -157,13 +173,13 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
         }
     };
 
-    const handleGeneratePdf = async () => {
+    const handleGeneratePdf = async (docType: string) => {
         if (!appointment) return;
         setGeneratingPdf(true);
         try {
-            const result = await appointmentsApi.generatePrescription(appointment.id);
+            const result = await appointmentsApi.generatePrescription(appointment.id, { docType });
             setPdfUrl(result.url);
-            toastWithSound.success('تم إنشاء الوصفة الطبية بنجاح');
+            toastWithSound.success('تم إنشاء الملف بنجاح');
             window.open(result.url, '_blank');
         } catch (error: any) {
             console.error('PDF Generation failed:', error);
@@ -191,25 +207,6 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
     };
 
     if (!appointment) return null;
-
-    const recordTypes = [
-        { id: 'prescription', label: 'وصفة طبية', icon: Pill },
-        { id: 'lab_report', label: 'تقرير مختبر', icon: Stethoscope },
-        { id: 'sick_leave', label: 'إجازة مرضية', icon: FileText },
-        { id: 'referral', label: 'تحويل طبي', icon: User }
-    ];
-
-    const diagnosisLabel =
-        formData.record_type === 'lab_report' ? 'الفحوصات المطلوبة / التشخيص' :
-            formData.record_type === 'sick_leave' ? 'السبب الطبي للإجازة' :
-                formData.record_type === 'referral' ? 'سبب التحويل' :
-                    'التشخيص الطبي';
-
-    const treatmentLabel =
-        formData.record_type === 'lab_report' ? 'النتائج / ملاحظات المختبر' :
-            formData.record_type === 'sick_leave' ? 'مدة الإجازة والتوصيات' :
-                formData.record_type === 'referral' ? 'الجهة المحول إليها' :
-                    'العلاج المقترح (الأدوية)';
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -295,46 +292,113 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                     </div>
                                 </div>
 
-                                {/* Record Type */}
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-4">
-                                    {recordTypes.map((type) => (
-                                        <div
-                                            key={type.id}
-                                            onClick={() => setFormData({ ...formData, record_type: type.id })}
-                                            className={`cursor-pointer rounded-xl border p-2 flex flex-col items-center justify-center gap-1 transition-all ${formData.record_type === type.id
-                                                    ? 'bg-primary text-white border-primary shadow-md scale-105'
-                                                    : 'bg-white text-muted-foreground border-border/50 hover:bg-gray-50'
-                                                }`}
-                                        >
-                                            <type.icon className="h-4 w-4" />
-                                            <span className="text-[10px] font-bold">{type.label}</span>
-                                        </div>
-                                    ))}
+                                {/* Prescription Details */}
+                                <div className="space-y-4 pt-4">
+                                    <div className="space-y-2">
+                                        <Label className="font-bold pr-1">التشخيص الطبي</Label>
+                                        <Textarea
+                                            placeholder="اكتب التشخيص هنا..."
+                                            className="min-h-[100px] rounded-2xl bg-muted/20 border-border/50 focus:border-primary/50 transition-all text-sm leading-relaxed"
+                                            value={formData.diagnosis}
+                                            onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="font-bold pr-1 flex items-center gap-2 text-amber-600">
+                                            <Pill className="h-4 w-4" />
+                                            العلاج المقترح (الأدوية)
+                                        </Label>
+                                        <Textarea
+                                            placeholder="اكتب العلاج والأدوية هنا..."
+                                            className="min-h-[120px] rounded-2xl bg-muted/20 border-border/50 focus:border-amber-500/50 transition-all text-sm leading-relaxed"
+                                            value={formData.treatment}
+                                            onChange={(e) => setFormData({ ...formData, treatment: e.target.value })}
+                                        />
+                                    </div>
                                 </div>
 
-                                {/* Diagnosis */}
-                                <div className="space-y-2">
-                                    <Label className="font-bold pr-1">{diagnosisLabel}</Label>
-                                    <Textarea
-                                        placeholder={formData.record_type === 'lab_report' ? 'اذكر الفحوصات المطلوبة...' : 'اكتب التفاصيل هنا...'}
-                                        className="min-h-[100px] rounded-2xl bg-muted/20 border-border/50 focus:border-primary/50 transition-all text-sm leading-relaxed"
-                                        value={formData.diagnosis}
-                                        onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
-                                    />
-                                </div>
+                                {/* Optional Additions (Sick Leave & Referral) */}
+                                <div className="space-y-4 pt-4 border-t border-border/50">
+                                    <Label className="font-bold text-muted-foreground flex items-center gap-2 mb-2">إضافات اختيارية (الإجازة والتحويل):</Label>
+                                    
+                                    {/* Sick Leave Toggle */}
+                                    <div className={`p-4 rounded-2xl border transition-all ${showSickLeave ? 'border-primary/50 bg-primary/5' : 'border-border/50 hover:bg-muted/30'}`}>
+                                        <label className="flex items-center gap-3 cursor-pointer select-none">
+                                            <input 
+                                                type="checkbox" 
+                                                className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
+                                                checked={showSickLeave}
+                                                onChange={(e) => setShowSickLeave(e.target.checked)}
+                                            />
+                                            <div className="flex items-center gap-2 font-bold text-sm">
+                                                <FileText className="h-4 w-4 text-primary" />
+                                                إضافة إجازة مرضية
+                                            </div>
+                                        </label>
+                                        
+                                        {showSickLeave && (
+                                            <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold text-muted-foreground">مدة الإجازة (أيام)</Label>
+                                                    <Input
+                                                        placeholder="مثال: 3"
+                                                        type="number"
+                                                        className="bg-white/50"
+                                                        value={formData.sickLeaveDays}
+                                                        onChange={(e) => setFormData({ ...formData, sickLeaveDays: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold text-muted-foreground">السبب الطبي للإجازة</Label>
+                                                    <Textarea
+                                                        placeholder="اذكر السبب..."
+                                                        className="bg-white/50 min-h-[60px]"
+                                                        value={formData.sickLeaveReason}
+                                                        onChange={(e) => setFormData({ ...formData, sickLeaveReason: e.target.value })}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
 
-                                {/* Treatment */}
-                                <div className="space-y-2">
-                                    <Label className="font-bold pr-1 flex items-center gap-2 text-amber-600">
-                                        {formData.record_type === 'lab_report' ? <Stethoscope className="h-4 w-4" /> : <Pill className="h-4 w-4" />}
-                                        {treatmentLabel}
-                                    </Label>
-                                    <Textarea
-                                        placeholder="اكتب التفاصيل هنا..."
-                                        className="min-h-[120px] rounded-2xl bg-muted/20 border-border/50 focus:border-amber-500/50 transition-all text-sm leading-relaxed"
-                                        value={formData.treatment}
-                                        onChange={(e) => setFormData({ ...formData, treatment: e.target.value })}
-                                    />
+                                    {/* Referral Toggle */}
+                                    <div className={`p-4 rounded-2xl border transition-all ${showReferral ? 'border-amber-500/50 bg-amber-500/5' : 'border-border/50 hover:bg-muted/30'}`}>
+                                        <label className="flex items-center gap-3 cursor-pointer select-none">
+                                            <input 
+                                                type="checkbox" 
+                                                className="w-5 h-5 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                                                checked={showReferral}
+                                                onChange={(e) => setShowReferral(e.target.checked)}
+                                            />
+                                            <div className="flex items-center gap-2 font-bold text-sm">
+                                                <User className="h-4 w-4 text-amber-600" />
+                                                إضافة تحويل طبي
+                                            </div>
+                                        </label>
+
+                                        {showReferral && (
+                                            <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold text-muted-foreground">الجهة المحول إليها (طبيب أو مستشفى)</Label>
+                                                    <Input
+                                                        placeholder="مثال: د. أحمد (باطنية)"
+                                                        className="bg-white/50"
+                                                        value={formData.referralTo}
+                                                        onChange={(e) => setFormData({ ...formData, referralTo: e.target.value })}
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold text-muted-foreground">سبب التحويل</Label>
+                                                    <Textarea
+                                                        placeholder="اذكر سبب التحويل أو الحالة..."
+                                                        className="bg-white/50 min-h-[60px]"
+                                                        value={formData.referralReason}
+                                                        onChange={(e) => setFormData({ ...formData, referralReason: e.target.value })}
+                                                    />
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* File Attachment */}
@@ -429,16 +493,43 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                     <div className="grid grid-cols-1 gap-3 animate-in fade-in slide-in-from-bottom-2 duration-500">
                                         <Button
                                             type="button"
-                                            onClick={handleGeneratePdf}
+                                            onClick={() => handleGeneratePdf('prescription')}
                                             disabled={generatingPdf}
-                                            className="h-14 rounded-2xl bg-slate-900 border-none hover:bg-slate-800 text-white shadow-lg flex items-center justify-between px-6"
+                                            className="h-12 rounded-xl bg-slate-900 border-none hover:bg-slate-800 text-white shadow-lg flex items-center justify-between px-6"
                                         >
                                             <div className="flex items-center gap-3">
-                                                {generatingPdf ? <Loader2 className="h-5 w-5 animate-spin" /> : <FileDown className="h-5 w-5" />}
-                                                <span className="font-bold">توليد الوصفة الطبية (PDF) - اختياري</span>
+                                                {generatingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                                                <span className="font-bold text-sm">طباعة الوصفة الطبية</span>
                                             </div>
-                                            {pdfUrl && <CheckCircle2 className="h-5 w-5 text-primary" />}
                                         </Button>
+
+                                        {showSickLeave && (
+                                            <Button
+                                                type="button"
+                                                onClick={() => handleGeneratePdf('sick_leave')}
+                                                disabled={generatingPdf}
+                                                className="h-12 rounded-xl bg-green-600 border-none hover:bg-green-700 text-white shadow-lg flex items-center justify-between px-6"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    {generatingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                                                    <span className="font-bold text-sm">طباعة الإجازة المرضية</span>
+                                                </div>
+                                            </Button>
+                                        )}
+
+                                        {showReferral && (
+                                            <Button
+                                                type="button"
+                                                onClick={() => handleGeneratePdf('referral')}
+                                                disabled={generatingPdf}
+                                                className="h-12 rounded-xl bg-amber-600 border-none hover:bg-amber-700 text-white shadow-lg flex items-center justify-between px-6"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    {generatingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileDown className="h-4 w-4" />}
+                                                    <span className="font-bold text-sm">طباعة التحويل الطبي</span>
+                                                </div>
+                                            </Button>
+                                        )}
 
                                         <Button
                                             type="button"

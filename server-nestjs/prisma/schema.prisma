@@ -288,6 +288,8 @@ model Appointment {
   notifications        Notification[]
   patientNotifications PatientNotification[]
   prescriptions        Prescription[]
+  initialTests         String?
+  medicalProcedures    String?
 }
 
 model TelegramChat {
@@ -362,6 +364,10 @@ model MedicalRecord {
   feeDetails       String?
   attachmentUrl    String?
   recordType       String        @default("prescription")
+  sickLeaveDays    String?
+  sickLeaveReason  String?
+  referralTo       String?
+  referralReason   String?
   createdAt        DateTime      @default(now())
   patientUserId    Int?
   aiAdvice         String?

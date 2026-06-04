@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye } from 'lucide-react';
+import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye, TestTube } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toastWithSound } from '@/lib/toast-with-sound';
@@ -11,6 +11,7 @@ import { cn } from '@/lib/utils';
 import AddAppointmentDialog from './AddAppointmentDialog';
 import CompleteAppointmentDialog from './CompleteAppointmentDialog';
 import AppointmentDetailView from './AppointmentDetailView';
+import ProceduresDialog from './ProceduresDialog';
 
 interface Appointment {
     id: number;
@@ -28,6 +29,8 @@ interface Appointment {
     notes: string;
     doctor_name?: string;
     doctorName?: string;
+    initialTests?: string;
+    medicalProcedures?: string;
 }
 
 const statusConfig = {
@@ -51,9 +54,10 @@ interface AppointmentsCalendarProps {
     onOpenChat?: (phone: string) => void;
     selectedAppointmentId?: number | null;
     onClearAppointmentId?: () => void;
+    onViewingDetail?: (info: { title: string, desc: string } | null) => void;
 }
 
-export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId, onClearAppointmentId }: AppointmentsCalendarProps) {
+export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId, onClearAppointmentId, onViewingDetail }: AppointmentsCalendarProps) {
     const [appointments, setAppointments] = useState<Appointment[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'today' | 'week' | 'pending_requests'>('today');
@@ -62,6 +66,13 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
     const [selectedApt, setSelectedApt] = useState<any>(null);
     const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
     const [selectedAppointmentForDetail, setSelectedAppointmentForDetail] = useState<any>(null);
+    const [isProceduresDialogOpen, setIsProceduresDialogOpen] = useState(false);
+    const [selectedAptForProcedures, setSelectedAptForProcedures] = useState<any>(null);
+
+    const openProceduresDialog = (appointment: any) => {
+        setSelectedAptForProcedures(appointment);
+        setIsProceduresDialogOpen(true);
+    };
 
     const loadAppointments = async () => {
         try {
@@ -149,6 +160,19 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
         }
     }, [selectedAppointmentId, onClearAppointmentId]); // we do not depend on appointments here to avoid infinite loops if it changes, we try fetching first.
 
+    // Effect to handle dynamic hero
+    useEffect(() => {
+        if (selectedAppointmentForDetail && onViewingDetail) {
+            const patientName = selectedAppointmentForDetail.customerName || selectedAppointmentForDetail.patient_name || 'غير محدد';
+            onViewingDetail({
+                title: `ملف المريض: ${patientName}`,
+                desc: `تفاصيل الموعد رقم #${selectedAppointmentForDetail.id}`
+            });
+        } else if (!selectedAppointmentForDetail && onViewingDetail) {
+            onViewingDetail(null);
+        }
+    }, [selectedAppointmentForDetail, onViewingDetail]);
+
     const filteredAppointments = statusFilter === 'all'
         ? appointments
         : appointments.filter(apt => apt.status === statusFilter);
@@ -172,11 +196,15 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
 
     // If viewing appointment details, show detail view (AFTER all hooks)
     if (selectedAppointmentForDetail) {
+        // We set the dynamic hero info just before returning the detail view, but we should do it in an effect to avoid React warnings about rendering during render.
+        // Wait, setting state during render of a child component can cause issues.
+        // We will use useEffect.
         return (
             <AppointmentDetailView
                 appointment={selectedAppointmentForDetail}
                 onBack={() => {
                     setSelectedAppointmentForDetail(null);
+                    if (onViewingDetail) onViewingDetail(null);
                     loadAppointments();
                 }}
                 onOpenChat={onOpenChat}
@@ -215,8 +243,8 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                 onOpenChat={onOpenChat}
             />
 
-            {/* Blue Glass Control Bar (Filters) */}
-            <Card className="p-2 bg-white border border-slate-200 rounded-md shadow-sm flex flex-col md:flex-row items-center gap-4 relative overflow-hidden">
+            {/* Modern Control Bar (Filters) */}
+            <div className="p-3 bg-white/80 backdrop-blur-xl border border-white shadow-xl shadow-blue-900/5 rounded-2xl flex flex-col md:flex-row items-center gap-4 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-1 h-full bg-blue-500" />
 
                 <div className="flex-1 flex flex-wrap items-center gap-6 px-2">
@@ -271,7 +299,7 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                         </select>
                     </div>
                 </div>
-            </Card>
+            </div>
 
             {/* Professional Divider */}
             <div className="w-full flex items-center justify-center gap-4 my-2 opacity-80">
@@ -318,7 +346,7 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                 {dayAppointments.map((appointment) => (
                                     <Card
                                         key={appointment.id}
-                                        className="group relative overflow-hidden p-0 bg-white border border-slate-200 rounded-md hover:border-orange-500 transition-all duration-300 hover:shadow-xl hover:shadow-orange-500/5"
+                                        className="flex flex-col bg-white border border-slate-100/60 shadow-lg shadow-slate-200/40 hover:shadow-xl hover:shadow-blue-900/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 group"
                                     >
                                         <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500" />
 
@@ -457,17 +485,31 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                                     </>
                                                 )}
                                                 {appointment.status === 'confirmed' && (
-                                                    <Button
-                                                        size="sm"
-                                                        className="w-full h-8 text-[11px] font-bold rounded-md bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white border border-orange-200 hover:border-orange-500 shadow-sm transition-all uppercase tracking-wider relative group/btn overflow-hidden"
-                                                        onClick={() => updateStatus(appointment.id, 'completed', appointment)}
-                                                    >
-                                                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
-                                                        <span className="relative z-10 flex items-center justify-center gap-2">
-                                                            تسجيل إتمام الكشف
-                                                            <CheckCircle2 className="h-3 w-3" />
-                                                        </span>
-                                                    </Button>
+                                                    (!appointment.initialTests && !appointment.medicalProcedures) ? (
+                                                        <Button
+                                                            size="sm"
+                                                            className="w-full h-8 text-[11px] font-bold rounded-md bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-sm transition-all uppercase tracking-wider relative group/btn overflow-hidden"
+                                                            onClick={() => openProceduresDialog(appointment)}
+                                                        >
+                                                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+                                                            <span className="relative z-10 flex items-center justify-center gap-2">
+                                                                الفحوصات والإجراءات
+                                                                <TestTube className="h-3 w-3" />
+                                                            </span>
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            size="sm"
+                                                            className="w-full h-8 text-[11px] font-bold rounded-md bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white border border-orange-200 hover:border-orange-500 shadow-sm transition-all uppercase tracking-wider relative group/btn overflow-hidden"
+                                                            onClick={() => updateStatus(appointment.id, 'completed', appointment)}
+                                                        >
+                                                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
+                                                            <span className="relative z-10 flex items-center justify-center gap-2">
+                                                                تسجيل إتمام الكشف
+                                                                <CheckCircle2 className="h-3 w-3" />
+                                                            </span>
+                                                        </Button>
+                                                    )
                                                 )}
                                                 {['completed', 'cancelled', 'no-show'].includes(appointment.status) && (
                                                     <div className="hidden group-hover:block w-full text-center">
@@ -498,6 +540,19 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                     setSelectedApt(null);
                 }}
                 appointment={selectedApt}
+                onSuccess={() => {
+                    loadAppointments();
+                    setIsCompleteDialogOpen(false);
+                }}
+            />
+
+            <ProceduresDialog
+                isOpen={isProceduresDialogOpen}
+                onClose={() => {
+                    setIsProceduresDialogOpen(false);
+                    setSelectedAptForProcedures(null);
+                }}
+                appointment={selectedAptForProcedures}
                 onSuccess={() => {
                     loadAppointments();
                 }}

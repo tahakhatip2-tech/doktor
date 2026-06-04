@@ -77,6 +77,7 @@ const Index = () => {
     const [scrollProgress, setScrollProgress] = useState(0);
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const itemsPerPage = 8;
+    const [dynamicHero, setDynamicHero] = useState<{ title: string, desc: string } | null>(null);
 
     // Onboarding Tutorial State
     const [showOnboarding, setShowOnboarding] = useState(false);
@@ -239,6 +240,7 @@ const Index = () => {
                                 <HeroSection
                                     doctorName={activeDoctor ? `د. ${activeDoctor.name}` : (user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : 'د. حكيم')}
                                     pageTitle={
+                                        dynamicHero ? dynamicHero.title :
                                         activeTab === 'dashboard' ? "موجز عمل اليوم" :
                                             activeTab === 'contacts' ? "إدارة المرضى والمراجعات" :
                                                 activeTab === 'appointments' ? "جدول المواعيد والزيارات" :
@@ -247,6 +249,7 @@ const Index = () => {
                                                             activeTab === 'bot-stats' ? "إحصائيات الذكاء الاصطناعي" : "نظام الطبيب"
                                     }
                                     description={
+                                        dynamicHero ? dynamicHero.desc :
                                         activeTab === 'dashboard' ? "إليك موجز سريع لأداء عيادتك اليوم والمهام القادمة" :
                                             activeTab === 'contacts' ? "قاعدة بيانات شاملة لمرضاك مع سجلاتهم الطبية وحالاتهم" :
                                                 activeTab === 'appointments' ? "نظرة شاملة على جميع المواعيد المحجوزة والقدرة على جدولتها" :
@@ -720,6 +723,7 @@ const Index = () => {
                             {activeTab === 'appointments' && <AppointmentsCalendar 
                                 selectedAppointmentId={selectedAppointmentId}
                                 onClearAppointmentId={() => setSelectedAppointmentId(null)}
+                                onViewingDetail={(info) => setDynamicHero(info)}
                                 onOpenChat={(phone) => {
                                 setSelectedPhone(phone);
                                 setActiveTab('whatsapp-bot');

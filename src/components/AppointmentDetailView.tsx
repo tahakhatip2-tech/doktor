@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import {
     ArrowRight,
     Calendar,
@@ -19,7 +21,12 @@ import {
     Stethoscope,
     Hash,
     Droplet,
-    IdCard
+    IdCard,
+    Save,
+    FastForward,
+    TestTube,
+    Syringe,
+    Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -61,6 +68,14 @@ export default function AppointmentDetailView({
 }: AppointmentDetailViewProps) {
     const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    
+    // Procedures State
+    const [proceduresData, setProceduresData] = useState({
+        initialTests: appointment.initialTests || '',
+        medicalProcedures: appointment.medicalProcedures || '',
+    });
+    const [savingProcedures, setSavingProcedures] = useState(false);
+    const [proceduresSaved, setProceduresSaved] = useState(!!(appointment.initialTests || appointment.medicalProcedures));
 
     const appointmentDate = new Date(appointment.appointmentDate || appointment.appointment_date);
     const patientName = appointment.customerName || appointment.patient_name || 'غير محدد';
@@ -95,35 +110,49 @@ export default function AppointmentDetailView({
         }
     };
 
+    const handleSaveProcedures = async () => {
+        setSavingProcedures(true);
+        try {
+            await appointmentsApi.updateProcedures(appointment.id, proceduresData);
+            setProceduresSaved(true);
+            toastWithSound.success('تم حفظ الفحوصات والإجراءات بنجاح');
+            if (onSuccess) onSuccess(); // to refresh data if needed
+        } catch (error) {
+            console.error('Error saving procedures:', error);
+            toastWithSound.error('فشل حفظ الفحوصات والإجراءات');
+        } finally {
+            setSavingProcedures(false);
+        }
+    };
+
     return (
         <div className="space-y-6 animate-fade-in pb-20">
-            {/* Hero Section */}
-            <HeroSection
-                pageTitle={`موعد #${appointment.id}`}
-                description={format(appointmentDate, 'EEEE، d MMMM yyyy - hh:mm a', { locale: ar })}
-                icon={Calendar}
-            >
+            {/* Action Bar */}
+            <div className="flex items-center justify-between px-4 pb-2">
                 <div className="flex gap-2">
                     <Button
                         onClick={onBack}
-                        variant="ghost"
-                        className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md rounded-xl h-10 px-4 font-bold transition-all"
+                        variant="outline"
+                        className="gap-2 bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-900 rounded-xl h-10 px-4 font-bold transition-all shadow-sm"
                     >
                         <ArrowRight className="h-4 w-4" />
-                        <span className="hidden sm:inline">العودة</span>
+                        <span className="hidden sm:inline">العودة للجدول</span>
                     </Button>
                     {onOpenChat && (
                         <Button
                             onClick={() => onOpenChat(appointment.phone)}
-                            variant="ghost"
-                            className="gap-2 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md rounded-xl h-10 px-4 font-bold transition-all"
+                            className="gap-2 bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100 hover:text-blue-700 rounded-xl h-10 px-4 font-bold transition-all shadow-sm"
                         >
                             <MessageCircle className="h-4 w-4" />
-                            <span className="hidden sm:inline">محادثة</span>
+                            <span className="hidden sm:inline">محادثة المريض</span>
                         </Button>
                     )}
                 </div>
-            </HeroSection>
+                <div className="text-left">
+                    <p className="text-sm font-bold text-slate-500">موعد #{appointment.id}</p>
+                    <p className="text-xs text-slate-400">{format(appointmentDate, 'EEEE، d MMMM - hh:mm a', { locale: ar })}</p>
+                </div>
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4">
                 {/* Right Column - Patient & Appointment Info */}
@@ -273,6 +302,93 @@ export default function AppointmentDetailView({
                         </Card>
                     </motion.div>
 
+                    {/* Procedures & Initial Tests Card (For Confirmed Appointments) */}
+                    {appointment.status === 'confirmed' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.3, delay: 0.15 }}
+                        >
+                            <Card className="p-6 border border-blue-500 bg-white shadow-sm rounded-2xl">
+                                <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                                    <div className="h-12 w-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+                                        <TestTube className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-xl font-black text-slate-900">الفحوصات والإجراءات الأولية</h3>
+                                        <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">مرحلة ما قبل التشخيص النهائي</p>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-5">
+                                    <div className="space-y-2">
+                                        <Label className="font-bold flex items-center gap-2 text-slate-700">
+                                            <Activity className="h-4 w-4 text-blue-500" />
+                                            الفحوصات الأولية السريعة (اختياري)
+                                        </Label>
+                                        <Textarea
+                                            placeholder="مثال: ضغط الدم 120/80، سكري 90، تخطيط قلب سليم..."
+                                            className="min-h-[80px] rounded-xl bg-slate-50/50 border-slate-200 focus:border-blue-500"
+                                            value={proceduresData.initialTests}
+                                            onChange={(e) => setProceduresData(prev => ({ ...prev, initialTests: e.target.value }))}
+                                            disabled={proceduresSaved}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <Label className="font-bold flex items-center gap-2 text-slate-700">
+                                            <Syringe className="h-4 w-4 text-orange-500" />
+                                            الإجراءات الطبية المتخذة (اختياري)
+                                        </Label>
+                                        <Textarea
+                                            placeholder="مثال: تم إعطاء إبرة، غيار جرح، تبخيرة..."
+                                            className="min-h-[80px] rounded-xl bg-slate-50/50 border-slate-200 focus:border-orange-500"
+                                            value={proceduresData.medicalProcedures}
+                                            onChange={(e) => setProceduresData(prev => ({ ...prev, medicalProcedures: e.target.value }))}
+                                            disabled={proceduresSaved}
+                                        />
+                                    </div>
+
+                                    {!proceduresSaved ? (
+                                        <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                                            <Button 
+                                                onClick={handleSaveProcedures} 
+                                                disabled={savingProcedures || (!proceduresData.initialTests && !proceduresData.medicalProcedures)}
+                                                className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl"
+                                            >
+                                                {savingProcedures ? <Loader2 className="h-5 w-5 animate-spin ml-2" /> : <Save className="h-5 w-5 ml-2" />}
+                                                حفظ الإجراءات والمتابعة
+                                            </Button>
+                                            <Button 
+                                                onClick={() => setProceduresSaved(true)} 
+                                                variant="outline"
+                                                className="flex-1 h-12 border-slate-200 text-slate-600 hover:bg-slate-50 font-bold rounded-xl"
+                                            >
+                                                <FastForward className="h-5 w-5 ml-2" />
+                                                تخطي (لا توجد إجراءات)
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl border border-green-100">
+                                            <div className="flex items-center gap-2 text-green-700">
+                                                <CheckCircle2 className="h-5 w-5" />
+                                                <span className="font-bold text-sm">تم حفظ الإجراءات. يمكنك الآن إتمام الكشف.</span>
+                                            </div>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm" 
+                                                onClick={() => setProceduresSaved(false)}
+                                                className="text-green-700 hover:bg-green-100"
+                                            >
+                                                تعديل
+                                            </Button>
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        </motion.div>
+                    )}
+
                     {/* Medical Record Card (if exists) */}
                     {appointment.medicalRecords && appointment.medicalRecords.length > 0 && (
                         <motion.div
@@ -363,14 +479,25 @@ export default function AppointmentDetailView({
                                 )}
 
                                 {appointment.status === 'confirmed' && (
-                                    <Button
-                                        onClick={() => handleStatusUpdate('completed')}
-                                        disabled={loading}
-                                        className="w-full h-12 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-all"
-                                    >
-                                        <CheckCircle2 className="h-5 w-5 ml-2" />
-                                        إتمام الكشف
-                                    </Button>
+                                    <div className="space-y-2">
+                                        <Button
+                                            onClick={() => handleStatusUpdate('completed')}
+                                            disabled={loading || !proceduresSaved}
+                                            className={`w-full h-12 font-bold rounded-xl transition-all ${
+                                                proceduresSaved 
+                                                    ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20' 
+                                                    : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            <CheckCircle2 className="h-5 w-5 ml-2" />
+                                            {proceduresSaved ? 'إتمام الكشف (وصفة وتشخيص)' : 'أكمل الإجراءات أولاً'}
+                                        </Button>
+                                        {!proceduresSaved && (
+                                            <p className="text-[10px] text-center text-slate-500 font-bold px-2 leading-relaxed">
+                                                يرجى تعبئة بطاقة "الفحوصات والإجراءات" أو تخطيها لتفعيل هذا الزر.
+                                            </p>
+                                        )}
+                                    </div>
                                 )}
 
                                 {onOpenChat && (

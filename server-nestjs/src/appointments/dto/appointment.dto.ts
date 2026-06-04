@@ -124,6 +124,25 @@ export class UpdateAppointmentDto {
     type?: string;
 }
 
+export class UpdateProceduresDto {
+    @ApiPropertyOptional({
+        description: 'الفحوصات الأولية',
+        example: 'ضغط الدم 120/80، سكري 90',
+    })
+    @IsOptional()
+    @IsString()
+    initialTests?: string;
+
+    @ApiPropertyOptional({
+        description: 'الإجراءات الطبية',
+        example: 'غيار جرح، تنظيف أذن',
+    })
+    @IsOptional()
+    @IsString()
+    medicalProcedures?: string;
+}
+
+
 export class SaveMedicalRecordDto {
     @ApiPropertyOptional({
         description: 'التشخيص الطبي',

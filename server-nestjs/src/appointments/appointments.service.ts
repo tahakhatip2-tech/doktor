@@ -481,6 +481,29 @@ export class AppointmentsService {
     };
   }
 
+  async updateProcedures(appointmentId: number, userId: number, data: any) {
+    // Verify ownership
+    const appointment = await this.prisma.appointment.findFirst({
+      where: { id: appointmentId, userId },
+    });
+
+    if (!appointment) {
+      throw new NotFoundException('الموعد غير موجود أو ليس لديك صلاحية الوصول إليه');
+    }
+
+    return this.prisma.appointment.update({
+      where: { id: appointmentId },
+      data: {
+        initialTests: data.initialTests,
+        medicalProcedures: data.medicalProcedures,
+      },
+      include: {
+        contact: true,
+        patientUser: true,
+      },
+    });
+  }
+
   async getMedicalRecord(appointmentId: number, userId: number) {
     // Verify ownership first
     await this.findOne(appointmentId, userId);
@@ -500,6 +523,10 @@ export class AppointmentsService {
       age,
       attachmentUrl,
       treatingDoctorId,
+      sickLeaveDays,
+      sickLeaveReason,
+      referralTo,
+      referralReason,
     } = data;
 
     // ─── جلب بيانات الموعد الكاملة (الموثوقة 100%) ───────────────────────
@@ -547,6 +574,10 @@ export class AppointmentsService {
         feeDetails,
         attachmentUrl,
         recordType: data.recordType || 'prescription',
+        sickLeaveDays,
+        sickLeaveReason,
+        referralTo,
+        referralReason,
         ...(treatingDoctorId ? { treatingDoctorId: Number(treatingDoctorId) } : {}),
       };
 
@@ -568,7 +599,7 @@ export class AppointmentsService {
     });
   }
 
-  async generatePrescription(appointmentId: number, userId: number) {
+  async generatePrescription(appointmentId: number, userId: number, docType: string = 'prescription') {
     const appointment = await this.prisma.appointment.findFirst({
       where: { id: appointmentId, userId },
       include: {
@@ -595,37 +626,38 @@ export class AppointmentsService {
       (await this.prisma.setting.findFirst({ where: { userId, key: 'phone' } }))
         ?.value || '';
 
-    const recordType = record.recordType || 'prescription';
-    const titles = {
-      prescription: {
-        main: 'وصفة طبية إلكترونية',
-        section1: 'التشخيص',
-        section2: 'العلاج والتعليمات',
-      },
-      lab_report: {
-        main: 'تقرير مختبر / نتائج فحوصات',
-        section1: 'الفحوصات المطلوبة',
-        section2: 'النتائج والملاحظات',
-      },
-      sick_leave: {
-        main: 'إجازة مرضية',
-        section1: 'السبب الطبي',
-        section2: 'مدة الإجازة',
-      },
-      referral: {
-        main: 'نموذج تحويل طبي',
-        section1: 'سبب التحويل',
-        section2: 'إلى الجهة / الطبيب',
-      },
-    };
-    const t = titles[recordType] || titles['prescription'];
+    let mainTitle = '';
+    let section1Title = '';
+    let section1Content = '';
+    let section2Title = '';
+    let section2Content = '';
+
+    if (docType === 'sick_leave') {
+      mainTitle = 'إجازة مرضية';
+      section1Title = 'السبب الطبي';
+      section1Content = record.sickLeaveReason || 'لم يحدد';
+      section2Title = 'مدة الإجازة';
+      section2Content = record.sickLeaveDays ? `${record.sickLeaveDays} يوم/أيام` : 'لم يحدد';
+    } else if (docType === 'referral') {
+      mainTitle = 'نموذج تحويل طبي';
+      section1Title = 'الجهة المحول إليها';
+      section1Content = record.referralTo || 'لم يحدد';
+      section2Title = 'سبب التحويل';
+      section2Content = record.referralReason || 'لم يحدد';
+    } else {
+      mainTitle = 'وصفة طبية إلكترونية';
+      section1Title = 'التشخيص';
+      section1Content = record.diagnosis || 'لم يحدد';
+      section2Title = 'العلاج والتعليمات';
+      section2Content = record.treatment || 'لم يحدد';
+    }
 
     const htmlContent = `
             <div dir="rtl" style="font-family: Arial, sans-serif; padding: 40px; border: 20px solid #1d4ed8; min-height: 90vh;">
                 <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid #1d4ed8; padding-bottom: 20px; margin-bottom: 30px;">
                     <div>
                         <h1 style="color: #1d4ed8; margin: 0; font-size: 32px;">${clinicName}</h1>
-                        <p style="color: #666; margin: 5px 0;">${t.main}</p>
+                        <p style="color: #666; margin: 5px 0;">${mainTitle}</p>
                     </div>
                     <div style="text-align: left;">
                         <p style="margin: 0; font-weight: bold;">رقم المرجع: #${appointmentId}</p>
@@ -645,13 +677,13 @@ export class AppointmentsService {
                 </div>
 
                 <div style="margin-bottom: 30px;">
-                    <h3 style="color: #1d4ed8; border-right: 4px solid #1d4ed8; padding-right: 15px; margin-bottom: 15px;">${t.section1}</h3>
-                    <p style="white-space: pre-wrap; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;">${record.diagnosis || 'لم يحدد'}</p>
+                    <h3 style="color: #1d4ed8; border-right: 4px solid #1d4ed8; padding-right: 15px; margin-bottom: 15px;">${section1Title}</h3>
+                    <p style="white-space: pre-wrap; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px;">${section1Content}</p>
                 </div>
 
                 <div style="margin-bottom: 50px;">
-                    <h3 style="color: #1d4ed8; border-right: 4px solid #1d4ed8; padding-right: 15px; margin-bottom: 15px;">${t.section2}</h3>
-                    <p style="white-space: pre-wrap; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; min-height: 200px; font-size: 18px;">${record.treatment || 'لم يحدد'}</p>
+                    <h3 style="color: #1d4ed8; border-right: 4px solid #1d4ed8; padding-right: 15px; margin-bottom: 15px;">${section2Title}</h3>
+                    <p style="white-space: pre-wrap; padding: 10px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; min-height: 200px; font-size: 18px;">${section2Content}</p>
                 </div>
 
                 <div style="margin-top: auto; border-top: 1px solid #e2e8f0; padding-top: 20px; text-align: center; color: #64748b; font-size: 12px;">
@@ -668,7 +700,7 @@ export class AppointmentsService {
     const page = await browser.newPage();
     await page.setContent(htmlContent);
 
-    const fileName = `prescription_${appointmentId}_${Date.now()}.pdf`;
+    const fileName = `${docType}_${appointmentId}_${Date.now()}.pdf`;
     const dirPath = path.join(process.cwd(), 'uploads', 'prescriptions');
     if (!fs.existsSync(dirPath)) fs.mkdirSync(dirPath, { recursive: true });
 
