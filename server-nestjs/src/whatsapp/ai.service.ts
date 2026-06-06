@@ -35,7 +35,7 @@ export class AiService {
             const aiEnabled = aiEnabledVal === undefined || aiEnabledVal === '1' || aiEnabledVal === 'true';
 
             // Use per-user key from DB if set, otherwise fall back to the central ENV key
-            const apiKey = getSetting('ai_api_key') || process.env.GEMINI_API_KEY;
+            const apiKey = getSetting('ai_api_key') || process.env.DEEPSEEK_API_KEY;
 
             if (!aiEnabled) {
                 console.log('[AI Debug] AI Stopped: Disabled by user setting');
@@ -43,7 +43,7 @@ export class AiService {
             }
 
             if (!apiKey) {
-                console.error('[AI Error] No API key found. Set GEMINI_API_KEY in .env file.');
+                console.error('[AI Error] No API key found. Set DEEPSEEK_API_KEY in .env file.');
                 return null;
             }
 
@@ -136,79 +136,48 @@ ${getSetting('ai_system_instruction')}
                 }
             }
 
-            const models = [
-                'gemini-2.5-flash-preview-05-20', // ✅ الأحدث والأقوى مجاناً
-                'gemini-2.5-flash',               // ✅ نسخة مستقرة
-                'gemini-2.0-flash-lite',          // الأسرع والأرخص
-                'gemini-2.0-flash',               // الأقوى من 2.0
-                'gemini-1.5-flash-latest',        // نسخة مستقرة من 1.5
-                'gemma-3-12b-it',                 // حصة منفصلة
-                'gemma-3-4b-it',                  // آخر خيار
-            ];
+            const url = 'https://api.deepseek.com/v1/chat/completions';
 
+            let userPrompt = `تاريخ اليوم: ${new Date().toLocaleString('ar-JO')}\n\nالسجل السابق:\n${historyStr}\n\nالرسالة الجديدة:\n${userMessage || '(رسالة فارغة)'}`;
 
-            for (const model of models) {
-                try {
-                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-
-                    const parts: any[] = [];
-                    if (audioFilePath && fs.existsSync(audioFilePath)) {
-                        const audioData = fs.readFileSync(audioFilePath).toString('base64');
-                        parts.push({ inlineData: { mimeType: "audio/ogg", data: audioData } });
-                        parts.push({ text: "استمع للرسالة الصوتية وأجب عليها." });
-                    }
-
-                    parts.push({ text: `تاريخ اليوم: ${new Date().toLocaleString('ar-JO')}\n\nالسجل السابق:\n${historyStr}\n\nالرسالة الجديدة:\n${userMessage || '(صوت)'}` });
-
-                    // Gemma models do NOT support system_instruction
-                    const isGemma = model.startsWith('gemma');
-                    const requestBody: any = {
-                        generationConfig: { temperature: 0.3, maxOutputTokens: 1000 }
-                    };
-
-                    if (isGemma) {
-                        // Inject system prompt as first multi-turn exchange
-                        requestBody.contents = [
-                            { role: 'user', parts: [{ text: `[تعليمات النظام]\n${systemInstruction}\n---` }] },
-                            { role: 'model', parts: [{ text: 'حسناً، سأتبع هذه التعليمات.' }] },
-                            { role: 'user', parts }
-                        ];
-                    } else {
-                        // Gemini supports system_instruction natively
-                        requestBody.contents = [{ role: 'user', parts }];
-                        requestBody.system_instruction = { parts: [{ text: systemInstruction }] };
-                    }
-
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(requestBody)
-                    });
-
-                    const data: any = await response.json();
-
-                    if (data.error) {
-                        const errorCode = data.error.code;
-                        const errorMsg = data.error.message || '';
-                        if (errorCode === 429 || errorMsg.toLowerCase().includes('quota') || errorMsg.includes('exhausted')) {
-                            console.warn(`[AI] Quota exceeded for model ${model}, trying next...`);
-                            continue;
-                        }
-                        console.error(`[AI Error] ${model}:`, data.error.status, '-', data.error.message);
-                        continue;
-                    }
-
-                    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-                    if (text) {
-                        console.log(`[AI] Responded using model: ${model}`);
-                        return text.trim();
-                    }
-                } catch (e) {
-                    console.error(`[AI Error] Model ${model} failed: ${e.message}`);
-                }
+            // DeepSeek text model doesn't support direct audio file upload like Gemini 1.5 Pro
+            if (audioFilePath && fs.existsSync(audioFilePath)) {
+                userPrompt += '\n\n(ملاحظة هامة للنظام: لقد أرسل المريض رسالة صوتية، ولكن نظام DeepSeek لا يدعم سماع الصوت حالياً. اعتذر منه بلطف واطلب منه كتابة طلبه نصياً أو تسجيل موعد عبر التطبيق.)';
             }
 
-            console.error('[AI] All models failed or quota exhausted.');
+            const requestBody = {
+                model: 'deepseek-chat',
+                messages: [
+                    { role: 'system', content: systemInstruction },
+                    { role: 'user', content: userPrompt }
+                ],
+                temperature: 0.3,
+                max_tokens: 1000
+            };
+
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const data: any = await response.json();
+
+            if (data.error) {
+                console.error(`[AI Error] DeepSeek:`, data.error.message);
+                return null;
+            }
+
+            const text = data.choices?.[0]?.message?.content;
+            if (text) {
+                console.log(`[AI] Responded using DeepSeek`);
+                return text.trim();
+            }
+
+            console.error('[AI] Failed to get response from DeepSeek.');
             return null;
 
         } catch (err) {

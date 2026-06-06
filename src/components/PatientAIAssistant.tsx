@@ -59,24 +59,29 @@ const CATEGORIES: Category[] = [
 ];
 
 // ─── Gemini API ────────────────────────────────────────────────────────────────
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_KEY}`;
+const DEEPSEEK_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '';
+const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
 
-async function callGemini(turns: { role: string; parts: { text: string }[] }[]): Promise<string> {
-    if (!GEMINI_KEY) throw new Error('عذراً، خدمة الذكاء الاصطناعي غير متوفرة حالياً.');
-    const res = await fetch(GEMINI_URL, {
+async function callDeepSeek(turns: { role: string; content: string }[]): Promise<string> {
+    if (!DEEPSEEK_KEY) throw new Error('عذراً، خدمة الذكاء الاصطناعي غير متوفرة حالياً.');
+    const res = await fetch(DEEPSEEK_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${DEEPSEEK_KEY}`
+        },
         body: JSON.stringify({
-            contents: turns,
-            generationConfig: { temperature: 0.6, topP: 0.9, maxOutputTokens: 1024 },
+            model: 'deepseek-chat',
+            messages: turns,
+            temperature: 0.6,
+            max_tokens: 1024,
         }),
     });
     if (!res.ok) {
         throw new Error('حدث خطأ في الاتصال بالسيرفر.');
     }
     const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    return data?.choices?.[0]?.message?.content ?? '';
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -167,18 +172,17 @@ export default function PatientAIAssistant() {
                 .filter(m => m.id !== messages[0]?.id)
                 .slice(-8)
                 .map(m => ({
-                    role: m.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: m.content }],
+                    role: m.role === 'user' ? 'user' : 'assistant',
+                    content: m.content,
                 }));
 
             const turns = [
-                { role: 'user', parts: [{ text: systemPrompt }] },
-                { role: 'model', parts: [{ text: `مفهوم، أنا المرشد الصحي في منصة Doctor Jo. جاهز لخدمة المريض ${patientName}.` }] },
+                { role: 'system', content: systemPrompt },
                 ...history,
-                { role: 'user', parts: [{ text: text.trim() }] },
+                { role: 'user', content: text.trim() },
             ];
 
-            const rawText = await callGemini(turns);
+            const rawText = await callDeepSeek(turns as any);
             
             const quickReplies: string[] = [];
             const cleanText = rawText.replace(/^🔹\s*.+$/gm, (line) => {

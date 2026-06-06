@@ -119,17 +119,22 @@ const CATEGORIES: Category[] = [
 ];
 
 // ─── Gemini API ────────────────────────────────────────────────────────────────
-const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${GEMINI_KEY}`;
+const DEEPSEEK_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '';
+const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
 
-async function callGemini(turns: { role: string; parts: { text: string }[] }[]): Promise<string> {
-    if (!GEMINI_KEY) throw new Error('مفتاح Gemini API غير موجود. يرجى إضافة VITE_GEMINI_API_KEY في ملف .env');
-    const res = await fetch(GEMINI_URL, {
+async function callDeepSeek(turns: { role: string; content: string }[]): Promise<string> {
+    if (!DEEPSEEK_KEY) throw new Error('مفتاح API غير موجود. يرجى إضافة VITE_DEEPSEEK_API_KEY في منصة الاستضافة');
+    const res = await fetch(DEEPSEEK_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${DEEPSEEK_KEY}`
+        },
         body: JSON.stringify({
-            contents: turns,
-            generationConfig: { temperature: 0.7, topP: 0.9, maxOutputTokens: 2048 },
+            model: 'deepseek-chat',
+            messages: turns,
+            temperature: 0.7,
+            max_tokens: 2048,
         }),
     });
     if (!res.ok) {
@@ -137,7 +142,7 @@ async function callGemini(turns: { role: string; parts: { text: string }[] }[]):
         throw new Error(err?.error?.message || `HTTP ${res.status}`);
     }
     const data = await res.json();
-    return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+    return data?.choices?.[0]?.message?.content ?? '';
 }
 
 // ─── Parse AI response for action blocks ──────────────────────────────────────
@@ -479,18 +484,17 @@ ${allApptSample}
                 .filter(m => m.id !== messages[0]?.id) // skip welcome
                 .slice(-12) // keep last 12 messages for context
                 .map(m => ({
-                    role: m.role === 'user' ? 'user' : 'model',
-                    parts: [{ text: m.content }],
+                    role: m.role === 'user' ? 'user' : 'assistant',
+                    content: m.content,
                 }));
 
             const turns = [
-                { role: 'user', parts: [{ text: systemPrompt }] },
-                { role: 'model', parts: [{ text: `مفهوم تماماً. أنا مساعد Doctor Jo الذكي لعيادة ${clinicName}، جاهز للمساعدة.` }] },
+                { role: 'system', content: systemPrompt },
                 ...history,
-                { role: 'user', parts: [{ text: text.trim() }] },
+                { role: 'user', content: text.trim() },
             ];
 
-            const raw = await callGemini(turns);
+            const raw = await callDeepSeek(turns as any);
             const { displayText, action } = parseActionBlock(raw);
 
             // Extract quick replies suggestion from display text (lines starting with "🔹")
@@ -515,7 +519,7 @@ ${allApptSample}
         } catch (err: any) {
             addMessage({
                 role: 'assistant',
-                content: `⚠️ **حدث خطأ:**\n${err.message}\n\nيرجى التحقق من مفتاح Gemini API في الإعدادات.`,
+                content: `⚠️ **حدث خطأ:**\n${err.message}\n\nيرجى التحقق من مفتاح API في الإعدادات.`,
             });
         } finally {
             setIsLoading(false);
