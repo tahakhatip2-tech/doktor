@@ -60,4 +60,9 @@ export class PatientAppointmentController {
     ) {
         return this.appointmentService.cancelAppointment(req.user.id, id, dto);
     }
+
+    @Get(':id/video-token')
+    async getVideoToken(@Request() req, @Param('id', ParseIntPipe) id: number) {
+        return this.appointmentService.getVideoToken(req.user.id, id);
+    }
 }

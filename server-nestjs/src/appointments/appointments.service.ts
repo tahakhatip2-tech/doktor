@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import * as puppeteer from 'puppeteer';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AppointmentsService {
@@ -110,6 +111,7 @@ export class AppointmentsService {
       type,
       status,
       notes,
+      isVideo,
     } = data;
 
     if (!phone || !appointmentDate) {
@@ -189,6 +191,8 @@ export class AppointmentsService {
         type: type || 'consultation',
         status: status || 'scheduled',
         notes,
+        isVideo: isVideo || false,
+        videoRoomId: isVideo ? crypto.randomUUID() : null,
       },
     });
 
@@ -235,10 +239,11 @@ export class AppointmentsService {
       type,
       status,
       notes,
+      isVideo,
     } = data;
 
     // Verify ownership
-    await this.findOne(id, userId);
+    const currentAppointment = await this.findOne(id, userId);
 
     // Build update object, excluding undefined values
     const updateData: any = {};
@@ -253,6 +258,16 @@ export class AppointmentsService {
       updateData.type = appointmentType || type;
     if (status !== undefined) updateData.status = status;
     if (notes !== undefined) updateData.notes = notes;
+    if (isVideo !== undefined) {
+      updateData.isVideo = isVideo;
+      if (isVideo && !currentAppointment.videoRoomId) {
+        updateData.videoRoomId = crypto.randomUUID();
+      } else if (!isVideo) {
+        updateData.videoRoomId = null;
+        updateData.videoStartedAt = null;
+        updateData.videoEndedAt = null;
+      }
+    }
 
     console.log(
       `[AppointmentsService] Updating appointment ${id} with data:`,
@@ -800,6 +815,39 @@ export class AppointmentsService {
     // But the user's current flow in frontend calls a specific endpoint.
     return { success: true, message: 'Prescription sent successfully' };
   }
+
+  // --- Video Call Methods ---
+  async getVideoToken(id: number, userId: number) {
+    const appointment = await this.findOne(id, userId);
+    if (!appointment.isVideo || !appointment.videoRoomId) {
+      throw new BadRequestException('This is not a video appointment');
+    }
+    return { videoRoomId: appointment.videoRoomId };
+  }
+
+  async startVideoCall(id: number, userId: number) {
+    const appointment = await this.findOne(id, userId);
+    if (!appointment.isVideo) throw new BadRequestException('Not a video appointment');
+
+    return this.prisma.appointment.update({
+      where: { id },
+      data: { videoStartedAt: new Date() },
+    });
+  }
+
+  async endVideoCall(id: number, userId: number) {
+    const appointment = await this.findOne(id, userId);
+    if (!appointment.isVideo) throw new BadRequestException('Not a video appointment');
+
+    return this.prisma.appointment.update({
+      where: { id },
+      data: { 
+        videoEndedAt: new Date(),
+        status: 'completed',
+      },
+    });
+  }
+
   async isSlotAvailable(
     userId: number,
     appointmentDate: Date,

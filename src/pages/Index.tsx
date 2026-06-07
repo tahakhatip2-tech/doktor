@@ -424,7 +424,7 @@ const Index = () => {
                                                 patientName: apt.customerName || apt.patient_name || apt.customer_name || 'بدون اسم',
                                                 time: new Date(apt.appointmentDate || apt.appointment_date || "").toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', hour12: true }),
                                                 date: new Date(apt.appointmentDate || apt.appointment_date || "").toLocaleDateString('ar-EG', { weekday: 'short', day: 'numeric', month: 'short' }),
-                                                type: (apt.type || apt.appointment_type) === 'consultation' ? 'استشارة' : (apt.type || apt.appointment_type),
+                                                type: (apt.type || apt.appointment_type) === 'video-consultation' ? 'استشارة فيديو' : (apt.type || apt.appointment_type) === 'consultation' ? 'استشارة' : (apt.type || apt.appointment_type),
                                                 status: apt.status === 'scheduled' ? 'scheduled' : apt.status === 'confirmed' ? 'confirmed' : 'waiting'
                                             }))}
                                         onViewAll={() => setActiveTab('appointments')}

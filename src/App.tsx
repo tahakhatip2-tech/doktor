@@ -42,6 +42,7 @@ import InternalChat from "./pages/InternalChat";
 import PublicClinicPage from "./pages/PublicClinicPage";
 import AppointmentDetail from "./pages/patient/AppointmentDetail";
 import ClinicDoctors from "./pages/doctor/ClinicDoctors";
+import VideoRoom from "./pages/VideoRoom";
 
 import { ClinicProvider } from "./context/ClinicContext";
 import { ActiveDoctorProvider } from "./context/ActiveDoctorContext";
@@ -74,6 +75,7 @@ const App = () => (
                         <Route path="/queue" element={<QueueDisplay />} />
                         <Route path="/internal-chat" element={<InternalChat />} />
                         <Route path="/clinic-doctors" element={<ClinicDoctors />} />
+                        <Route path="/appointments/:appointmentId/video" element={<VideoRoom />} />
 
                         {/* ─── Public Shareable Clinic Page (No Auth) ─── */}
                         <Route path="/clinic/:id" element={<PublicClinicPage />} />
@@ -92,6 +94,7 @@ const App = () => (
                             <Route path="appointments" element={<PatientAppointments />} />
                             <Route path="appointments/:id" element={<AppointmentDetail />} />
                             <Route path="appointments/:id/:slug" element={<AppointmentDetail />} />
+                            <Route path="appointments/:appointmentId/video" element={<VideoRoom />} />
                             <Route path="notifications" element={<PatientNotifications />} />
                             <Route path="medical-records" element={<PatientMedicalRecords />} />
                             <Route path="messages" element={<PatientMessages />} />

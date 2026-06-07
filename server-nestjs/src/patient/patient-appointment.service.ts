@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, BadRequestException, ForbiddenException 
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePatientAppointmentDto, CancelAppointmentDto } from './patient-appointment.dto';
 import { AiService } from '../whatsapp/ai.service';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class PatientAppointmentService {
@@ -66,7 +67,9 @@ export class PatientAppointmentService {
                 status: 'pending', // Waiting for doctor confirmation
                 notes: dto.notes,
                 duration: dto.duration || 30,
-                type: 'consultation',
+                type: dto.type || 'consultation',
+                isVideo: dto.isVideo || false,
+                videoRoomId: dto.isVideo ? crypto.randomUUID() : null,
             },
             include: {
                 user: {
@@ -340,5 +343,25 @@ export class PatientAppointmentService {
         }
 
         return { advice: advice || 'لا تتوفر نصائح حالياً، يرجى المحاولة لاحقاً' };
+    }
+
+    async getVideoToken(patientId: number, appointmentId: number) {
+        const appointment = await this.prisma.appointment.findUnique({
+            where: { id: appointmentId },
+        });
+
+        if (!appointment) {
+            throw new NotFoundException('الموعد غير موجود');
+        }
+
+        if (appointment.patientUserId !== patientId) {
+            throw new ForbiddenException('ليس لديك صلاحية الوصول لهذا الموعد');
+        }
+
+        if (!appointment.isVideo || !appointment.videoRoomId) {
+            throw new BadRequestException('هذا الموعد ليس استشارة فيديو');
+        }
+
+        return { videoRoomId: appointment.videoRoomId };
     }
 }

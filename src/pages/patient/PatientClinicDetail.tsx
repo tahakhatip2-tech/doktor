@@ -52,6 +52,7 @@ export default function PatientClinicDetail() {
     const [notes, setNotes] = useState('');
     const [customerName, setCustomerName] = useState('');
     const [bookingLoading, setBookingLoading] = useState(false);
+    const [isVideo, setIsVideo] = useState(false);
 
     // ── التقييمات ───────────────────────────────────────────────
     const [reviewsData, setReviewsData] = useState<any>(null);
@@ -161,6 +162,8 @@ export default function PatientClinicDetail() {
                     appointmentDate: appointmentDate.toISOString(),
                     notes,
                     duration: 30,
+                    type: isVideo ? 'video-consultation' : 'consultation',
+                    isVideo: isVideo,
                     ...(customerName.trim() ? { customerName: customerName.trim() } : {}),
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
@@ -673,6 +676,29 @@ export default function PatientClinicDetail() {
                         />
                     </div>
 
+                    {/* استشارة فيديو */}
+                    <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50/50">
+                        <div>
+                            <h4 className="font-semibold text-sm">استشارة فيديو</h4>
+                            <p className="text-xs text-muted-foreground mt-0.5">هل ترغب بأن يكون الموعد عبر مكالمة فيديو؟</p>
+                        </div>
+                        <button
+                            onClick={() => setIsVideo(!isVideo)}
+                            className={cn(
+                                "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                                isVideo ? "bg-primary" : "bg-gray-200"
+                            )}
+                        >
+                            <span
+                                aria-hidden="true"
+                                className={cn(
+                                    "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                                    isVideo ? "-translate-x-5" : "translate-x-0"
+                                )}
+                            />
+                        </button>
+                    </div>
+
                     {/* حجز لشخص آخر (جديد) */}
                     <div className="space-y-2">
                         <Label htmlFor="customerName">اسم المريض (إذا كنت تحجز لشخص آخر)</Label>
@@ -800,7 +826,28 @@ export default function PatientClinicDetail() {
                                             <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                                                 <div className="h-full bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full transition-all" style={{ width: `${pct}%` }} />
                                             </div>
-                                            <span className="text-xs text-muted-foreground w-4">{count}</span>
+                                            <div className="flex items-center justify-between mt-4 p-3 border rounded-lg bg-slate-50/50">
+                                                <div>
+                                                    <h4 className="font-semibold text-sm">استشارة فيديو</h4>
+                                                    <p className="text-xs text-muted-foreground mt-0.5">هل ترغب بأن يكون الموعد عبر مكالمة فيديو؟</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setIsVideo(!isVideo)}
+                                                    className={cn(
+                                                        "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                                                        isVideo ? "bg-primary" : "bg-gray-200"
+                                                    )}
+                                                >
+                                                    <span
+                                                        aria-hidden="true"
+                                                        className={cn(
+                                                            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                                                            isVideo ? "translate-x-5" : "translate-x-0"
+                                                        )}
+                                                    />
+                                                </button>
+                                            </div>
+                                            <div className="pt-2"><span className="text-xs text-muted-foreground w-4">{count}</span></div>
                                         </div>
                                     );
                                 })}

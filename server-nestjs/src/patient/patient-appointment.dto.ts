@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsInt, IsDateString, IsString, IsOptional } from 'class-validator';
+import { IsNotEmpty, IsInt, IsDateString, IsString, IsOptional, IsBoolean } from 'class-validator';
 
 export class CreatePatientAppointmentDto {
     @IsInt()
@@ -20,6 +20,14 @@ export class CreatePatientAppointmentDto {
     @IsOptional()
     @IsString()
     customerName?: string;
+
+    @IsOptional()
+    @IsBoolean()
+    isVideo?: boolean;
+
+    @IsOptional()
+    @IsString()
+    type?: string;
 }
 
 export class CancelAppointmentDto {

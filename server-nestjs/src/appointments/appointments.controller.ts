@@ -82,6 +82,25 @@ export class AppointmentsController {
         return this.appointmentsService.remove(id, req.user.id);
     }
 
+    // --- Video Call Endpoints ---
+    @Get(':id/video-token')
+    @ApiOperation({ summary: 'الحصول على رمز غرفة الفيديو' })
+    getVideoToken(@Param('id', ParseIntPipe) id: number, @Request() req) {
+        return this.appointmentsService.getVideoToken(id, req.user.id);
+    }
+
+    @Post(':id/video/start')
+    @ApiOperation({ summary: 'بدء مكالمة الفيديو' })
+    startVideoCall(@Param('id', ParseIntPipe) id: number, @Request() req) {
+        return this.appointmentsService.startVideoCall(id, req.user.id);
+    }
+
+    @Post(':id/video/end')
+    @ApiOperation({ summary: 'إنهاء مكالمة الفيديو' })
+    endVideoCall(@Param('id', ParseIntPipe) id: number, @Request() req) {
+        return this.appointmentsService.endVideoCall(id, req.user.id);
+    }
+
     @Get(':id/medical-record')
     @ApiOperation({ summary: 'جلب السجل الطبي لليوم', description: 'عرض التشخيص والعلاج المرتبط بهذا الموعد' })
     @ApiParam({ name: 'id', description: 'معرف الموعد' })

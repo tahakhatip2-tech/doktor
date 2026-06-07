@@ -23,7 +23,7 @@ import {
     Calendar, Clock, MapPin, Phone, Building2,
     FileText, X, Loader2, ArrowRight, CheckCircle2,
     AlertCircle, User, Stethoscope, Hash,
-    Download, Send, Pill, ChevronLeft
+    Download, Send, Pill, ChevronLeft, Video
 } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -270,6 +270,20 @@ export default function AppointmentDetail() {
                                 <span className="text-sm font-black text-orange-900">{format(apptDate, 'hh:mm a', { locale: ar })}</span>
                             </div>
                         </div>
+
+                        {/* Video Call Button */}
+                        {appointment.isVideo && appointment.status !== 'cancelled' && (
+                            <div className="mt-4">
+                                <Button
+                                    className="w-full bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20"
+                                    onClick={() => navigate(`/patient/appointments/${appointment.id}/video`)}
+                                    disabled={appointment.status === 'completed'}
+                                >
+                                    <Video className="h-5 w-5 ml-2" />
+                                    {appointment.status === 'completed' ? 'تمت الاستشارة عبر الفيديو' : 'انضم للمكالمة'}
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 </div>
 

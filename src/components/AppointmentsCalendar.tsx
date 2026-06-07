@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye, TestTube } from 'lucide-react';
+import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye, TestTube, Video } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toastWithSound } from '@/lib/toast-with-sound';
@@ -48,6 +48,7 @@ const typeConfig = {
     followup: 'متابعة',
     emergency: 'طارئ',
     general: 'عام',
+    'video-consultation': 'استشارة فيديو',
 };
 
 interface AppointmentsCalendarProps {
@@ -394,6 +395,13 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                                     <div className="h-4 w-px bg-slate-200" />
                                                     <div className="text-[10px] font-bold text-slate-600 flex items-center gap-2">
                                                         <span>{typeConfig[(appointment.type || appointment.appointment_type) as keyof typeof typeConfig] || 'عام'}</span>
+
+                                                        {appointment.isVideo && (
+                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[9px]">
+                                                                <Video className="h-3 w-3" />
+                                                                <span>مكالمة فيديو</span>
+                                                            </div>
+                                                        )}
 
                                                         {/* Source Indicator */}
                                                         {((appointment.notes || '').includes('[BOT]') || (appointment.notes || '').toLowerCase().includes('ai generated')) ? (

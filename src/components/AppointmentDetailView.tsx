@@ -26,7 +26,8 @@ import {
     FastForward,
     TestTube,
     Syringe,
-    Loader2
+    Loader2,
+    Video
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -58,6 +59,7 @@ const typeConfig = {
     followup: 'متابعة',
     emergency: 'طارئ',
     general: 'عام',
+    'video-consultation': 'استشارة فيديو',
 };
 
 export default function AppointmentDetailView({
@@ -296,6 +298,20 @@ export default function AppointmentDetailView({
                                         <p className="text-sm text-slate-700 leading-relaxed">
                                             {appointment.notes.replace('[BOT]', '').replace('AI Generated Appointment', '').trim() || 'لا توجد ملاحظات'}
                                         </p>
+                                    </div>
+                                )}
+
+                                {/* زر بدء مكالمة الفيديو */}
+                                {appointment.isVideo && appointment.status !== 'cancelled' && (
+                                    <div className="mt-4 pt-2 border-t border-slate-100">
+                                        <Button
+                                            className="w-full h-12 bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg shadow-emerald-500/20 rounded-xl text-lg font-bold gap-2"
+                                            onClick={() => window.open(`/#/appointments/${appointment.id}/video`, '_blank')}
+                                            disabled={appointment.status === 'completed'}
+                                        >
+                                            <Video className="h-6 w-6 ml-2" />
+                                            {appointment.status === 'completed' ? 'تمت الاستشارة' : 'بدء مكالمة الفيديو مع المريض'}
+                                        </Button>
                                     </div>
                                 )}
                             </div>

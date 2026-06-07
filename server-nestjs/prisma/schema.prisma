@@ -270,6 +270,10 @@ model Appointment {
   doctorId             Int?
   duration             Int                   @default(30)
   type                 String                @default("consultation")
+  isVideo              Boolean               @default(false)
+  videoRoomId          String?               @unique
+  videoStartedAt       DateTime?
+  videoEndedAt         DateTime?
   reminderSent         Boolean               @default(false)
   reminder24hSent      Boolean               @default(false)
   reminder1hSent       Boolean               @default(false)

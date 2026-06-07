@@ -55,10 +55,18 @@ export class CreateAppointmentDto {
     @ApiPropertyOptional({
         description: 'نوع الموعد',
         example: 'consultation',
-        enum: ['consultation', 'follow-up', 'emergency', 'checkup'],
+        enum: ['consultation', 'follow-up', 'emergency', 'checkup', 'video-consultation'],
         default: 'consultation',
     })
     type?: string;
+
+    @ApiPropertyOptional({
+        description: 'هل الموعد فيديو؟',
+        example: true,
+        type: 'boolean',
+        default: false,
+    })
+    isVideo?: boolean;
 }
 
 export class UpdateAppointmentDto {
@@ -117,11 +125,19 @@ export class UpdateAppointmentDto {
     @ApiPropertyOptional({
         description: 'نوع الموعد',
         example: 'follow-up',
-        enum: ['consultation', 'follow-up', 'emergency', 'checkup'],
+        enum: ['consultation', 'follow-up', 'emergency', 'checkup', 'video-consultation'],
     })
     @IsOptional()
     @IsString()
     type?: string;
+
+    @ApiPropertyOptional({
+        description: 'هل الموعد فيديو؟',
+        example: true,
+        type: 'boolean',
+    })
+    @IsOptional()
+    isVideo?: boolean;
 }
 
 export class UpdateProceduresDto {
