@@ -219,7 +219,7 @@ export class PatientService {
                 working_hours: true,
                 settings: {
                     where: {
-                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng'] },
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
                     },
                     select: { key: true, value: true },
                 },
@@ -242,10 +242,15 @@ export class PatientService {
                 const sumRating = totalReviews > 0 ? u.clinicReviews!.reduce((acc, curr) => acc + curr.rating, 0) : 0;
                 const avgRating = totalReviews > 0 ? +(sumRating / totalReviews).toFixed(1) : 0;
 
+                const working_hours = (settingsMap['working_hours_start'] && settingsMap['working_hours_end'])
+                    ? `${settingsMap['working_hours_start']} - ${settingsMap['working_hours_end']}`
+                    : u.working_hours;
+
                 return {
                     ...u,
                     settings: undefined,
                     clinicReviews: undefined,
+                    working_hours,
                     avgRating,
                     totalReviews,
                     clinic_name: resolvedClinicName,
@@ -280,7 +285,7 @@ export class PatientService {
                 working_hours: true,
                 settings: {
                     where: {
-                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng'] },
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
                     },
                     select: { key: true, value: true },
                 },
@@ -305,9 +310,14 @@ export class PatientService {
         const settingsMap: Record<string, string> = {};
         clinic.settings.forEach((s) => { settingsMap[s.key] = s.value; });
 
+        const working_hours = (settingsMap['working_hours_start'] && settingsMap['working_hours_end'])
+            ? `${settingsMap['working_hours_start']} - ${settingsMap['working_hours_end']}`
+            : clinic.working_hours;
+
         return {
             ...clinic,
             settings: undefined,
+            working_hours,
             clinic_name: settingsMap['clinic_name'] || clinic.clinic_name,
             clinic_specialty: settingsMap['clinic_specialty'] || clinic.clinic_specialty,
             clinic_logo: settingsMap['clinic_logo'] || null,

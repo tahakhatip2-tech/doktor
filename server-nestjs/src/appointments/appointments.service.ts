@@ -829,10 +829,28 @@ export class AppointmentsService {
     const appointment = await this.findOne(id, userId);
     if (!appointment.isVideo) throw new BadRequestException('Not a video appointment');
 
-    return this.prisma.appointment.update({
+    const updated = await this.prisma.appointment.update({
       where: { id },
       data: { videoStartedAt: new Date() },
+      include: { contact: true, user: true },
     });
+
+    // إرسال إشعار "مكالمة واردة" للمريض عبر Socket
+    // نستخدم patientUserId إذا توفر (مريض مسجل)
+    const targetPatientId = updated.patientUserId;
+    if (targetPatientId) {
+      const doctorName = updated.user?.name || 'الطبيب';
+      this.notificationsGateway.sendNotificationToPatient(targetPatientId, {
+        type: 'incoming_video_call',
+        appointmentId: id,
+        doctorName,
+        videoRoomId: updated.videoRoomId,
+        message: 'لديك مكالمة فيديو واردة من الطبيب',
+      });
+      console.log(`[Video] Incoming call notification sent to patient ${targetPatientId} for appointment ${id}`);
+    }
+
+    return updated;
   }
 
   async endVideoCall(id: number, userId: number) {

@@ -119,30 +119,38 @@ const CATEGORIES: Category[] = [
 ];
 
 // ─── Gemini API ────────────────────────────────────────────────────────────────
-const DEEPSEEK_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '';
-const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
 
-async function callDeepSeek(turns: { role: string; content: string }[]): Promise<string> {
-    if (!DEEPSEEK_KEY) throw new Error('مفتاح API غير موجود. يرجى إضافة VITE_DEEPSEEK_API_KEY في منصة الاستضافة');
-    const res = await fetch(DEEPSEEK_URL, {
+async function callGemini(turns: { role: string; content: string }[]): Promise<string> {
+    if (!GEMINI_KEY) throw new Error('مفتاح API غير موجود. يرجى إضافة VITE_GEMINI_API_KEY في منصة الاستضافة');
+    
+    // Convert standard OpenAI roles to Gemini roles
+    const geminiContents = turns.map(t => {
+        let role = t.role === 'assistant' ? 'model' : 'user';
+        return {
+            role,
+            parts: [{ text: t.content }]
+        };
+    });
+
+    const res = await fetch(GEMINI_URL, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${DEEPSEEK_KEY}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: 'deepseek-chat',
-            messages: turns,
-            temperature: 0.7,
-            max_tokens: 2048,
+            contents: geminiContents,
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 2048,
+            },
         }),
     });
+    
     if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err?.error?.message || `HTTP ${res.status}`);
+        throw new Error('حدث خطأ في الاتصال بالذكاء الاصطناعي.');
     }
     const data = await res.json();
-    return data?.choices?.[0]?.message?.content ?? '';
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
 // ─── Parse AI response for action blocks ──────────────────────────────────────
@@ -494,7 +502,7 @@ ${allApptSample}
                 { role: 'user', content: text.trim() },
             ];
 
-            const raw = await callDeepSeek(turns as any);
+            const raw = await callGemini(turns as any);
             const { displayText, action } = parseActionBlock(raw);
 
             // Extract quick replies suggestion from display text (lines starting with "🔹")

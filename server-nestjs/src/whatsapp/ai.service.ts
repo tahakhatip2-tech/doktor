@@ -35,7 +35,7 @@ export class AiService {
             const aiEnabled = aiEnabledVal === undefined || aiEnabledVal === '1' || aiEnabledVal === 'true';
 
             // Use per-user key from DB if set, otherwise fall back to the central ENV key
-            const apiKey = getSetting('ai_api_key') || process.env.DEEPSEEK_API_KEY;
+            const apiKey = getSetting('ai_api_key') || process.env.GEMINI_API_KEY;
 
             if (!aiEnabled) {
                 console.log('[AI Debug] AI Stopped: Disabled by user setting');
@@ -43,7 +43,7 @@ export class AiService {
             }
 
             if (!apiKey) {
-                console.error('[AI Error] No API key found. Set DEEPSEEK_API_KEY in .env file.');
+                console.error('[AI Error] No API key found. Set GEMINI_API_KEY in .env file.');
                 return null;
             }
 
@@ -130,54 +130,63 @@ ${getSetting('ai_system_instruction')}
                     const history = await this.prisma.whatsAppMessage.findMany({
                         where: { chatId: chat.id },
                         orderBy: { timestamp: 'desc' },
-                        take: 10, // Increased context window
+                        take: 10,
                     });
                     historyStr = history.reverse().map(h => `${h.fromMe ? 'Secretary' : 'Patient'}: ${h.content}`).join('\n');
                 }
             }
 
-            const url = 'https://api.deepseek.com/v1/chat/completions';
+            // 6. Build parts for Gemini
+            const parts: any[] = [];
 
-            let userPrompt = `تاريخ اليوم: ${new Date().toLocaleString('ar-JO')}\n\nالسجل السابق:\n${historyStr}\n\nالرسالة الجديدة:\n${userMessage || '(رسالة فارغة)'}`;
-
-            // DeepSeek text model doesn't support direct audio file upload like Gemini 1.5 Pro
+            // Add audio if available (Gemini 1.5 Pro supports audio natively)
             if (audioFilePath && fs.existsSync(audioFilePath)) {
-                userPrompt += '\n\n(ملاحظة هامة للنظام: لقد أرسل المريض رسالة صوتية، ولكن نظام DeepSeek لا يدعم سماع الصوت حالياً. اعتذر منه بلطف واطلب منه كتابة طلبه نصياً أو تسجيل موعد عبر التطبيق.)';
+                const audioData = fs.readFileSync(audioFilePath);
+                const base64Audio = audioData.toString('base64');
+                parts.push({
+                    inlineData: {
+                        mimeType: 'audio/ogg',
+                        data: base64Audio,
+                    }
+                });
+                parts.push({ text: 'هذه رسالة صوتية من المريض. افهمها ورد عليها وفق بروتوكولاتك.' });
+            } else {
+                const userPrompt = `تاريخ اليوم: ${new Date().toLocaleString('ar-JO')}\n\nالسجل السابق:\n${historyStr}\n\nالرسالة الجديدة:\n${userMessage || '(رسالة فارغة)'}`;
+                parts.push({ text: userPrompt });
             }
 
+            // 7. Call Gemini API
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+
             const requestBody = {
-                model: 'deepseek-chat',
-                messages: [
-                    { role: 'system', content: systemInstruction },
-                    { role: 'user', content: userPrompt }
-                ],
-                temperature: 0.3,
-                max_tokens: 1000
+                system_instruction: { parts: [{ text: systemInstruction }] },
+                contents: [{ role: 'user', parts }],
+                generationConfig: {
+                    temperature: 0.3,
+                    maxOutputTokens: 1000,
+                }
             };
 
-            const response = await fetch(url, {
+            const response = await fetch(geminiUrl, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestBody)
             });
 
             const data: any = await response.json();
 
             if (data.error) {
-                console.error(`[AI Error] DeepSeek:`, data.error.message);
+                console.error(`[AI Error] Gemini:`, data.error.message);
                 return null;
             }
 
-            const text = data.choices?.[0]?.message?.content;
+            const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
             if (text) {
-                console.log(`[AI] Responded using DeepSeek`);
+                console.log(`[AI] Responded using Gemini`);
                 return text.trim();
             }
 
-            console.error('[AI] Failed to get response from DeepSeek.');
+            console.error('[AI] Failed to get response from Gemini.');
             return null;
 
         } catch (err) {
@@ -215,4 +224,3 @@ ${getSetting('ai_system_instruction')}
         return this.getAIResponse(userId, prompt, undefined, 'نظام السجلات الطبية');
     }
 }
-

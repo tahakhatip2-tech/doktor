@@ -30,6 +30,7 @@ import { cn } from '@/lib/utils';
 import axios from 'axios';
 import Footer from '@/components/Footer';
 import PatientAIAssistant from '@/components/PatientAIAssistant';
+import IncomingCallOverlay from '@/components/IncomingCallOverlay';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:3000';
@@ -46,6 +47,12 @@ export default function PatientLayout() {
     const { patient, signOut, loading, token } = usePatientAuth(true);
     const [unreadCount, setUnreadCount] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [incomingCall, setIncomingCall] = useState<{
+        appointmentId: number;
+        doctorName: string;
+        videoRoomId: string;
+        message: string;
+    } | null>(null);
 
     const { unreadCount: msgCount, setUnreadCount: setMsgCount, lastConversationId, refetch: refetchMsgs } = usePatientUnreadMessages();
 
@@ -54,7 +61,10 @@ export default function PatientLayout() {
         () => { fetchUnreadCount(); },
         useCallback(() => {
             setMsgCount(prev => prev + 1);
-        }, [setMsgCount])
+        }, [setMsgCount]),
+        useCallback((callData) => {
+            setIncomingCall(callData);
+        }, [])
     );
 
     useEffect(() => {
@@ -434,6 +444,12 @@ export default function PatientLayout() {
 
             {/* AI Assistant for Patient */}
             <PatientAIAssistant />
+
+            {/* Incoming Video Call Overlay */}
+            <IncomingCallOverlay
+                call={incomingCall}
+                onDismiss={() => setIncomingCall(null)}
+            />
         </div>
     );
 }

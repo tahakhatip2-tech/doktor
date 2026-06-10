@@ -8,7 +8,11 @@ import { usePatientAuth } from './usePatientAuth';
  * يتصل تلقائياً عند تسجيل دخول المريض
  * يستمع لحدث 'patient_notification' ويعرض Toast فورياً
  */
-export function usePatientSocketNotifications(onNewNotification?: () => void, onNewMessage?: () => void) {
+export function usePatientSocketNotifications(
+    onNewNotification?: () => void,
+    onNewMessage?: () => void,
+    onIncomingVideoCall?: (data: { appointmentId: number; doctorName: string; videoRoomId: string; message: string }) => void
+) {
     const { patient, token } = usePatientAuth(false);
     const socketRef = useRef<Socket | null>(null);
 
@@ -52,7 +56,19 @@ export function usePatientSocketNotifications(onNewNotification?: () => void, on
             console.log('[PatientSocket] New notification:', notification);
             showPatientToast(notification);
             playNotificationSound();
-            if (onNewNotification) onNewNotification();
+            // Handle incoming video call separately
+            if (notification.type === 'incoming_video_call') {
+                if (onIncomingVideoCall) {
+                    onIncomingVideoCall({
+                        appointmentId: notification.appointmentId,
+                        doctorName: notification.doctorName || 'الطبيب',
+                        videoRoomId: notification.videoRoomId,
+                        message: notification.message || 'لديك مكالمة فيديو واردة',
+                    });
+                }
+            } else {
+                if (onNewNotification) onNewNotification();
+            }
         });
 
         // ── رسائل الدردشة الداخلية للمريض ──
@@ -82,7 +98,7 @@ export function usePatientSocketNotifications(onNewNotification?: () => void, on
                 socketRef.current = null;
             }
         };
-    }, [patient, token, onNewNotification, onNewMessage]);
+    }, [patient, token, onNewNotification, onNewMessage, onIncomingVideoCall]);
 }
 
 function showPatientToast(notification: any) {

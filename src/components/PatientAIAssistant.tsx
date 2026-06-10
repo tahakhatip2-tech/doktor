@@ -59,29 +59,39 @@ const CATEGORIES: Category[] = [
 ];
 
 // ─── Gemini API ────────────────────────────────────────────────────────────────
-const DEEPSEEK_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY || import.meta.env.VITE_GEMINI_API_KEY || '';
-const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
+const GEMINI_KEY = import.meta.env.VITE_GEMINI_API_KEY || '';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`;
 
-async function callDeepSeek(turns: { role: string; content: string }[]): Promise<string> {
-    if (!DEEPSEEK_KEY) throw new Error('عذراً، خدمة الذكاء الاصطناعي غير متوفرة حالياً.');
-    const res = await fetch(DEEPSEEK_URL, {
+async function callGemini(turns: { role: string; content: string }[]): Promise<string> {
+    if (!GEMINI_KEY) throw new Error('عذراً، خدمة الذكاء الاصطناعي غير متوفرة حالياً.');
+
+    // Convert standard OpenAI roles to Gemini roles
+    const geminiContents = turns.map(t => {
+        // 'system' is generally handled at the request level, but here we'll map 'system' to 'user' for simplicity if it's in the messages array
+        let role = t.role === 'assistant' ? 'model' : 'user';
+        return {
+            role,
+            parts: [{ text: t.content }]
+        };
+    });
+
+    const res = await fetch(GEMINI_URL, {
         method: 'POST',
-        headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${DEEPSEEK_KEY}`
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            model: 'deepseek-chat',
-            messages: turns,
-            temperature: 0.6,
-            max_tokens: 1024,
+            contents: geminiContents,
+            generationConfig: {
+                temperature: 0.6,
+                maxOutputTokens: 1024,
+            },
         }),
     });
+    
     if (!res.ok) {
         throw new Error('حدث خطأ في الاتصال بالسيرفر.');
     }
     const data = await res.json();
-    return data?.choices?.[0]?.message?.content ?? '';
+    return data?.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
@@ -182,7 +192,7 @@ export default function PatientAIAssistant() {
                 { role: 'user', content: text.trim() },
             ];
 
-            const rawText = await callDeepSeek(turns as any);
+            const rawText = await callGemini(turns as any);
             
             const quickReplies: string[] = [];
             const cleanText = rawText.replace(/^🔹\s*.+$/gm, (line) => {
