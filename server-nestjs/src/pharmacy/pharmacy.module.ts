@@ -5,6 +5,7 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { SupabaseService } from '../storage/supabase.service';
 import { InternalChatModule } from '../internal-chat/internal-chat.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { InternalChatModule } from '../internal-chat/internal-chat.module';
       signOptions: { expiresIn: '7d' },
     }),
     InternalChatModule,
+    NotificationsModule,
   ],
   controllers: [PharmacyController],
   providers: [PharmacyService, SupabaseService],

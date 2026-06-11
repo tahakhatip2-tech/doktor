@@ -296,6 +296,7 @@ export class PatientAppointmentService {
                                 clinic_specialty: true,
                             },
                         },
+                        prescriptions: true,
                     },
                 },
             },

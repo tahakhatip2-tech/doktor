@@ -10,6 +10,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
+import { NotificationsGateway } from '../notifications/notifications.gateway';
 
 @Injectable()
 export class PharmacyService {
@@ -18,6 +19,7 @@ export class PharmacyService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private notificationsGateway: NotificationsGateway,
   ) {}
 
   async register(data: any) {
@@ -154,6 +156,34 @@ export class PharmacyService {
     });
   }
 
+  async getPrescriptionById(pharmacyId: number, prescriptionId: number) {
+    const prescription = await this.prisma.prescription.findFirst({
+      where: { id: prescriptionId, pharmacyId },
+      include: {
+        patient: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+            gender: true,
+          },
+        },
+        doctor: {
+          select: {
+            id: true,
+            name: true,
+            clinic_name: true,
+          },
+        },
+      },
+    });
+
+    if (!prescription) {
+      throw new NotFoundException('الوصفة غير موجودة');
+    }
+    return prescription;
+  }
+
   async dispensePrescription(pharmacyId: number, prescriptionId: number) {
     const prescription = await this.prisma.prescription.findFirst({
       where: { id: prescriptionId, pharmacyId },
@@ -163,13 +193,25 @@ export class PharmacyService {
       throw new NotFoundException('الوصفة غير موجودة');
     }
 
-    return this.prisma.prescription.update({
+    const updated = await this.prisma.prescription.update({
       where: { id: prescriptionId },
       data: {
         status: 'DISPENSED',
         dispensedAt: new Date(),
       },
+      include: {
+        pharmacy: true,
+      }
     });
+
+    // Notify patient via Socket
+    this.notificationsGateway.sendNotificationToPatient(updated.patientId, {
+      type: 'prescription_dispensed',
+      title: 'تم صرف وصفتك الطبية',
+      message: `تم صرف وصفتك الطبية بنجاح من صيدلية ${updated.pharmacy?.clinic_name || updated.pharmacy?.name || 'مجهولة'}.`,
+    });
+
+    return updated;
   }
 
   async getSettings(pharmacyId: number) {

@@ -7,6 +7,7 @@ import { Pill, CheckCircle2, Clock, Calendar, Search, Loader2 } from 'lucide-rea
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import QRScannerDialog from '@/components/pharmacy/QRScannerDialog';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -16,6 +17,7 @@ export default function PharmacyDashboard() {
     const [prescriptions, setPrescriptions] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [dispensingId, setDispensingId] = useState<number | null>(null);
+    const [isScannerOpen, setIsScannerOpen] = useState(false);
 
     const fetchDashboardData = async () => {
         try {
@@ -72,7 +74,16 @@ export default function PharmacyDashboard() {
 
     return (
         <div className="space-y-6" dir="rtl">
-            <h1 className="text-2xl font-bold text-slate-800">لوحة التحكم</h1>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h1 className="text-2xl font-bold text-slate-800">لوحة التحكم</h1>
+                <Button 
+                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 gap-2 h-11 px-6 rounded-xl"
+                    onClick={() => setIsScannerOpen(true)}
+                >
+                    <Search className="h-5 w-5" />
+                    مسح وصفة (QR)
+                </Button>
+            </div>
 
             {/* إحصائيات */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -202,6 +213,12 @@ export default function PharmacyDashboard() {
                     )}
                 </CardContent>
             </Card>
+
+            <QRScannerDialog 
+                isOpen={isScannerOpen} 
+                onClose={() => setIsScannerOpen(false)} 
+                onDispenseSuccess={fetchDashboardData}
+            />
         </div>
     );
 }

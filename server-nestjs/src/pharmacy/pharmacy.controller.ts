@@ -60,6 +60,11 @@ export class PharmacyController {
     return this.pharmacyService.getPrescriptions(req.user.id, status);
   }
 
+  @Get('prescriptions/:id')
+  async getPrescriptionById(@Request() req, @Param('id') id: string) {
+    return this.pharmacyService.getPrescriptionById(req.user.id, parseInt(id));
+  }
+
   @UseGuards(JwtAuthGuard)
   @Patch('prescriptions/:id/dispense')
   async dispensePrescription(@Request() req, @Param('id') id: string) {

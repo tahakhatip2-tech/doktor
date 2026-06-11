@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
+import { QRCodeSVG } from 'qrcode.react';
 import PatientHero from '@/components/patient/PatientHero';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -48,6 +49,10 @@ interface MedicalRecord {
         customerName: string;
         status: string;
         doctor?: { name: string; clinic_name: string; clinic_specialty: string };
+        prescriptions?: Array<{
+            id: number;
+            status: string;
+        }>;
     };
 }
 
@@ -282,6 +287,30 @@ export default function PatientMedicalRecords() {
                                                             </div>
                                                         ))}
                                                     </div>
+                                                    
+                                                    {/* QR Code Section for Pharmacy */}
+                                                    {record.appointment?.prescriptions && record.appointment.prescriptions.length > 0 && (
+                                                        <div className="mt-6 flex flex-col items-center p-4 bg-white border-2 border-dashed border-blue-200 rounded-2xl">
+                                                            <p className="text-sm font-bold text-blue-800 mb-2">رمز صرف الوصفة للصيدلية</p>
+                                                            <div className="p-2 bg-white rounded-xl shadow-sm border border-slate-100">
+                                                                <QRCodeSVG 
+                                                                    value={record.appointment.prescriptions[0].id.toString()} 
+                                                                    size={150}
+                                                                    level="H"
+                                                                />
+                                                            </div>
+                                                            <p className="text-[11px] text-slate-500 font-medium mt-3 text-center">
+                                                                أظهر هذا الرمز للصيدلاني ليتمكن من صرف الوصفة فوراً
+                                                            </p>
+                                                            <div className={`mt-2 px-3 py-1 rounded-full text-[10px] font-bold ${
+                                                                record.appointment.prescriptions[0].status === 'DISPENSED' 
+                                                                    ? 'bg-green-100 text-green-700' 
+                                                                    : 'bg-yellow-100 text-yellow-700'
+                                                            }`}>
+                                                                {record.appointment.prescriptions[0].status === 'DISPENSED' ? 'تم الصرف' : 'بانتظار الصرف'}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                             {record.treatment && (
