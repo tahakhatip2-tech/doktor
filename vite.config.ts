@@ -28,6 +28,7 @@ export default defineConfig({
         enabled: true, // Enable PWA in development for testing
       },
       workbox: {
+        maximumFileSizeToCacheInBytes: 5000000,
         cleanupOutdatedCaches: true,
         skipWaiting: true,
         clientsClaim: true,
