@@ -58,7 +58,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const Index = () => {
     const navigate = useNavigate();
     const { user, loading: authLoading, signOut } = useAuth();
-    const { activeDoctor } = useActiveDoctor();
+    const { activeDoctor, openLoginModal } = useActiveDoctor();
     const [activeTab, setActiveTab] = useState("dashboard");
     const [selectedPhone, setSelectedPhone] = useState<string | null>(null);
     const [selectedName, setSelectedName] = useState<string | null>(null);
@@ -151,6 +151,17 @@ const Index = () => {
             navigate("/auth");
         }
     }, [user, authLoading, navigate]);
+
+    // Show Staff Login Modal only inside Doctor System on first load
+    useEffect(() => {
+        if (!authLoading && user) {
+            const sessionStarted = sessionStorage.getItem('clinic_session_started');
+            if (!sessionStarted) {
+                openLoginModal();
+                sessionStorage.setItem('clinic_session_started', '1');
+            }
+        }
+    }, [user, authLoading, openLoginModal]);
 
     // Enforce RBAC for activeTab
     useEffect(() => {

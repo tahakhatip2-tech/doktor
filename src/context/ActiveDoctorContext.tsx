@@ -45,13 +45,6 @@ export function ActiveDoctorProvider({ children }: { children: React.ReactNode }
             } catch {
                 sessionStorage.removeItem(SESSION_KEY);
             }
-        } else {
-            // أول فتح للنظام في هذه الجلسة — اعرض المودال
-            const sessionStarted = sessionStorage.getItem('clinic_session_started');
-            if (!sessionStarted) {
-                setShowLoginModal(true);
-                sessionStorage.setItem('clinic_session_started', '1');
-            }
         }
     }, []);
 
