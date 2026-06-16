@@ -18,8 +18,8 @@ export class SupabaseService {
         // Only initialise if both values are present and look real (not dummy)
         if (supabaseUrl && supabaseKey && !supabaseKey.includes('dummy')) {
             this.supabase = createClient(supabaseUrl, supabaseKey, {
-                global: {
-                    WebSocket: WebSocket,
+                realtime: {
+                    transport: WebSocket as any,
                 },
             });
         } else {
