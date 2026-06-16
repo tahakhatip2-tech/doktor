@@ -857,14 +857,55 @@ export class AppointmentsService {
     const appointment = await this.findOne(id, userId);
     if (!appointment.isVideo) throw new BadRequestException('Not a video appointment');
 
+    // Only record end time — do NOT auto-complete the appointment
+    // The doctor will complete it via completeVideoConsultation() after writing the prescription
     return this.prisma.appointment.update({
       where: { id },
-      data: { 
+      data: {
         videoEndedAt: new Date(),
-        status: 'completed',
       },
     });
   }
+
+  async completeVideoConsultation(id: number, userId: number, prescriptionData?: any) {
+    const appointment = await this.findOne(id, userId);
+    if (!appointment.isVideo) throw new BadRequestException('Not a video appointment');
+
+    // If prescription data is provided, save it first
+    if (prescriptionData && (prescriptionData.diagnosis || prescriptionData.medications?.length)) {
+      await this.saveMedicalRecord(id, userId, {
+        ...prescriptionData,
+        recordType: prescriptionData.recordType || 'prescription',
+      });
+    } else {
+      // Just mark as completed without a record
+      await this.prisma.appointment.update({
+        where: { id },
+        data: { status: 'completed' },
+      });
+    }
+
+    // Notify patient
+    const updated = await this.prisma.appointment.findFirst({
+      where: { id },
+      include: { contact: true },
+    });
+
+    if (updated?.patientUserId) {
+      this.notificationsGateway.sendNotificationToPatient(updated.patientUserId, {
+        type: 'VIDEO_CONSULTATION_COMPLETED',
+        title: '✅ انتهت جلسة الاستشارة',
+        message: prescriptionData?.diagnosis
+          ? 'تم إنهاء الاستشارة وحفظ الوصفة الطبية — يمكنك مراجعتها في ملفك الطبي'
+          : 'تم إنهاء جلسة الاستشارة بنجاح',
+        appointmentId: id,
+        created_at: new Date(),
+      });
+    }
+
+    return updated;
+  }
+
 
   async isSlotAvailable(
     userId: number,

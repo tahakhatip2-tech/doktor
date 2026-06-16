@@ -96,9 +96,27 @@ export class AppointmentsController {
     }
 
     @Post(':id/video/end')
-    @ApiOperation({ summary: 'إنهاء مكالمة الفيديو' })
+    @ApiOperation({ summary: 'إنهاء مكالمة الفيديو (تسجيل الوقت فقط)' })
     endVideoCall(@Param('id', ParseIntPipe) id: number, @Request() req) {
         return this.appointmentsService.endVideoCall(id, req.user.id);
+    }
+
+    @Post(':id/video/complete')
+    @ApiOperation({ summary: 'إتمام الاستشارة بعد الفيديو مع حفظ الوصفة' })
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                diagnosis: { type: 'string', description: 'التشخيص' },
+                treatment: { type: 'string', description: 'خطة العلاج' },
+                medications: { type: 'array', description: 'الأدوية الموصوفة' },
+                sickLeaveDays: { type: 'number', description: 'أيام الإجازة المرضية (اختياري)' },
+                feeAmount: { type: 'number', description: 'قيمة الكشف (اختياري)' },
+            }
+        }
+    })
+    completeVideoConsultation(@Param('id', ParseIntPipe) id: number, @Request() req, @Body() data: any) {
+        return this.appointmentsService.completeVideoConsultation(id, req.user.id, data);
     }
 
     @Get(':id/medical-record')

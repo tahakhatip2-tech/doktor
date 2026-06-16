@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,7 +23,7 @@ import {
     Calendar, Clock, MapPin, Phone, Building2,
     FileText, X, Loader2, ArrowRight, CheckCircle2,
     AlertCircle, User, Stethoscope, Hash,
-    Download, Send, Pill, ChevronLeft, Video
+    Download, Send, Pill, ChevronLeft, Video, Upload
 } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
@@ -57,6 +57,8 @@ export default function AppointmentDetail() {
     const [pharmaciesLoading, setPharmaciesLoading] = useState(false);
     const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<number | null>(null);
     const [sendingPrescription, setSendingPrescription] = useState(false);
+    const [uploadingFile, setUploadingFile] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -170,6 +172,26 @@ export default function AppointmentDetail() {
             toast({ variant: 'destructive', title: 'خطأ', description: err.response?.data?.message || 'حدث خطأ أثناء الإلغاء' });
         } finally {
             setCancelLoading(false);
+        }
+    };
+
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setUploadingFile(true);
+        try {
+            const token = localStorage.getItem('patient_token');
+            const fd = new FormData();
+            fd.append('file', file);
+            await axios.post(`${API_URL}/patient/appointments/${id}/upload-file`, fd, {
+                headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'multipart/form-data' }
+            });
+            toast({ title: '✅ تم الرفع', description: 'تم رفع الملف بنجاح' });
+            fetchAppointment();
+        } catch {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'فشل رفع الملف' });
+        } finally {
+            setUploadingFile(false);
         }
     };
 
@@ -345,6 +367,47 @@ export default function AppointmentDetail() {
                         </div>
                     </div>
                 )}
+
+                {/* ── 3.5. Patient Uploaded Files ── */}
+                <div className="bg-white rounded-2xl border border-slate-100 shadow-[0_8px_30px_rgba(0,0,0,0.03)] p-4 sm:p-5">
+                    <div className="flex items-center justify-between mb-3">
+                        <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                            <Upload className="h-4 w-4 text-slate-300" /> المرفقات والتحاليل
+                        </h2>
+                        <input type="file" ref={fileInputRef} onChange={handleFileUpload} className="hidden" accept="image/*,.pdf,.doc,.docx" />
+                        <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingFile} className="h-8 rounded-lg text-xs font-bold text-blue-600 border-blue-200 bg-blue-50 hover:bg-blue-100">
+                            {uploadingFile ? <Loader2 className="h-3 w-3 animate-spin ml-1" /> : <Upload className="h-3 w-3 ml-1" />}
+                            رفع ملف
+                        </Button>
+                    </div>
+                    
+                    {(() => {
+                        let files = [];
+                        try {
+                            if (appointment.patientFiles) files = JSON.parse(appointment.patientFiles);
+                        } catch {}
+                        if (files.length === 0) {
+                            return <p className="text-xs text-slate-400 font-medium text-center py-2">لا توجد ملفات مرفوعة</p>;
+                        }
+                        return (
+                            <div className="space-y-2 mt-2">
+                                {files.map((f: any, i: number) => {
+                                    const fileUrl = f.url.startsWith('http') ? f.url : `${BASE_URL}${f.url}`;
+                                    return (
+                                        <a key={i} href={fileUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-xl p-2.5 hover:bg-slate-100 transition-colors">
+                                            <div className="h-8 w-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                <FileText className="h-4 w-4" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-sm font-bold text-slate-700 truncate">{f.name}</p>
+                                            </div>
+                                        </a>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })()}
+                </div>
 
                 {/* ── 4. Medical Documents (Prescription, Sick Leave, Referral) ── */}
                 {appointment.medicalRecords?.length > 0 && (

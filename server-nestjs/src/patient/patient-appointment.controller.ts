@@ -1,4 +1,8 @@
-import { Controller, Post, Get, Delete, Body, UseGuards, Request, Param, ParseIntPipe, Query } from '@nestjs/common';
+import { Controller, Post, Get, Delete, Body, UseGuards, Request, Param, ParseIntPipe, Query, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import * as fs from 'fs';
 import { PatientAppointmentService } from './patient-appointment.service';
 import { AppointmentsService } from '../appointments/appointments.service';
 import { CreatePatientAppointmentDto, CancelAppointmentDto } from './patient-appointment.dto';
@@ -64,5 +68,28 @@ export class PatientAppointmentController {
     @Get(':id/video-token')
     async getVideoToken(@Request() req, @Param('id', ParseIntPipe) id: number) {
         return this.appointmentService.getVideoToken(req.user.id, id);
+    }
+
+    @Post(':id/upload-file')
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: (req, file, cb) => {
+                const dir = './uploads/patient-files';
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                cb(null, dir);
+            },
+            filename: (req, file, cb) => {
+                const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('');
+                cb(null, `${randomName}${extname(file.originalname)}`);
+            }
+        })
+    }))
+    async uploadFile(
+        @Request() req,
+        @Param('id', ParseIntPipe) id: number,
+        @UploadedFile() file: Express.Multer.File
+    ) {
+        const fileUrl = `/uploads/patient-files/${file.filename}`;
+        return this.appointmentService.uploadPatientFile(req.user.id, id, fileUrl, file.originalname);
     }
 }

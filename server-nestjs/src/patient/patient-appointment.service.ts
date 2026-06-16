@@ -365,4 +365,26 @@ export class PatientAppointmentService {
 
         return { videoRoomId: appointment.videoRoomId };
     }
+
+    async uploadPatientFile(patientId: number, appointmentId: number, fileUrl: string, fileName: string) {
+        const appointment = await this.prisma.appointment.findFirst({
+            where: { id: appointmentId, patientUserId: patientId }
+        });
+
+        if (!appointment) throw new NotFoundException('الموعد غير موجود');
+
+        let currentFiles = [];
+        if (appointment.patientFiles) {
+            try { currentFiles = JSON.parse(appointment.patientFiles); } catch (e) {}
+        }
+        
+        currentFiles.push({ name: fileName, url: fileUrl, uploadedAt: new Date() });
+
+        await this.prisma.appointment.update({
+            where: { id: appointmentId },
+            data: { patientFiles: JSON.stringify(currentFiles) }
+        });
+
+        return { success: true, url: fileUrl };
+    }
 }

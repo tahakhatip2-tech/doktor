@@ -294,6 +294,7 @@ model Appointment {
   prescriptions        Prescription[]
   initialTests         String?
   medicalProcedures    String?
+  patientFiles         String?
 }
 
 model TelegramChat {
