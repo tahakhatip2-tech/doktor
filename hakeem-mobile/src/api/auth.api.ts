@@ -29,3 +29,22 @@ export const doctorAuthApi = {
   getMe: () =>
     apiClient.get('/auth/me'),
 };
+
+// ============================
+// Pharmacy Auth API
+// ============================
+export interface LoginPharmacyDto {
+  email: string;
+  password: string;
+}
+
+export const pharmacyAuthApi = {
+  login: (dto: LoginPharmacyDto) =>
+    apiClient.post('/pharmacy/auth/login', dto),
+
+  getProfile: () =>
+    apiClient.get('/pharmacy/profile'),
+
+  updateProfile: (dto: any) =>
+    apiClient.put('/pharmacy/profile', dto),
+};

@@ -4,6 +4,8 @@ const PATIENT_TOKEN_KEY = 'patient_token';
 const PATIENT_USER_KEY = 'patient_user';
 const DOCTOR_TOKEN_KEY = 'doctor_token';
 const DOCTOR_USER_KEY = 'doctor_user';
+const PHARMACY_TOKEN_KEY = 'pharmacy_token';
+const PHARMACY_USER_KEY = 'pharmacy_user';
 
 // Patient Auth
 export const setPatientToken = (token: string) =>
@@ -47,6 +49,27 @@ export const getDoctorUser = async () => {
 export const removeDoctorUser = () =>
   SecureStore.deleteItemAsync(DOCTOR_USER_KEY);
 
+// Pharmacy Auth
+export const setPharmacyToken = (token: string) =>
+  SecureStore.setItemAsync(PHARMACY_TOKEN_KEY, token);
+
+export const getPharmacyToken = () =>
+  SecureStore.getItemAsync(PHARMACY_TOKEN_KEY);
+
+export const removePharmacyToken = () =>
+  SecureStore.deleteItemAsync(PHARMACY_TOKEN_KEY);
+
+export const setPharmacyUser = (user: object) =>
+  SecureStore.setItemAsync(PHARMACY_USER_KEY, JSON.stringify(user));
+
+export const getPharmacyUser = async () => {
+  const raw = await SecureStore.getItemAsync(PHARMACY_USER_KEY);
+  return raw ? JSON.parse(raw) : null;
+};
+
+export const removePharmacyUser = () =>
+  SecureStore.deleteItemAsync(PHARMACY_USER_KEY);
+
 // Clear all
 export const clearAllStorage = async () => {
   await Promise.all([
@@ -54,5 +77,7 @@ export const clearAllStorage = async () => {
     removePatientUser(),
     removeDoctorToken(),
     removeDoctorUser(),
+    removePharmacyToken(),
+    removePharmacyUser(),
   ]);
 };

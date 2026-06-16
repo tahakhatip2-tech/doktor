@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
@@ -8,6 +8,7 @@ import * as z from 'zod';
 import { doctorAuthApi } from '../../src/api/auth.api';
 import { useAuthStore } from '../../src/store/auth.store';
 import { getErrorMessage } from '../../src/api/client';
+import { colors } from '../../src/theme/colors';
 
 const loginSchema = z.object({
   email: z.string().email('البريد الإلكتروني غير صالح').min(1, 'البريد الإلكتروني مطلوب'),
@@ -29,16 +30,14 @@ export default function DoctorLoginScreen() {
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     try {
-      // إرسال الطلب للـ API
       const response = await doctorAuthApi.login(data);
       const token = response.data?.token || response.data?.session?.access_token;
       const user = response.data?.user;
 
       if (token && user) {
         await loginAsDoctor(token, user);
-        // التوجيه سيتم تلقائياً عبر AuthGuard في _layout.tsx
       } else {
-         Alert.alert('خطأ', 'بيانات الدخول غير مكتملة');
+        Alert.alert('خطأ', 'بيانات الدخول غير مكتملة');
       }
     } catch (error) {
       Alert.alert('خطأ في تسجيل الدخول', getErrorMessage(error));
@@ -48,42 +47,33 @@ export default function DoctorLoginScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
-        className="flex-1"
-      >
-        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }}>
-          
-          <TouchableOpacity onPress={() => router.back()} className="absolute top-12 left-6 z-10 p-2">
-            <Text className="text-secondary text-base font-bold" style={{ fontFamily: 'Cairo-Bold' }}>عودة ➔</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={[styles.backText, { fontFamily: 'Cairo-Bold' }]}>عودة ➔</Text>
           </TouchableOpacity>
 
-          <View className="mb-10 items-center">
-            <View className="w-20 h-20 bg-primary/20 rounded-2xl items-center justify-center mb-4">
-               <Text className="text-3xl">👨‍⚕️</Text>
+          <View style={styles.headerContainer}>
+            <View style={styles.iconContainer}>
+              <Text style={{ fontSize: 32 }}>👨‍⚕️</Text>
             </View>
-            <Text className="text-3xl font-bold text-textMain text-center mb-2" style={{ fontFamily: 'Cairo-Bold' }}>
-              دخول العيادات
-            </Text>
-            <Text className="text-base text-textSecondary text-center" style={{ fontFamily: 'Cairo-Regular' }}>
-              أدخل بيانات حسابك للوصول لنظام حكيم
-            </Text>
+            <Text style={[styles.title, { fontFamily: 'Cairo-Bold' }]}>دخول العيادات</Text>
+            <Text style={[styles.subtitle, { fontFamily: 'Cairo-Regular' }]}>أدخل بيانات حسابك للوصول لنظام حكيم</Text>
           </View>
 
-          <View className="gap-y-4">
-            {/* حقل البريد الإلكتروني */}
-            <View>
-              <Text className="text-textMain mb-2" style={{ fontFamily: 'Cairo-SemiBold' }}>البريد الإلكتروني</Text>
+          <View style={styles.formContainer}>
+            <View style={styles.fieldWrapper}>
+              <Text style={[styles.label, { fontFamily: 'Cairo-SemiBold' }]}>البريد الإلكتروني</Text>
               <Controller
                 control={control}
                 name="email"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="bg-surface border border-border rounded-xl px-4 py-4 text-textMain text-right"
-                    style={{ fontFamily: 'Cairo-Regular' }}
+                    style={[styles.input, { fontFamily: 'Cairo-Regular' }]}
                     placeholder="example@clinic.com"
-                    placeholderTextColor="#64748B"
+                    placeholderTextColor={colors.textSecondary}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     onBlur={onBlur}
@@ -92,21 +82,19 @@ export default function DoctorLoginScreen() {
                   />
                 )}
               />
-              {errors.email && <Text className="text-error text-sm mt-1" style={{ fontFamily: 'Cairo-Regular' }}>{errors.email.message}</Text>}
+              {errors.email && <Text style={[styles.errorText, { fontFamily: 'Cairo-Regular' }]}>{errors.email.message}</Text>}
             </View>
 
-            {/* حقل كلمة المرور */}
-            <View>
-              <Text className="text-textMain mb-2" style={{ fontFamily: 'Cairo-SemiBold' }}>كلمة المرور</Text>
+            <View style={styles.fieldWrapper}>
+              <Text style={[styles.label, { fontFamily: 'Cairo-SemiBold' }]}>كلمة المرور</Text>
               <Controller
                 control={control}
                 name="password"
                 render={({ field: { onChange, onBlur, value } }) => (
                   <TextInput
-                    className="bg-surface border border-border rounded-xl px-4 py-4 text-textMain text-right"
-                    style={{ fontFamily: 'Cairo-Regular' }}
+                    style={[styles.input, { fontFamily: 'Cairo-Regular' }]}
                     placeholder="••••••••"
-                    placeholderTextColor="#64748B"
+                    placeholderTextColor={colors.textSecondary}
                     secureTextEntry
                     onBlur={onBlur}
                     onChangeText={onChange}
@@ -114,18 +102,18 @@ export default function DoctorLoginScreen() {
                   />
                 )}
               />
-              {errors.password && <Text className="text-error text-sm mt-1" style={{ fontFamily: 'Cairo-Regular' }}>{errors.password.message}</Text>}
+              {errors.password && <Text style={[styles.errorText, { fontFamily: 'Cairo-Regular' }]}>{errors.password.message}</Text>}
             </View>
 
-            <TouchableOpacity 
-              className={`bg-primary w-full py-4 rounded-xl items-center mt-6 ${isLoading ? 'opacity-70' : ''}`}
+            <TouchableOpacity
+              style={[styles.submitButton, isLoading && styles.buttonDisabled]}
               onPress={handleSubmit(onSubmit)}
               disabled={isLoading}
             >
               {isLoading ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color={colors.white} />
               ) : (
-                <Text className="text-white text-lg font-bold" style={{ fontFamily: 'Cairo-Bold' }}>تسجيل الدخول</Text>
+                <Text style={[styles.submitText, { fontFamily: 'Cairo-Bold' }]}>تسجيل الدخول</Text>
               )}
             </TouchableOpacity>
           </View>
@@ -135,3 +123,34 @@ export default function DoctorLoginScreen() {
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: colors.background },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 24 },
+  backButton: { position: 'absolute', top: 12, left: 6, padding: 8, zIndex: 10 },
+  backText: { color: colors.textSecondary, fontSize: 14 },
+  headerContainer: { alignItems: 'center', marginBottom: 40 },
+  iconContainer: {
+    width: 80, height: 80, borderRadius: 20,
+    backgroundColor: `${colors.primary}20`,
+    justifyContent: 'center', alignItems: 'center', marginBottom: 16,
+  },
+  title: { fontSize: 28, color: colors.textMain, textAlign: 'center', marginBottom: 8 },
+  subtitle: { fontSize: 15, color: colors.textSecondary, textAlign: 'center' },
+  formContainer: { gap: 16 },
+  fieldWrapper: { gap: 6 },
+  label: { fontSize: 15, color: colors.textMain, textAlign: 'right' },
+  input: {
+    backgroundColor: colors.surface,
+    borderWidth: 1, borderColor: colors.border,
+    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16,
+    color: colors.textMain, textAlign: 'right', fontSize: 15,
+  },
+  errorText: { fontSize: 13, color: colors.error, textAlign: 'right' },
+  submitButton: {
+    backgroundColor: colors.primary, borderRadius: 14,
+    paddingVertical: 16, alignItems: 'center', marginTop: 8,
+  },
+  buttonDisabled: { opacity: 0.7 },
+  submitText: { color: colors.white, fontSize: 17 },
+});

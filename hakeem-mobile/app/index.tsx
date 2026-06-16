@@ -1,50 +1,188 @@
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { colors } from '../src/theme/colors';
+
+const { width } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
+  const portals = [
+    {
+      id: 'doctor',
+      emoji: '👨‍⚕️',
+      title: 'بوابة الطبيب',
+      subtitle: 'لوحة تحكم العيادة والمواعيد',
+      route: '/(auth)/login',
+      gradient: [colors.primary, colors.primaryDark] as [string, string],
+      border: colors.primary,
+    },
+    {
+      id: 'patient',
+      emoji: '🧑‍💼',
+      title: 'بوابة المريض',
+      subtitle: 'حجز المواعيد والسجلات الطبية',
+      route: '/(auth)/patient-login',
+      gradient: [colors.accent, colors.accentDark] as [string, string],
+      border: colors.accent,
+    },
+    {
+      id: 'pharmacy',
+      emoji: '💊',
+      title: 'بوابة الصيدلية',
+      subtitle: 'الوصفات الطبية والمخزون',
+      route: '/(auth)/pharmacy-login',
+      gradient: [colors.success, '#047857'] as [string, string],
+      border: colors.success,
+    },
+  ];
+
   return (
-    <SafeAreaView className="flex-1 bg-background justify-center items-center px-6">
-      
-      {/* قسم الشعار والترحيب */}
-      <View className="items-center mb-16">
-        <View className="w-24 h-24 bg-surfaceLight rounded-3xl mb-6 items-center justify-center">
-            <Text className="text-4xl">🏥</Text>
+    <SafeAreaView style={styles.container}>
+      {/* الشعار والترحيب */}
+      <View style={styles.header}>
+        <View style={styles.logoWrapper}>
+          <Text style={styles.logoEmoji}>🏥</Text>
         </View>
-        <Text className="text-3xl font-bold text-textMain mb-2 text-center" style={{ fontFamily: 'Cairo-Bold' }}>
-          حكيم جو
-        </Text>
-        <Text className="text-lg text-textSecondary text-center" style={{ fontFamily: 'Cairo-Regular' }}>
-          نظام إدارة العيادات الذكي والمواعيد
-        </Text>
+        <Text style={styles.appName}>حكيم جو</Text>
+        <Text style={styles.appTagline}>نظام إدارة العيادات الذكي</Text>
       </View>
 
-      {/* خيارات الدخول */}
-      <View className="w-full gap-y-4">
-        <TouchableOpacity
-          className="bg-primary w-full py-4 rounded-2xl flex-row justify-center items-center"
-          onPress={() => router.push('/(auth)/login')}
-        >
-          <Text className="text-white text-lg font-bold" style={{ fontFamily: 'Cairo-SemiBold' }}>
-            دخول الأطباء والعيادات
-          </Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className="bg-surface w-full py-4 rounded-2xl flex-row justify-center items-center border border-border"
-          onPress={() => router.push('/(auth)/patient-login')}
-        >
-          <Text className="text-secondary text-lg font-bold" style={{ fontFamily: 'Cairo-SemiBold' }}>
-            دخول المرضى والمراجعين
-          </Text>
-        </TouchableOpacity>
+      {/* بطاقات البوابات */}
+      <View style={styles.portalsContainer}>
+        <Text style={styles.chooseLabel}>اختر بوابتك للمتابعة</Text>
+        {portals.map((portal) => (
+          <TouchableOpacity
+            key={portal.id}
+            style={[styles.portalCard, { borderColor: portal.border }]}
+            onPress={() => router.push(portal.route as any)}
+            activeOpacity={0.85}
+          >
+            <LinearGradient
+              colors={portal.gradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.portalGradient}
+            >
+              <Text style={styles.portalEmoji}>{portal.emoji}</Text>
+              <View style={styles.portalText}>
+                <Text style={styles.portalTitle}>{portal.title}</Text>
+                <Text style={styles.portalSubtitle}>{portal.subtitle}</Text>
+              </View>
+              <Text style={styles.arrow}>←</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      <Text className="text-textSecondary text-xs absolute bottom-10" style={{ fontFamily: 'Cairo-Regular' }}>
-        الإصدار 1.0.0
-      </Text>
+      {/* Footer */}
+      <Text style={styles.version}>الإصدار 1.0.0 © حكيم جو 2026</Text>
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+    paddingHorizontal: 20,
+    justifyContent: 'space-between',
+  },
+  header: {
+    alignItems: 'center',
+    paddingTop: 32,
+    gap: 8,
+  },
+  logoWrapper: {
+    width: 88,
+    height: 88,
+    borderRadius: 24,
+    backgroundColor: colors.surfaceLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 8,
+    borderWidth: 1.5,
+    borderColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  logoEmoji: {
+    fontSize: 40,
+  },
+  appName: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 30,
+    color: colors.textMain,
+    letterSpacing: 0.5,
+  },
+  appTagline: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+
+  portalsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    gap: 14,
+    paddingVertical: 24,
+  },
+  chooseLabel: {
+    fontFamily: 'Cairo-SemiBold',
+    fontSize: 15,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  portalCard: {
+    borderRadius: 18,
+    overflow: 'hidden',
+    borderWidth: 1.5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  portalGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    gap: 14,
+  },
+  portalEmoji: {
+    fontSize: 32,
+  },
+  portalText: {
+    flex: 1,
+    gap: 2,
+  },
+  portalTitle: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 18,
+    color: colors.white,
+  },
+  portalSubtitle: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.75)',
+  },
+  arrow: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 20,
+    color: 'rgba(255,255,255,0.7)',
+  },
+
+  version: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 11,
+    color: colors.textMuted,
+    textAlign: 'center',
+    paddingBottom: 12,
+  },
+});
