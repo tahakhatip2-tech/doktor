@@ -373,7 +373,7 @@ export class PatientAppointmentService {
 
         if (!appointment) throw new NotFoundException('الموعد غير موجود');
 
-        let currentFiles = [];
+        let currentFiles: any[] = [];
         if (appointment.patientFiles) {
             try { currentFiles = JSON.parse(appointment.patientFiles); } catch (e) {}
         }
