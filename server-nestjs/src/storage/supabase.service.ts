@@ -3,6 +3,7 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { extname } from 'path';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as WebSocket from 'ws';
 
 @Injectable()
 export class SupabaseService {
@@ -16,7 +17,11 @@ export class SupabaseService {
 
         // Only initialise if both values are present and look real (not dummy)
         if (supabaseUrl && supabaseKey && !supabaseKey.includes('dummy')) {
-            this.supabase = createClient(supabaseUrl, supabaseKey);
+            this.supabase = createClient(supabaseUrl, supabaseKey, {
+                global: {
+                    WebSocket: WebSocket,
+                },
+            });
         } else {
             this.logger.warn('Supabase not configured — file uploads will use local disk storage.');
         }
