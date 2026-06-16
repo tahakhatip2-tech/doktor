@@ -22,18 +22,14 @@ export function useSocketNotifications(onNewMessage?: () => void) {
         // Ensure this matches your backend URL. If using ngrok/proxy, adjust accordingly.
         // Assuming socket.io server is at the same origin as API or process.env.VITE_API_URL
         // Determine correct Socket URL
-        let socketUrl = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000';
+        let socketUrl: string;
 
         if (import.meta.env.PROD) {
-            socketUrl = 'https://tsunamic-unshameable-maricruz.ngrok-free.dev';
+            // In production, Socket.IO is proxied via Nginx at the same domain
+            socketUrl = 'https://doctorjo.net';
         } else {
-            // Clean up URL: remove '/api' suffix and ensure it points to the server root
-            if (socketUrl.startsWith('/')) {
-                // Probably a relative path (e.g., from generic proxy), explicitly point to backend port in dev
-                socketUrl = 'http://localhost:3000';
-            } else {
-                socketUrl = socketUrl.replace(/\/api$/, '');
-            }
+            // In development, connect directly to backend
+            socketUrl = (import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000').replace(/\/api$/, '');
         }
 
         console.log('Connecting to Socket.io at:', socketUrl, 'for User:', user.id);

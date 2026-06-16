@@ -19,11 +19,11 @@ export function usePatientSocketNotifications(
     useEffect(() => {
         if (!patient || !token || socketRef.current) return;
 
-        let socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+        let socketUrl: string;
         if (import.meta.env.PROD) {
-            socketUrl = 'https://tsunamic-unshameable-maricruz.ngrok-free.dev';
+            socketUrl = 'https://doctorjo.net';
         } else {
-            socketUrl = socketUrl.replace(/\/api$/, '');
+            socketUrl = (import.meta.env.VITE_API_URL || 'http://localhost:3000/api').replace(/\/api$/, '');
         }
 
         console.log('[PatientSocket] Connecting to:', socketUrl, 'Patient:', patient.id);
