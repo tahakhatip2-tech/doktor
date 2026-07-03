@@ -12,13 +12,6 @@ export default function DoctorLayout() {
       }}
     >
       <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: 'الرئيسية',
-          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="appointments/index"
         options={{
           title: 'المواعيد',
@@ -30,6 +23,13 @@ export default function DoctorLayout() {
         options={{
           title: 'المرضى',
           tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: 'الرئيسية',
+          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

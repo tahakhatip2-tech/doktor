@@ -12,17 +12,17 @@ export default function PharmacyLayout() {
       }}
     >
       <Tabs.Screen
-        name="dashboard"
-        options={{
-          title: 'الرئيسية',
-          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="prescriptions/index"
         options={{
           title: 'الوصفات',
           tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="dashboard"
+        options={{
+          title: 'الرئيسية',
+          tabBarIcon: ({ color, size }) => <Ionicons name="stats-chart" size={size} color={color} />,
         }}
       />
       <Tabs.Screen

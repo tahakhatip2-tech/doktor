@@ -12,13 +12,6 @@ export default function PatientLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
-        options={{
-          title: 'الرئيسية',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="clinics/index"
         options={{
           title: 'العيادات',
@@ -30,6 +23,13 @@ export default function PatientLayout() {
         options={{
           title: 'مواعيدي',
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'الرئيسية',
+          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
