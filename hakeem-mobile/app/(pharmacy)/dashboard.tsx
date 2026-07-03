@@ -38,11 +38,6 @@ export default function PharmacyDashboard() {
       <AppHeader 
         title="لوحة تحكم الصيدلية" 
         showBack={false}
-        rightComponent={
-          <View style={styles.avatar}>
-            <MaterialCommunityIcons name="pill" size={22} color={colors.pharmacyColor} />
-          </View>
-        }
       />
       
       <ScrollView 

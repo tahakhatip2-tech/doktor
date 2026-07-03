@@ -81,13 +81,6 @@ export default function DoctorDashboard() {
       <AppHeader 
         title="لوحة تحكم الطبيب" 
         showBack={false}
-        rightComponent={
-          <View style={styles.headerProfile}>
-            <View style={styles.avatar}>
-              <MaterialCommunityIcons name="stethoscope" size={20} color={colors.primary} />
-            </View>
-          </View>
-        }
       />
       <ScrollView 
         contentContainerStyle={styles.scroll} 
