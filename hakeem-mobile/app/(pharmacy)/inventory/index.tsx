@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { Card, Input, ScreenHeader, Button, Badge } from '../../../src/components/common';
+import { Card, Input, AppHeader, Button, Badge } from '../../../src/components/common';
 
 const MOCK_INVENTORY = [
   { id: 1, name: 'Amoxil 500mg Capsule', category: 'مضادات حيوية', stock: 120, price: '8.50', status: 'available' },
@@ -68,7 +68,7 @@ export default function PharmacyInventoryScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader 
+      <AppHeader 
         title="المخزون" 
         showBack={false}
         rightComponent={

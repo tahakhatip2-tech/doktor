@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
 import { 
-  AppointmentCard, ScreenHeader, EmptyState, 
+  AppointmentCard, AppHeader, EmptyState, 
   AppointmentSkeleton, ConfirmModal, useToast, Toast
 } from '../../../src/components/common';
 import { patientAppointmentsApi } from '../../../src/api/appointments.api';
@@ -83,7 +83,7 @@ export default function AppointmentsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="سجل المواعيد" showBack />
+      <AppHeader title="سجل المواعيد" showBack />
       
       <View style={styles.header}>
         <View style={styles.filtersRow}>

@@ -5,7 +5,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, useToast, Toast } from '../../../src/components/common';
+import { AppHeader, useToast, Toast } from '../../../src/components/common';
 import { chatApi } from '../../../src/api/modules.api';
 import { InternalMessage } from '../../../src/types/clinic.types';
 import { getErrorMessage } from '../../../src/api/client';
@@ -108,7 +108,7 @@ export default function ChatRoomScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="المحادثة" showBack />
+      <AppHeader title="المحادثة" showBack />
 
       <KeyboardAvoidingView 
         style={styles.keyboardView} 

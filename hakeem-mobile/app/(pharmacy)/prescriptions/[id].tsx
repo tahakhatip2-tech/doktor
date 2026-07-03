@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, Card, Button, StatusBadge, ConfirmModal, useToast, Toast } from '../../../src/components/common';
+import { AppHeader, Card, Button, StatusBadge, ConfirmModal, useToast, Toast } from '../../../src/components/common';
 
 export default function PrescriptionDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -60,7 +60,7 @@ export default function PrescriptionDetailsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title={`وصفة رقم ${id}`} showBack />
+      <AppHeader title={`وصفة رقم ${id}`} showBack />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         

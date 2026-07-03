@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, EmptyState, useToast, Toast } from '../../../src/components/common';
+import { AppHeader, EmptyState, useToast, Toast } from '../../../src/components/common';
 import { offersApi } from '../../../src/api/modules.api';
 import { Offer } from '../../../src/types/clinic.types';
 
@@ -95,7 +95,7 @@ export default function OffersScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="العروض والخصومات" showBack />
+      <AppHeader title="العروض والخصومات" showBack />
       
       {isLoading && !refreshing ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>

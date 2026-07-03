@@ -3,7 +3,7 @@ import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, Card } from '../../../src/components/common';
+import { AppHeader, Card } from '../../../src/components/common';
 
 const MOCK_TRANSACTIONS = [
   { id: 1, patient: 'أحمد محمود', type: 'كشف عيادة', amount: 50, date: '2023-10-15', status: 'completed' },
@@ -38,7 +38,7 @@ export default function DoctorFinancialScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="التحليل المالي" showBack={false} />
+      <AppHeader title="التحليل المالي" showBack={false} />
 
       {/* Filters */}
       <View style={styles.filtersContainer}>

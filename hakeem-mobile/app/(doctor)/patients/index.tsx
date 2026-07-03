@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { Card, Input, ScreenHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
+import { Card, Input, AppHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
 import { contactsApi } from '../../../src/api/modules.api';
 import { getErrorMessage } from '../../../src/api/client';
 
@@ -68,7 +68,7 @@ export default function DoctorPatientsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="مرضى العيادة" showBack={false} />
+      <AppHeader title="مرضى العيادة" showBack={false} />
       
       <View style={styles.header}>
         <Input 

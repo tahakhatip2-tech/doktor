@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, EmptyState, Card, useToast, Toast } from '../../../src/components/common';
+import { AppHeader, EmptyState, Card, useToast, Toast } from '../../../src/components/common';
 import { medicalRecordsApi } from '../../../src/api/modules.api';
 import { MedicalRecord } from '../../../src/types/clinic.types';
 import { getErrorMessage } from '../../../src/api/client';
@@ -99,7 +99,7 @@ export default function MedicalRecordsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="السجلات الطبية" showBack />
+      <AppHeader title="السجلات الطبية" showBack />
       
       <View style={styles.filtersRow}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>

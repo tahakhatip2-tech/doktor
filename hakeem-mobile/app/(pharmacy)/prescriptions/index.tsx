@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { Card, Input, Badge, ScreenHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
+import { Card, Input, Badge, AppHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
 
 // نوع وهمي للوصفة الطبية
 interface MockPrescription {
@@ -97,7 +97,7 @@ export default function PharmacyPrescriptionsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="البحث عن وصفة طبية" showBack={false} />
+      <AppHeader title="البحث عن وصفة طبية" showBack={false} />
       
       <View style={styles.searchSection}>
         <View style={styles.searchRow}>

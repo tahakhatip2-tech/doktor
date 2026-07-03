@@ -5,7 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
+import { AppHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
 import { notificationsApi } from '../../../src/api/modules.api';
 
 export default function NotificationsScreen() {
@@ -111,7 +111,7 @@ export default function NotificationsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader 
+      <AppHeader 
         title="الإشعارات" 
         showBack 
         rightComponent={

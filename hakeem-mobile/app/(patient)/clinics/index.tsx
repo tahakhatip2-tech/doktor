@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { Input, Card, Badge, ScreenHeader, EmptyState, ClinicSkeleton } from '../../../src/components/common';
+import { Input, Card, Badge, AppHeader, EmptyState, ClinicSkeleton } from '../../../src/components/common';
 import { clinicsApi } from '../../../src/api/modules.api';
 import { Clinic } from '../../../src/types/clinic.types';
 
@@ -95,7 +95,7 @@ export default function ClinicsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="العيادات الطبية" showBack />
+      <AppHeader title="العيادات الطبية" showBack />
       
       <View style={styles.searchSection}>
         <Input 

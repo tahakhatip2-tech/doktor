@@ -6,7 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
 import { doctorAppointmentsApi } from '../../../src/api/appointments.api';
 import { Appointment } from '../../../src/types/appointment.types';
-import { Button, StatusBadge, ScreenHeader, ConfirmModal, useToast, Toast, Card, Input } from '../../../src/components/common';
+import { Button, StatusBadge, AppHeader, ConfirmModal, useToast, Toast, Card, Input } from '../../../src/components/common';
 import { getErrorMessage } from '../../../src/api/client';
 import { formatDate, formatTime } from '../../../src/utils/format.utils';
 
@@ -79,7 +79,7 @@ export default function DoctorAppointmentDetailsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="تفاصيل الموعد" showBack />
+      <AppHeader title="تفاصيل الموعد" showBack />
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         

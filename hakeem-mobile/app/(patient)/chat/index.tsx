@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, EmptyState } from '../../../src/components/common';
+import { AppHeader, EmptyState } from '../../../src/components/common';
 
 const MOCK_CHATS = [
   { id: 1, clinicId: 1, clinicName: 'عيادة د. أحمد للأسنان', lastMessage: 'نعم، يمكنك الحضور غداً في نفس الموعد.', time: '10:30 ص', unread: 2 },
@@ -47,7 +47,7 @@ export default function ChatListScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="المحادثات" showBack={false} />
+      <AppHeader title="المحادثات" showBack={false} />
       
       <FlatList
         data={MOCK_CHATS}

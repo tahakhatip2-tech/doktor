@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../src/theme/colors';
-import { Card, ScreenHeader, Skeleton } from '../../src/components/common';
+import { Card, AppHeader, Skeleton } from '../../src/components/common';
 import { useAuthStore } from '../../src/store/auth.store';
 
 export default function PharmacyDashboard() {
@@ -35,7 +35,7 @@ export default function PharmacyDashboard() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader 
+      <AppHeader 
         title="لوحة تحكم الصيدلية" 
         showBack={false}
         rightComponent={

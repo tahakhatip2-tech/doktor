@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../../src/store/auth.store';
 import { colors } from '../../../src/theme/colors';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, ScreenHeader, ConfirmModal, useToast, Toast } from '../../../src/components/common';
+import { Button, AppHeader, ConfirmModal, useToast, Toast } from '../../../src/components/common';
 
 export default function PharmacySettingsScreen() {
   const { pharmacyUser, logout } = useAuthStore() as any;
@@ -30,7 +30,7 @@ export default function PharmacySettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="إعدادات الصيدلية" showBack={false} />
+      <AppHeader title="إعدادات الصيدلية" showBack={false} />
       
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         

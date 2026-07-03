@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, Card, Button } from '../../../src/components/common';
+import { AppHeader, Card, Button } from '../../../src/components/common';
 
 const MOCK_PATIENT = {
   id: 1,
@@ -35,7 +35,7 @@ export default function DoctorPatientRecordScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="السجل الطبي للمريض" showBack />
+      <AppHeader title="السجل الطبي للمريض" showBack />
       
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         

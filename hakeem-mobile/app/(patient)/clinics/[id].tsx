@@ -7,7 +7,7 @@ import { colors } from '../../../src/theme/colors';
 import { clinicsApi } from '../../../src/api/modules.api';
 import { patientAppointmentsApi } from '../../../src/api/appointments.api';
 import { Clinic } from '../../../src/types/clinic.types';
-import { Button, Input, ScreenHeader, Modal, useToast, Toast } from '../../../src/components/common';
+import { Button, Input, AppHeader, Modal, useToast, Toast } from '../../../src/components/common';
 
 // -- دوال مساعدة للتاريخ والوقت --
 function getNextDays(days = 7) {
@@ -123,7 +123,7 @@ export default function ClinicDetailsScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
-      <ScreenHeader title={clinic.name ?? 'عيادة'} showBack />
+      <AppHeader title={clinic.name ?? 'عيادة'} showBack />
       
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
         {/* معلومات العيادة العلوية */}

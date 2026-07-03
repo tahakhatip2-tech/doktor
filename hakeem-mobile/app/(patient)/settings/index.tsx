@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../../src/store/auth.store';
 import { colors } from '../../../src/theme/colors';
 import { Ionicons } from '@expo/vector-icons';
-import { Button, ScreenHeader, ConfirmModal, useToast, Toast } from '../../../src/components/common';
+import { Button, AppHeader, ConfirmModal, useToast, Toast } from '../../../src/components/common';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -39,7 +39,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="الإعدادات" />
+      <AppHeader title="الإعدادات" />
       
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         

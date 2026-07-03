@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { ScreenHeader, Input, Button, Card, useToast, Toast } from '../../../src/components/common';
+import { AppHeader, Input, Button, Card, useToast, Toast } from '../../../src/components/common';
 import { useAuthStore } from '../../../src/store/auth.store';
 
 export default function ProfileScreen() {
@@ -29,7 +29,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="الملف الشخصي" showBack />
+      <AppHeader title="الملف الشخصي" showBack />
       
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.avatarContainer}>

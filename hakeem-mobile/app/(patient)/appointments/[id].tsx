@@ -9,7 +9,7 @@ import { Appointment } from '../../../src/types/appointment.types';
 import { getErrorMessage } from '../../../src/api/client';
 import { formatDate, formatTime } from '../../../src/utils/format.utils';
 import { 
-  ScreenHeader, StatusBadge, Button, 
+  AppHeader, StatusBadge, Button, 
   ConfirmModal, useToast, Toast, Card
 } from '../../../src/components/common';
 
@@ -76,7 +76,7 @@ export default function AppointmentDetailsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <ScreenHeader title="تفاصيل الموعد" showBack />
+      <AppHeader title="تفاصيل الموعد" showBack />
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
         {/* Status Section */}
