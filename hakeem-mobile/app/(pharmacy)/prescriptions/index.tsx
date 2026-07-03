@@ -1,9 +1,10 @@
-import { View, Text, FlatList, TouchableOpacity, Alert, Keyboard } from 'react-native';
-import { useState } from 'react';
+import React, { useState } from 'react';
+import { View, Text, FlatList, TouchableOpacity, Keyboard, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { Card, Input, Button, Badge } from '../../../src/components/common';
+import { Card, Input, Badge, ScreenHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
 
 // نوع وهمي للوصفة الطبية
 interface MockPrescription {
@@ -16,19 +17,25 @@ interface MockPrescription {
 }
 
 export default function PharmacyPrescriptionsScreen() {
+  const router = useRouter();
+  const { toast, show, hide } = useToast();
+  
   const [search, setSearch] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [prescriptions, setPrescriptions] = useState<MockPrescription[]>([]);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // محاكاة البحث
   const handleSearch = () => {
     Keyboard.dismiss();
     if (!search.trim()) {
-      Alert.alert('تنبيه', 'الرجاء إدخال رقم الهوية أو كود الوصفة');
+      show('الرجاء إدخال رقم الهوية أو كود الوصفة', 'error');
       return;
     }
 
     setIsLoading(true);
+    setHasSearched(true);
+    
     setTimeout(() => {
       // بيانات وهمية للوصفات
       setPrescriptions([
@@ -42,86 +49,69 @@ export default function PharmacyPrescriptionsScreen() {
         },
       ]);
       setIsLoading(false);
-    }, 1000);
-  };
-
-  const handleDispense = (id: string) => {
-    Alert.alert('تأكيد الصرف', 'هل أنت متأكد من صرف هذه الوصفة للمريض؟', [
-      { text: 'إلغاء', style: 'cancel' },
-      { 
-        text: 'تأكيد', 
-        style: 'default',
-        onPress: () => {
-          setPrescriptions(prev => prev.map(p => 
-            p.id === id ? { ...p, status: 'dispensed' } : p
-          ));
-          Alert.alert('نجاح', 'تم صرف الوصفة وتحديث النظام بنجاح.');
-        }
-      }
-    ]);
+    }, 1200);
   };
 
   const renderItem = ({ item }: { item: MockPrescription }) => (
-    <Card style={{ marginBottom: 16, borderColor: item.status === 'dispensed' ? colors.border : colors.success }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 18, color: colors.textMain, textAlign: 'left' }}>
-            {item.patientName}
-          </Text>
-          <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, textAlign: 'left', marginTop: 2 }}>
-            من: {item.doctorName}
-          </Text>
-        </View>
-        <Badge 
-          label={item.status === 'pending' ? 'بانتظار الصرف' : 'تم الصرف'} 
-          variant={item.status === 'pending' ? 'warning' : 'muted'} 
-        />
-      </View>
-
-      <View style={{ backgroundColor: colors.surfaceLight, padding: 12, borderRadius: 8, marginBottom: 16 }}>
-        <Text style={{ fontFamily: 'Cairo-SemiBold', fontSize: 14, color: colors.textMain, marginBottom: 8, textAlign: 'left' }}>الأدوية الموصوفة:</Text>
-        {item.items.map((med, idx) => (
-          <View key={idx} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <Ionicons name="medical" size={14} color={colors.primary} />
-            <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary, textAlign: 'left' }}>{med}</Text>
+    <TouchableOpacity 
+      activeOpacity={0.8}
+      onPress={() => router.push(`/(pharmacy)/prescriptions/${item.id}` as any)}
+    >
+      <Card style={item.status === 'dispensed' ? { borderColor: colors.border, padding: 16, marginBottom: 16 } : { borderColor: colors.success, padding: 16, marginBottom: 16 }}>
+        <View style={styles.cardHeader}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.patientName}>{item.patientName}</Text>
+            <Text style={styles.doctorName}>من: {item.doctorName}</Text>
           </View>
-        ))}
-      </View>
-
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textMuted }}>كود: {item.id}</Text>
-        {item.status === 'pending' ? (
-          <Button 
-            title="صرف الأدوية" 
-            size="sm" 
-            variant="primary"
-            style={{ backgroundColor: colors.success }}
-            onPress={() => handleDispense(item.id)}
-            fullWidth={false}
+          <Badge 
+            label={item.status === 'pending' ? 'بانتظار الصرف' : 'تم الصرف'} 
+            variant={item.status === 'pending' ? 'warning' : 'muted'} 
           />
-        ) : (
-          <Ionicons name="checkmark-done-circle" size={32} color={colors.success} />
-        )}
-      </View>
-    </Card>
+        </View>
+
+        <View style={styles.itemsBox}>
+          <Text style={styles.itemsTitle}>الأدوية الموصوفة ({item.items.length}):</Text>
+          <View style={styles.itemsList}>
+            {item.items.slice(0, 2).map((med, idx) => (
+              <View key={idx} style={styles.medRow}>
+                <Ionicons name="medical" size={14} color={colors.primary} />
+                <Text style={styles.medText} numberOfLines={1}>{med}</Text>
+              </View>
+            ))}
+            {item.items.length > 2 && (
+              <Text style={styles.moreText}>+ {item.items.length - 2} أدوية أخرى</Text>
+            )}
+          </View>
+        </View>
+
+        <View style={styles.cardFooter}>
+          <Text style={styles.codeText}>كود: {item.id}</Text>
+          <View style={styles.detailsBtn}>
+            <Text style={styles.detailsBtnText}>التفاصيل والصرف</Text>
+            <Ionicons name="chevron-back" size={16} color={colors.success} />
+          </View>
+        </View>
+      </Card>
+    </TouchableOpacity>
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ padding: 20, paddingBottom: 0 }}>
-        <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 24, color: colors.textMain, marginBottom: 16, textAlign: 'left' }}>الوصفات الطبية</Text>
-        
-        <View style={{ flexDirection: 'row', gap: 12, marginBottom: 24 }}>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenHeader title="البحث عن وصفة طبية" showBack={false} />
+      
+      <View style={styles.searchSection}>
+        <View style={styles.searchRow}>
           <View style={{ flex: 1 }}>
             <Input 
               value={search}
               onChangeText={setSearch}
               placeholder="رقم الهوية أو كود الوصفة..."
               keyboardType="default"
+              style={{ marginBottom: 0 }}
             />
           </View>
           <TouchableOpacity 
-            style={{ width: 52, height: 52, borderRadius: 12, backgroundColor: colors.success, justifyContent: 'center', alignItems: 'center' }}
+            style={[styles.searchBtn, isLoading && { opacity: 0.7 }]}
             onPress={handleSearch}
             disabled={isLoading}
           >
@@ -130,23 +120,60 @@ export default function PharmacyPrescriptionsScreen() {
         </View>
       </View>
 
-      <FlatList
-        data={prescriptions}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ padding: 20 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <View style={{ alignItems: 'center', marginTop: 40 }}>
-            <View style={{ width: 80, height: 80, borderRadius: 40, backgroundColor: colors.surfaceLight, justifyContent: 'center', alignItems: 'center', marginBottom: 16 }}>
-              <Ionicons name="barcode-outline" size={40} color={colors.textSecondary} />
-            </View>
-            <Text style={{ fontFamily: 'Cairo-SemiBold', fontSize: 16, color: colors.textSecondary, textAlign: 'center' }}>
-              أدخل رقم هوية المريض أو كود الوصفة للبحث وعرض الأدوية
-            </Text>
-          </View>
-        }
-      />
+      {isLoading ? (
+        <View style={styles.list}>
+           <Card style={styles.card}>
+             <View style={styles.cardHeader}>
+               <View style={{ flex: 1, gap: 8 }}>
+                 <Skeleton width="60%" height={20} />
+                 <Skeleton width="40%" height={14} />
+               </View>
+               <Skeleton width={80} height={24} borderRadius={12} />
+             </View>
+             <Skeleton width="100%" height={80} borderRadius={8} style={{ marginBottom: 16 }} />
+             <Skeleton width="100%" height={30} />
+           </Card>
+        </View>
+      ) : (
+        <FlatList
+          data={prescriptions}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <EmptyState
+              icon={hasSearched ? "search-outline" : "barcode-outline"}
+              title={hasSearched ? "لم يتم العثور على الوصفة" : "ابحث عن وصفة مريض"}
+              subtitle={hasSearched ? "تأكد من رقم الهوية أو الكود المدخل وحاول مجدداً." : "أدخل رقم هوية المريض أو كود الوصفة للبحث وعرض الأدوية."}
+            />
+          }
+        />
+      )}
+      
+      <Toast {...toast} onHide={hide} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  searchSection: { padding: 20, paddingBottom: 16, backgroundColor: colors.surface, borderBottomWidth: 1, borderBottomColor: colors.border },
+  searchRow: { flexDirection: 'row', gap: 12, alignItems: 'center' },
+  searchBtn: { width: 52, height: 52, borderRadius: 12, backgroundColor: colors.success, justifyContent: 'center', alignItems: 'center' },
+  list: { padding: 20, paddingBottom: 40 },
+  card: { padding: 16, marginBottom: 16, borderColor: colors.success },
+  cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 },
+  patientName: { fontFamily: 'Cairo-Bold', fontSize: 18, color: colors.textMain, textAlign: 'left' },
+  doctorName: { fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, textAlign: 'left', marginTop: 4 },
+  itemsBox: { backgroundColor: colors.surfaceLight, padding: 12, borderRadius: 8, marginBottom: 16 },
+  itemsTitle: { fontFamily: 'Cairo-SemiBold', fontSize: 14, color: colors.textMain, marginBottom: 8, textAlign: 'left' },
+  itemsList: { gap: 6 },
+  medRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  medText: { flex: 1, fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary, textAlign: 'left' },
+  moreText: { fontFamily: 'Cairo-SemiBold', fontSize: 12, color: colors.primary, marginTop: 4 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingTop: 12, borderTopWidth: 1, borderTopColor: colors.borderLight },
+  codeText: { fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textMuted },
+  detailsBtn: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  detailsBtnText: { fontFamily: 'Cairo-Bold', fontSize: 14, color: colors.success },
+});

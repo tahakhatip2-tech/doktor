@@ -19,7 +19,7 @@ export default function PatientLayout() {
         },
         tabBarLabelStyle: {
           fontFamily: 'Cairo-SemiBold',
-          fontSize: 12,
+          fontSize: 11,
         },
       }}
     >
@@ -31,26 +31,39 @@ export default function PatientLayout() {
         }}
       />
       <Tabs.Screen
-        name="clinics"
+        name="clinics/index"
         options={{
           title: 'العيادات',
           tabBarIcon: ({ color, size }) => <Ionicons name="medical" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="appointments"
+        name="appointments/index"
         options={{
           title: 'مواعيدي',
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="chat/index"
+        options={{
+          title: 'محادثاتي',
+          tabBarIcon: ({ color, size }) => <Ionicons name="chatbubbles" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings/index"
         options={{
           title: 'حسابي',
           tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
         }}
       />
+
+      {/* شاشات مخفية من شريط التنقل السفلي */}
+      <Tabs.Screen name="notifications/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="medical-records/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="offers/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
+      <Tabs.Screen name="profile/index" options={{ href: null, tabBarStyle: { display: 'none' } }} />
     </Tabs>
   );
 }

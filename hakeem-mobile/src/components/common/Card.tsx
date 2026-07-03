@@ -1,9 +1,10 @@
-import { StyleSheet, View, Text, ViewStyle } from 'react-native';
+import React from 'react';
+import { StyleSheet, View, Text, ViewStyle, StyleProp } from 'react-native';
 import { colors } from '../../theme/colors';
 
 interface CardProps {
   children: React.ReactNode;
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   title?: string;
   subtitle?: string;
   accent?: boolean;
@@ -11,37 +12,52 @@ interface CardProps {
 
 export function Card({ children, style, title, subtitle, accent = false }: CardProps) {
   return (
-    <View style={[styles.card, accent && styles.cardAccent, style]}>
+    <View style={[styles.card, accent && styles.cardAccent, style as ViewStyle]}>
+      <View style={styles.glassEffect} />
       {(title || subtitle) && (
         <View style={styles.header}>
           {title && <Text style={styles.title}>{title}</Text>}
           {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
         </View>
       )}
-      {children}
+      <View style={styles.contentContainer}>
+        {children}
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
+    backgroundColor: colors.backgroundCard,
+    borderRadius: 20,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.borderLight,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.4,
+    shadowRadius: 16,
+    elevation: 8,
+    overflow: 'hidden',
+  },
+  glassEffect: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(255, 255, 255, 0.02)',
+  },
+  contentContainer: {
+    padding: 18,
   },
   cardAccent: {
     borderColor: colors.accent,
-    borderWidth: 1.5,
+    backgroundColor: 'rgba(249, 115, 22, 0.05)',
   },
   header: {
-    marginBottom: 12,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    marginBottom: 8,
   },
   title: {
     fontFamily: 'Cairo-Bold',

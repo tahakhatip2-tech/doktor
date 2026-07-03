@@ -19,7 +19,7 @@ export default function PharmacyLayout() {
         },
         tabBarLabelStyle: {
           fontFamily: 'Cairo-SemiBold',
-          fontSize: 12,
+          fontSize: 11,
         },
       }}
     >
@@ -31,14 +31,21 @@ export default function PharmacyLayout() {
         }}
       />
       <Tabs.Screen
-        name="prescriptions"
+        name="prescriptions/index"
         options={{
-          title: 'الوصفات الطبية',
+          title: 'الوصفات',
           tabBarIcon: ({ color, size }) => <Ionicons name="document-text" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="inventory/index"
+        options={{
+          title: 'المخزون',
+          tabBarIcon: ({ color, size }) => <Ionicons name="medkit" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings/index"
         options={{
           title: 'حسابي',
           tabBarIcon: ({ color, size }) => <Ionicons name="storefront" size={size} color={color} />,

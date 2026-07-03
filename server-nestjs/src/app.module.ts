@@ -20,6 +20,7 @@ import { join } from 'path';
 import { FinanceModule } from './finance/finance.module';
 import { ClinicDoctorsModule } from './clinic-doctors/clinic-doctors.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -44,6 +45,7 @@ import { PharmacyModule } from './pharmacy/pharmacy.module';
     FinanceModule,
     ClinicDoctorsModule,
     PharmacyModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

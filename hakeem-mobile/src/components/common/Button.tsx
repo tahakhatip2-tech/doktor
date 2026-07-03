@@ -1,8 +1,9 @@
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, ActivityIndicator, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../theme/colors';
 
-type Variant = 'primary' | 'accent' | 'outline' | 'ghost' | 'danger';
+type Variant = 'primary' | 'accent' | 'success' | 'outline' | 'ghost' | 'danger';
 type Size = 'sm' | 'md' | 'lg';
 
 interface ButtonProps {
@@ -14,6 +15,7 @@ interface ButtonProps {
   disabled?: boolean;
   icon?: React.ReactNode;
   fullWidth?: boolean;
+  style?: any;
 }
 
 export function Button({
@@ -25,15 +27,16 @@ export function Button({
   disabled = false,
   icon,
   fullWidth = true,
+  style,
 }: ButtonProps) {
   const isDisabled = disabled || loading;
 
   const containerStyle = [
     styles.base,
-    styles[variant],
     styles[`size_${size}`],
     fullWidth && styles.fullWidth,
     isDisabled && styles.disabled,
+    style
   ];
 
   const textStyle = [
@@ -42,13 +45,55 @@ export function Button({
     styles[`textSize_${size}`],
   ];
 
+  // Helper to determine if button should have gradient/solid background
+  const renderBackground = () => {
+    switch (variant) {
+      case 'primary':
+        return (
+          <LinearGradient
+            colors={[colors.primaryLight, colors.primaryDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        );
+      case 'accent':
+        return (
+          <LinearGradient
+            colors={[colors.accentLight, colors.accentDark]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={StyleSheet.absoluteFillObject}
+          />
+        );
+      case 'success':
+        return (
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.success }]} />
+        );
+      case 'danger':
+        return (
+          <View style={[StyleSheet.absoluteFillObject, { backgroundColor: colors.error }]} />
+        );
+      case 'outline':
+      case 'ghost':
+      default:
+        return null;
+    }
+  };
+
   return (
     <TouchableOpacity
-      style={containerStyle}
+      style={[
+        containerStyle,
+        variant === 'outline' && styles.outline,
+        variant === 'ghost' && styles.ghost,
+      ]}
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.8}
     >
+      {renderBackground()}
+      
       {loading ? (
         <ActivityIndicator
           color={variant === 'outline' || variant === 'ghost' ? colors.primary : colors.white}
@@ -66,40 +111,22 @@ export function Button({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 14,
+    borderRadius: 16,
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
+    overflow: 'hidden',
   },
   fullWidth: { width: '100%' },
 
   // المتغيرات
-  primary: {
-    backgroundColor: colors.primary,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  accent: {
-    backgroundColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
-  },
   outline: {
     backgroundColor: 'transparent',
     borderWidth: 1.5,
-    borderColor: colors.primary,
+    borderColor: colors.borderLight,
   },
   ghost: {
-    backgroundColor: colors.surfaceLight,
-  },
-  danger: {
-    backgroundColor: colors.error,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   disabled: {
     opacity: 0.5,
@@ -107,28 +134,31 @@ const styles = StyleSheet.create({
 
   // الأحجام
   size_sm: { paddingVertical: 10, paddingHorizontal: 16 },
-  size_md: { paddingVertical: 14, paddingHorizontal: 20 },
+  size_md: { paddingVertical: 16, paddingHorizontal: 20 },
   size_lg: { paddingVertical: 18, paddingHorizontal: 24 },
 
   // النصوص
   text: {
-    fontFamily: 'Cairo-SemiBold',
+    fontFamily: 'Cairo-Bold',
     textAlign: 'center',
+    letterSpacing: 0.3,
   },
   text_primary: { color: colors.white },
   text_accent: { color: colors.white },
-  text_outline: { color: colors.primary },
+  text_success: { color: colors.white },
+  text_outline: { color: colors.textMain },
   text_ghost: { color: colors.textMain },
   text_danger: { color: colors.white },
 
-  textSize_sm: { fontSize: 13 },
-  textSize_md: { fontSize: 15 },
-  textSize_lg: { fontSize: 17 },
+  textSize_sm: { fontSize: 14 },
+  textSize_md: { fontSize: 16 },
+  textSize_lg: { fontSize: 18 },
 
   content: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    zIndex: 1, // To appear above absolute background
   },
   iconWrapper: {
     marginRight: 4,

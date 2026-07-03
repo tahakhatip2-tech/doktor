@@ -6,6 +6,7 @@ import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
+import AdminPanel from "./pages/admin/AdminPanel";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
 import Plans from "./pages/Plans";
@@ -70,6 +71,7 @@ const App = () => (
 
                         {/* Doctor/Admin Routes */}
                         <Route path="/admin" element={<Admin />} />
+                        <Route path="/admin-panel" element={<AdminPanel />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/plans" element={<Plans />} />
                         <Route path="/queue" element={<QueueDisplay />} />

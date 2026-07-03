@@ -28,6 +28,9 @@ export const doctorAuthApi = {
 
   getMe: () =>
     apiClient.get('/auth/me'),
+
+  register: (dto: any) =>
+    apiClient.post('/auth/register', dto),
 };
 
 // ============================
@@ -47,4 +50,7 @@ export const pharmacyAuthApi = {
 
   updateProfile: (dto: any) =>
     apiClient.put('/pharmacy/profile', dto),
+
+  register: (dto: any) =>
+    apiClient.post('/pharmacy/auth/register', dto),
 };

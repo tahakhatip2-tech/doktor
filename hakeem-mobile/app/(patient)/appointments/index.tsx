@@ -1,151 +1,193 @@
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { useRouter, useFocusEffect } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
-import { Card, AppointmentStatusBadge, Button } from '../../../src/components/common';
+import { 
+  AppointmentCard, ScreenHeader, EmptyState, 
+  AppointmentSkeleton, ConfirmModal, useToast, Toast
+} from '../../../src/components/common';
 import { patientAppointmentsApi } from '../../../src/api/appointments.api';
 import { Appointment } from '../../../src/types/appointment.types';
 import { getErrorMessage } from '../../../src/api/client';
-import { formatDate, formatTime } from '../../../src/utils/format.utils';
-import { useFocusEffect } from 'expo-router';
+
+type FilterType = 'upcoming' | 'past' | 'all';
 
 export default function AppointmentsScreen() {
+  const router = useRouter();
+  const { toast, show: showToast, hide: hideToast } = useToast();
+  
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('upcoming');
+  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<FilterType>('upcoming');
+  
+  // -- الإلغاء --
+  const [cancelId, setCancelId] = useState<number | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       setIsLoading(true);
       const res = filter === 'upcoming' 
         ? await patientAppointmentsApi.getUpcoming()
         : await patientAppointmentsApi.getAll();
       
-      setAppointments(res.data);
+      // إذا كان الفلتر 'past' نصفي القائمة محلياً من السجل الكامل (لأنه لا يوجد endpoint خاص بـ past)
+      let data = res.data;
+      if (filter === 'past') {
+        const now = new Date();
+        data = data.filter((a: Appointment) => new Date(a.appointmentDate) < now || a.status === 'completed' || a.status === 'cancelled');
+      }
+
+      setAppointments(data);
     } catch (err) {
-      Alert.alert('خطأ', getErrorMessage(err));
+      showToast(getErrorMessage(err), 'error');
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [filter]);
 
   useFocusEffect(
     useCallback(() => {
       fetchAppointments();
-    }, [filter])
+    }, [fetchAppointments])
   );
 
-  const handleCancel = (id: number) => {
-    Alert.alert('إلغاء الموعد', 'هل أنت متأكد أنك تريد إلغاء هذا الموعد؟', [
-      { text: 'تراجع', style: 'cancel' },
-      { 
-        text: 'تأكيد الإلغاء', 
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await patientAppointmentsApi.cancel(id, { reason: 'إلغاء من قبل المريض' });
-            fetchAppointments();
-          } catch (err) {
-            Alert.alert('خطأ', getErrorMessage(err));
-          }
-        }
-      }
-    ]);
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchAppointments();
   };
 
-  const renderItem = ({ item }: { item: Appointment }) => (
-    <Card style={{ marginBottom: 16 }}>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 16, color: colors.textMain }}>
-          {item.clinic?.clinic_name || 'عيادة طبية'}
-        </Text>
-        <AppointmentStatusBadge status={item.status} />
-      </View>
+  const handleCancel = async () => {
+    if (!cancelId) return;
+    try {
+      setIsCancelling(true);
+      await patientAppointmentsApi.cancel(cancelId, { reason: 'إلغاء من قبل المريض' });
+      setCancelId(null);
+      showToast('تم إلغاء الموعد بنجاح', 'success');
+      fetchAppointments();
+    } catch (err) {
+      showToast(getErrorMessage(err), 'error');
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
-      <View style={{ flexDirection: 'row', gap: 16, marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Ionicons name="calendar-outline" size={16} color={colors.textSecondary} />
-          <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary }}>
-            {formatDate(item.appointmentDate)}
-          </Text>
-        </View>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-          <Ionicons name="time-outline" size={16} color={colors.textSecondary} />
-          <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary }}>
-            {formatTime(item.appointmentDate)}
-          </Text>
-        </View>
-      </View>
-
-      {item.notes && (
-        <View style={{ backgroundColor: colors.surfaceLight, padding: 12, borderRadius: 8, marginBottom: 16 }}>
-          <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textSecondary }}>ملاحظتك: {item.notes}</Text>
-        </View>
-      )}
-
-      {item.status === 'pending' || item.status === 'confirmed' ? (
-        <Button 
-          title="إلغاء الموعد" 
-          variant="outline" 
-          size="sm" 
-          onPress={() => handleCancel(item.id)}
-        />
-      ) : null}
-    </Card>
-  );
+  const FILTERS = [
+    { id: 'upcoming', label: 'القادمة' },
+    { id: 'past', label: 'السابقة' },
+    { id: 'all', label: 'الكل' },
+  ] as const;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ padding: 20, paddingBottom: 0 }}>
-        <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 24, color: colors.textMain, marginBottom: 16, textAlign: 'left' }}>سجل المواعيد</Text>
-        
-        {/* فلاتر */}
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-          {(['upcoming', 'past', 'all'] as const).map(f => (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenHeader title="سجل المواعيد" showBack />
+      
+      <View style={styles.header}>
+        <View style={styles.filtersRow}>
+          {FILTERS.map(f => (
             <TouchableOpacity 
-              key={f}
-              onPress={() => setFilter(f)}
-              style={{
-                paddingHorizontal: 16, 
-                paddingVertical: 8, 
-                borderRadius: 20,
-                backgroundColor: filter === f ? colors.primary : colors.surface,
-                borderWidth: 1,
-                borderColor: filter === f ? colors.primary : colors.border
-              }}
+              key={f.id}
+              onPress={() => setFilter(f.id)}
+              style={[styles.filterChip, filter === f.id && styles.filterChipActive]}
+              activeOpacity={0.8}
             >
-              <Text style={{ 
-                fontFamily: 'Cairo-SemiBold', 
-                color: filter === f ? colors.white : colors.textSecondary,
-                fontSize: 13 
-              }}>
-                {f === 'upcoming' ? 'القادمة' : f === 'past' ? 'السابقة' : 'الكل'}
+              <Text style={[styles.filterText, filter === f.id && styles.filterTextActive]}>
+                {f.label}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
-      {isLoading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+      {isLoading && !refreshing ? (
+        <View style={styles.listContainer}>
+          <AppointmentSkeleton />
+          <AppointmentSkeleton />
+          <AppointmentSkeleton />
         </View>
       ) : (
         <FlatList
           data={appointments}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={{ padding: 20 }}
+          contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+          renderItem={({ item }) => (
+            <AppointmentCard
+              appointment={item as any}
+              viewAs="patient"
+              onPress={() => router.push(`/(patient)/appointments/${item.id}` as any)}
+            />
+          )}
           ListEmptyComponent={
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <Ionicons name="calendar-clear-outline" size={64} color={colors.surfaceLight} />
-              <Text style={{ fontFamily: 'Cairo-SemiBold', fontSize: 16, color: colors.textSecondary, marginTop: 16 }}>لا توجد مواعيد حالياً</Text>
-            </View>
+            <EmptyState
+              icon="calendar-clear-outline"
+              title="لا توجد مواعيد"
+              subtitle={filter === 'upcoming' ? 'لا توجد لديك أي مواعيد قادمة مجدولة' : 'لم يتم العثور على أي مواعيد في سجلك'}
+            />
           }
         />
       )}
+
+      <ConfirmModal
+        visible={!!cancelId}
+        title="إلغاء الموعد"
+        message="هل أنت متأكد أنك تريد إلغاء هذا الموعد نهائياً؟ لا يمكن التراجع عن هذا الإجراء."
+        confirmText="نعم، إلغاء الموعد"
+        cancelText="تراجع"
+        confirmVariant="danger"
+        loading={isCancelling}
+        onConfirm={handleCancel}
+        onClose={() => setCancelId(null)}
+      />
+
+      <Toast {...toast} onHide={hideToast} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    padding: 20,
+    paddingBottom: 12,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  filtersRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  filterChip: {
+    paddingHorizontal: 18,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  filterChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  filterText: {
+    fontFamily: 'Cairo-SemiBold',
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  filterTextActive: {
+    color: colors.white,
+  },
+  listContainer: {
+    padding: 20,
+    gap: 12,
+    paddingBottom: 40,
+  },
+});

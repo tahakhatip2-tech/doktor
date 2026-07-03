@@ -9,6 +9,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -51,6 +53,10 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
     }
 
     try {
+      if (Constants.appOwnership === 'expo' || Constants.executionEnvironment === 'storeClient') {
+        console.warn('Push notifications are not supported in Expo Go. Skipping.');
+        return undefined;
+      }
       token = (
         await Notifications.getExpoPushTokenAsync({
           projectId,
@@ -58,7 +64,7 @@ export async function registerForPushNotificationsAsync(): Promise<string | unde
       ).data;
       console.log('Expo Push Token:', token);
     } catch (e) {
-      console.error(e);
+      console.warn('Push notification warning:', e);
     }
   } else {
     console.log('Must use physical device for Push Notifications');

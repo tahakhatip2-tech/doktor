@@ -12,6 +12,10 @@ export interface Clinic {
   working_hours?: string;
   name?: string;
   email?: string;
+  phone?: string;
+  address?: string;
+  status?: string;
+  metadata?: any;
   // إحصائيات
   averageRating?: number;
   reviewsCount?: number;

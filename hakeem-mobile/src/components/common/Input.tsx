@@ -47,7 +47,7 @@ export function Input({
       ]}>
         {icon && <View style={styles.iconLeft}>{icon}</View>}
         <TextInput
-          style={[styles.input, icon && styles.inputWithIcon, multiline && styles.multiline]}
+          style={[styles.input, !!icon && styles.inputWithIcon, !!multiline && styles.multiline]}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           value={value}
@@ -76,61 +76,66 @@ export function Input({
 
 const styles = StyleSheet.create({
   wrapper: {
-    gap: 6,
+    gap: 8,
   },
   label: {
     fontFamily: 'Cairo-SemiBold',
     fontSize: 14,
-    color: colors.textMain,
+    color: colors.textSecondary,
     textAlign: 'right',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surfaceLight,
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: colors.border,
-    paddingHorizontal: 14,
-    minHeight: 52,
+    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+    paddingHorizontal: 16,
+    minHeight: 56,
   },
   inputFocused: {
     borderColor: colors.primary,
-    backgroundColor: colors.surface,
+    backgroundColor: 'rgba(108, 99, 255, 0.05)',
   },
   inputError: {
     borderColor: colors.error,
+    backgroundColor: 'rgba(239, 68, 68, 0.05)',
   },
   inputDisabled: {
     opacity: 0.5,
+    backgroundColor: 'rgba(255, 255, 255, 0.01)',
   },
   input: {
     flex: 1,
     fontFamily: 'Cairo-Regular',
     fontSize: 15,
     color: colors.textMain,
-    paddingVertical: 12,
+    paddingVertical: 14,
   },
   inputWithIcon: {
-    marginRight: 8,
+    marginRight: 10,
   },
   multiline: {
-    minHeight: 100,
+    minHeight: 120,
     textAlignVertical: 'top',
+    paddingTop: 16,
   },
   iconLeft: {
-    marginLeft: 8,
+    marginLeft: 10,
   },
   eyeBtn: {
-    padding: 4,
+    padding: 8,
   },
   eyeText: {
-    fontSize: 16,
+    fontSize: 18,
+    opacity: 0.8,
   },
   errorText: {
     fontFamily: 'Cairo-Regular',
-    fontSize: 12,
+    fontSize: 13,
     color: colors.error,
     textAlign: 'right',
+    marginTop: -2,
   },
 });

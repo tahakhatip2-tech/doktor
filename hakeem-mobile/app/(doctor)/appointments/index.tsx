@@ -1,133 +1,157 @@
-import { View, Text, FlatList, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { Card, AppointmentStatusBadge } from '../../../src/components/common';
+import { ScreenHeader, AppointmentCard, AppointmentSkeleton, EmptyState, useToast, Toast } from '../../../src/components/common';
 import { doctorAppointmentsApi } from '../../../src/api/appointments.api';
 import { Appointment } from '../../../src/types/appointment.types';
 import { getErrorMessage } from '../../../src/api/client';
-import { formatTime } from '../../../src/utils/format.utils';
+
+type TabType = 'pending' | 'confirmed' | 'all';
 
 export default function DoctorAppointmentsScreen() {
   const router = useRouter();
+  const { toast, show: showToast, hide: hideToast } = useToast();
+  
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'pending' | 'confirmed' | 'all'>('pending');
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('pending');
 
-  const fetchAppointments = async () => {
+  const fetchAppointments = useCallback(async () => {
     try {
       setIsLoading(true);
       const params = activeTab !== 'all' ? { status: activeTab } : {};
       const res = await doctorAppointmentsApi.getAll(params);
+      
+      // إذا كان الفلتر all يمكننا عرض الكل وتصفيتها لو أردنا، هنا السيرفر يدعم الفلتر
       setAppointments(res.data);
     } catch (err) {
-      Alert.alert('خطأ', getErrorMessage(err));
+      showToast(getErrorMessage(err), 'error');
     } finally {
       setIsLoading(false);
+      setRefreshing(false);
     }
-  };
+  }, [activeTab]);
 
   useFocusEffect(
     useCallback(() => {
       fetchAppointments();
-    }, [activeTab])
+    }, [fetchAppointments])
   );
 
-  const renderItem = ({ item }: { item: Appointment }) => (
-    <TouchableOpacity onPress={() => router.push(`/(doctor)/appointments/${item.id}`)} activeOpacity={0.8}>
-      <Card style={{ marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 16, color: colors.textMain, textAlign: 'left' }}>
-              {item.customerName || 'مريض غير مسجل'}
-            </Text>
-            <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, textAlign: 'left' }}>
-              {item.phone}
-            </Text>
-          </View>
-          <AppointmentStatusBadge status={item.status} />
-        </View>
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchAppointments();
+  };
 
-        <View style={{ flexDirection: 'row', gap: 16, marginBottom: 12 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="time-outline" size={18} color={colors.primary} />
-            <Text style={{ fontFamily: 'Cairo-SemiBold', fontSize: 14, color: colors.primary }}>
-              {formatTime(item.appointmentDate)}
-            </Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Ionicons name="medical-outline" size={18} color={colors.textSecondary} />
-            <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary }}>
-              {item.type === 'consultation' ? 'استشارة' : item.type === 'followup' ? 'مراجعة' : 'أخرى'}
-            </Text>
-          </View>
-        </View>
-
-        {item.notes && (
-          <View style={{ backgroundColor: colors.surfaceLight, padding: 12, borderRadius: 8 }}>
-            <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textSecondary }} numberOfLines={1}>
-              ملاحظة: {item.notes}
-            </Text>
-          </View>
-        )}
-      </Card>
-    </TouchableOpacity>
-  );
+  const TABS = [
+    { id: 'pending', label: 'طلبات جديدة' },
+    { id: 'confirmed', label: 'مؤكدة' },
+    { id: 'all', label: 'الكل' },
+  ] as const;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <View style={{ padding: 20, paddingBottom: 0 }}>
-        <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 24, color: colors.textMain, marginBottom: 16, textAlign: 'left' }}>إدارة المواعيد</Text>
-        
-        {/* فلاتر */}
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
-          {(['pending', 'confirmed', 'all'] as const).map(tab => (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <ScreenHeader title="إدارة المواعيد" showBack={false} />
+      
+      <View style={styles.header}>
+        <View style={styles.tabsContainer}>
+          {TABS.map(tab => (
             <TouchableOpacity 
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              style={{
-                flex: 1,
-                paddingVertical: 10, 
-                borderRadius: 12,
-                backgroundColor: activeTab === tab ? colors.primary : colors.surface,
-                borderWidth: 1,
-                borderColor: activeTab === tab ? colors.primary : colors.border,
-                alignItems: 'center'
-              }}
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id as TabType)}
+              style={[styles.tab, activeTab === tab.id && styles.tabActive]}
+              activeOpacity={0.8}
             >
-              <Text style={{ 
-                fontFamily: 'Cairo-SemiBold', 
-                color: activeTab === tab ? colors.white : colors.textSecondary,
-                fontSize: 13 
-              }}>
-                {tab === 'pending' ? 'طلبات جديدة' : tab === 'confirmed' ? 'مؤكدة' : 'الكل'}
+              <Text style={[styles.tabText, activeTab === tab.id && styles.tabTextActive]}>
+                {tab.label}
               </Text>
             </TouchableOpacity>
           ))}
         </View>
       </View>
 
-      {isLoading ? (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color={colors.primary} />
+      {isLoading && !refreshing ? (
+        <View style={styles.listContainer}>
+          <AppointmentSkeleton />
+          <AppointmentSkeleton />
+          <AppointmentSkeleton />
         </View>
       ) : (
         <FlatList
           data={appointments}
           keyExtractor={(item) => item.id.toString()}
-          renderItem={renderItem}
-          contentContainerStyle={{ padding: 20 }}
+          contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+          renderItem={({ item }) => (
+            <AppointmentCard
+              appointment={item as any}
+              viewAs="doctor"
+              onPress={() => router.push(`/(doctor)/appointments/${item.id}` as any)}
+            />
+          )}
           ListEmptyComponent={
-            <View style={{ alignItems: 'center', marginTop: 40 }}>
-              <Ionicons name="calendar-clear-outline" size={64} color={colors.surfaceLight} />
-              <Text style={{ fontFamily: 'Cairo-SemiBold', fontSize: 16, color: colors.textSecondary, marginTop: 16 }}>لا توجد مواعيد حالياً</Text>
-            </View>
+            <EmptyState
+              icon="calendar-clear-outline"
+              title="لا توجد مواعيد"
+              subtitle={
+                activeTab === 'pending' ? 'لا توجد طلبات مواعيد جديدة قيد الانتظار' :
+                activeTab === 'confirmed' ? 'لا توجد مواعيد مؤكدة' :
+                'لم يتم العثور على أي مواعيد'
+              }
+            />
           }
         />
       )}
+
+      <Toast {...toast} onHide={hideToast} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    padding: 20,
+    paddingBottom: 12,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  tab: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: colors.surfaceLight,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  tabActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  tabText: {
+    fontFamily: 'Cairo-SemiBold',
+    fontSize: 13,
+    color: colors.textSecondary,
+  },
+  tabTextActive: {
+    color: colors.white,
+  },
+  listContainer: {
+    padding: 20,
+    gap: 12,
+    paddingBottom: 40,
+  },
+});

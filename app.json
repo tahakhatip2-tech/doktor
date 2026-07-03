@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "23bd9603-59fe-4372-9759-d3c16a9b645c"
+      }
+    },
+    "android": {
+      "package": "com.khodnimaakapp.hakeemjordan"
+    }
+  }
+}

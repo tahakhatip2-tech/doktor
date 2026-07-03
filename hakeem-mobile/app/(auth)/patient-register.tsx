@@ -1,110 +1,218 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, ImageBackground } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { patientAuthApi } from '../../src/api/auth.api';
-import { useAuthStore } from '../../src/store/auth.store';
 import { getErrorMessage } from '../../src/api/client';
 import { colors } from '../../src/theme/colors';
 
 const schema = z.object({
-  fullName: z.string().min(3, 'الاسم يجب أن يكون 3 أحرف على الأقل'),
-  phone: z.string().min(10, 'رقم الهاتف غير صالح'),
-  email: z.string().email('البريد الإلكتروني غير صالح'),
-  password: z.string().min(6, 'كلمة المرور 6 أحرف على الأقل'),
+  fullName: z.string().min(2, 'الاسم مطلوب'),
+  email: z.string().email('بريد غير صالح'),
+  password: z.string().min(6, 'كلمة المرور قصيرة'),
+  phone: z.string().min(10, 'رقم هاتف غير صالح'),
 });
 type FormData = z.infer<typeof schema>;
 
 export default function PatientRegisterScreen() {
   const router = useRouter();
-  const loginAsPatient = useAuthStore((s) => s.loginAsPatient);
   const [isLoading, setIsLoading] = useState(false);
 
   const { control, handleSubmit, formState: { errors } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: { fullName: '', phone: '', email: '', password: '' },
+    resolver: zodResolver(schema as any),
+    defaultValues: { fullName: '', email: '', password: '', phone: '' },
   });
 
   const onSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
-      const res = await patientAuthApi.register(data);
-      const { token, patient } = res.data;
-      if (token && patient) await loginAsPatient(token, patient);
+      await patientAuthApi.register(data);
+      Alert.alert('نجاح', 'تم إنشاء الحساب بنجاح! يمكنك الآن تسجيل الدخول', [
+        { text: 'حسناً', onPress: () => router.push('/(auth)/patient-login') }
+      ]);
     } catch (e) {
-      Alert.alert('خطأ', getErrorMessage(e));
+      Alert.alert('خطأ في التسجيل', getErrorMessage(e));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const fields: Array<{ name: keyof FormData; label: string; placeholder: string; keyboard?: any; secure?: boolean }> = [
-    { name: 'fullName', label: 'الاسم الكامل', placeholder: 'الاسم الرباعي' },
-    { name: 'phone', label: 'رقم الهاتف', placeholder: '07xxxxxxxx', keyboard: 'phone-pad' },
-    { name: 'email', label: 'البريد الإلكتروني', placeholder: 'mail@example.com', keyboard: 'email-address' },
-    { name: 'password', label: 'كلمة المرور', placeholder: '••••••••', secure: true },
-  ];
-
   return (
-    <SafeAreaView style={s.safe}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={s.scroll}>
-          <TouchableOpacity onPress={() => router.back()} style={s.back}>
-            <Text style={[s.backText, { fontFamily: 'Cairo-Bold' }]}>عودة ➔</Text>
-          </TouchableOpacity>
+    <ImageBackground source={require('../../assets/bg.jpg')} style={styles.backgroundImage} resizeMode="cover">
+      <SafeAreaView style={styles.safeArea}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
 
-          <View style={s.header}>
-            <Text style={[s.title, { fontFamily: 'Cairo-Bold' }]}>إنشاء حساب مريض</Text>
-            <Text style={[s.sub, { fontFamily: 'Cairo-Regular' }]}>انضم إلينا وابدأ بحجز مواعيدك بسهولة</Text>
-          </View>
-
-          <View style={s.form}>
-            {fields.map(f => (
-              <View key={f.name}>
-                <Text style={[s.label, { fontFamily: 'Cairo-SemiBold' }]}>{f.label}</Text>
-                <Controller control={control} name={f.name} render={({ field: { onChange, onBlur, value } }) => (
-                  <TextInput
-                    style={[s.input, { fontFamily: 'Cairo-Regular' }]}
-                    placeholder={f.placeholder}
-                    placeholderTextColor={colors.textSecondary}
-                    keyboardType={f.keyboard || 'default'}
-                    autoCapitalize={f.name === 'email' ? 'none' : 'words'}
-                    secureTextEntry={f.secure}
-                    onBlur={onBlur}
-                    onChangeText={onChange}
-                    value={value}
-                  />
-                )} />
-                {errors[f.name] && <Text style={[s.err, { fontFamily: 'Cairo-Regular' }]}>{errors[f.name]?.message}</Text>}
-              </View>
-            ))}
-
-            <TouchableOpacity style={[s.btn, isLoading && s.disabled]} onPress={handleSubmit(onSubmit)} disabled={isLoading}>
-              {isLoading ? <ActivityIndicator color={colors.white} /> : <Text style={[s.btnText, { fontFamily: 'Cairo-Bold' }]}>إنشاء حساب</Text>}
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <MaterialCommunityIcons name="arrow-right" size={24} color="#fff" />
             </TouchableOpacity>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+
+            <View style={styles.glassCard}>
+              <View style={styles.headerContainer}>
+                <View style={styles.iconContainer}>
+                  <MaterialCommunityIcons name="account-plus" size={40} color={colors.accent} />
+                </View>
+                <Text style={[styles.title, { fontFamily: 'Cairo-Bold' }]}>حساب جديد</Text>
+                <Text style={[styles.subtitle, { fontFamily: 'Cairo-Regular' }]}>أدخل بياناتك لإنشاء حساب مريض</Text>
+              </View>
+
+              <View style={styles.formContainer}>
+                <View style={styles.fieldWrapper}>
+                  <Text style={[styles.label, { fontFamily: 'Cairo-SemiBold' }]}>الاسم الكامل</Text>
+                  <Controller
+                    control={control}
+                    name="fullName"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        style={[styles.input, { fontFamily: 'Cairo-Regular' }]}
+                        placeholder="أحمد محمد"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                    )}
+                  />
+                  {errors.fullName && <Text style={[styles.errorText, { fontFamily: 'Cairo-Regular' }]}>{errors.fullName.message}</Text>}
+                </View>
+
+                <View style={styles.fieldWrapper}>
+                  <Text style={[styles.label, { fontFamily: 'Cairo-SemiBold' }]}>البريد الإلكتروني</Text>
+                  <Controller
+                    control={control}
+                    name="email"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        style={[styles.input, { fontFamily: 'Cairo-Regular' }]}
+                        placeholder="patient@example.com"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        keyboardType="email-address"
+                        autoCapitalize="none"
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                    )}
+                  />
+                  {errors.email && <Text style={[styles.errorText, { fontFamily: 'Cairo-Regular' }]}>{errors.email.message}</Text>}
+                </View>
+
+                <View style={styles.fieldWrapper}>
+                  <Text style={[styles.label, { fontFamily: 'Cairo-SemiBold' }]}>رقم الهاتف</Text>
+                  <Controller
+                    control={control}
+                    name="phone"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        style={[styles.input, { fontFamily: 'Cairo-Regular' }]}
+                        placeholder="07XXXXXXXX"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        keyboardType="phone-pad"
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                    )}
+                  />
+                  {errors.phone && <Text style={[styles.errorText, { fontFamily: 'Cairo-Regular' }]}>{errors.phone.message}</Text>}
+                </View>
+
+                <View style={styles.fieldWrapper}>
+                  <Text style={[styles.label, { fontFamily: 'Cairo-SemiBold' }]}>كلمة المرور</Text>
+                  <Controller
+                    control={control}
+                    name="password"
+                    render={({ field: { onChange, onBlur, value } }) => (
+                      <TextInput
+                        style={[styles.input, { fontFamily: 'Cairo-Regular' }]}
+                        placeholder="••••••••"
+                        placeholderTextColor="rgba(255,255,255,0.4)"
+                        secureTextEntry
+                        onBlur={onBlur}
+                        onChangeText={onChange}
+                        value={value}
+                      />
+                    )}
+                  />
+                  {errors.password && <Text style={[styles.errorText, { fontFamily: 'Cairo-Regular' }]}>{errors.password.message}</Text>}
+                </View>
+
+                <TouchableOpacity
+                  style={[styles.submitButton, isLoading && styles.buttonDisabled]}
+                  onPress={handleSubmit(onSubmit)}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={[styles.submitText, { fontFamily: 'Cairo-Bold' }]}>إنشاء حساب</Text>
+                  )}
+                </TouchableOpacity>
+
+                <View style={styles.registerContainer}>
+                  <TouchableOpacity onPress={() => router.push('/(auth)/patient-login')}>
+                    <Text style={[styles.registerLink, { fontFamily: 'Cairo-Bold' }]}>تسجيل الدخول</Text>
+                  </TouchableOpacity>
+                  <Text style={[styles.registerText, { fontFamily: 'Cairo-Regular' }]}>لديك حساب بالفعل؟</Text>
+                </View>
+              </View>
+            </View>
+
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    </ImageBackground>
   );
 }
 
-const s = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
-  scroll: { flexGrow: 1, padding: 24 },
-  back: { marginBottom: 16, padding: 4 },
-  backText: { color: colors.textSecondary, fontSize: 14 },
-  header: { alignItems: 'center', marginBottom: 32, marginTop: 24 },
-  title: { fontSize: 26, color: colors.textMain, textAlign: 'center', marginBottom: 8 },
-  sub: { fontSize: 14, color: colors.textSecondary, textAlign: 'center' },
-  form: { gap: 16 },
-  label: { fontSize: 15, color: colors.textMain, textAlign: 'right', marginBottom: 6 },
-  input: { backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 12, paddingHorizontal: 16, paddingVertical: 16, color: colors.textMain, textAlign: 'right', fontSize: 15 },
-  err: { fontSize: 13, color: colors.error, textAlign: 'right', marginTop: 4 },
-  btn: { backgroundColor: colors.accent, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 8 },
-  disabled: { opacity: 0.7 },
-  btnText: { color: colors.white, fontSize: 17 },
+const styles = StyleSheet.create({
+  backgroundImage: { flex: 1, width: "100%", height: "100%" },
+  safeArea: { flex: 1 },
+  scrollContent: { flexGrow: 1, justifyContent: 'center', padding: 20 },
+  backButton: { position: 'absolute', top: 20, right: 20, zIndex: 10, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  glassCard: {
+    width: "100%",
+    backgroundColor: "rgba(15, 23, 42, 0.8)",
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.1)",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
+    elevation: 5,
+  },
+  headerContainer: { alignItems: 'center', marginBottom: 32 },
+  iconContainer: {
+    width: 80, height: 80, borderRadius: 24,
+    backgroundColor: 'rgba(249, 115, 22, 0.2)',
+    borderWidth: 1, borderColor: "rgba(249, 115, 22, 0.5)",
+    justifyContent: 'center', alignItems: 'center', marginBottom: 16,
+  },
+  title: { fontSize: 26, color: "#fff", textAlign: 'center', marginBottom: 4 },
+  subtitle: { fontSize: 13, color: "rgba(255,255,255,0.6)", textAlign: 'center' },
+  formContainer: { gap: 16 },
+  fieldWrapper: { gap: 6 },
+  label: { fontSize: 14, color: "rgba(255,255,255,0.8)", textAlign: 'right' },
+  input: {
+    backgroundColor: "rgba(0,0,0,0.3)",
+    borderWidth: 1, borderColor: "rgba(255,255,255,0.1)",
+    borderRadius: 16, paddingHorizontal: 16, paddingVertical: 14,
+    color: "#fff", textAlign: 'right', fontSize: 15,
+  },
+  errorText: { fontSize: 13, color: colors.error, textAlign: 'right' },
+  submitButton: {
+    backgroundColor: colors.accent, borderRadius: 16,
+    paddingVertical: 16, alignItems: 'center', marginTop: 12,
+  },
+  buttonDisabled: { opacity: 0.7 },
+  submitText: { color: "#fff", fontSize: 16 },
+  registerContainer: { flexDirection: 'row', justifyContent: 'center', marginTop: 24, gap: 6 },
+  registerLink: { color: colors.accent, fontSize: 14 },
+  registerText: { color: "rgba(255,255,255,0.6)", fontSize: 14 },
 });

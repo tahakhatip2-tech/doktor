@@ -1,5 +1,5 @@
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from 'react-native';
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,21 +7,45 @@ import { colors } from '../../../src/theme/colors';
 import { clinicsApi } from '../../../src/api/modules.api';
 import { patientAppointmentsApi } from '../../../src/api/appointments.api';
 import { Clinic } from '../../../src/types/clinic.types';
-import { Button, Input } from '../../../src/components/common';
-import { getErrorMessage } from '../../../src/api/client';
+import { Button, Input, ScreenHeader, Modal, useToast, Toast } from '../../../src/components/common';
+
+// -- دوال مساعدة للتاريخ والوقت --
+function getNextDays(days = 7) {
+  const result = [];
+  const date = new Date();
+  const dayNames = ['الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت'];
+  const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+
+  for (let i = 0; i < days; i++) {
+    const current = new Date(date);
+    current.setDate(date.getDate() + i);
+    result.push({
+      dateStr: current.toISOString().split('T')[0],
+      dayName: i === 0 ? 'اليوم' : i === 1 ? 'غداً' : dayNames[current.getDay()],
+      dayNum: current.getDate(),
+      month: monthNames[current.getMonth()]
+    });
+  }
+  return result;
+}
+
+const MOCK_SLOTS = ['09:00 AM', '10:00 AM', '11:30 AM', '01:00 PM', '02:30 PM', '04:00 PM', '06:00 PM'];
 
 export default function ClinicDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
+  const { toast, show: showToast, hide: hideToast } = useToast();
   
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
   
-  // نموذج الحجز
-  const [date, setDate] = useState('');
-  const [time, setTime] = useState('');
+  // -- حالة الحجز --
+  const nextDays = getNextDays(7);
+  const [selectedDate, setSelectedDate] = useState(nextDays[0].dateStr);
+  const [selectedSlot, setSelectedSlot] = useState('');
   const [notes, setNotes] = useState('');
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
 
   useEffect(() => {
     fetchClinic();
@@ -33,23 +57,27 @@ export default function ClinicDetailsScreen() {
       const res = await clinicsApi.getById(Number(id));
       setClinic(res.data);
     } catch (err) {
-      Alert.alert('خطأ', getErrorMessage(err));
-      router.back();
+      showToast('حدث خطأ أثناء جلب بيانات العيادة', 'error');
+      setTimeout(() => router.back(), 2000);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleBook = async () => {
-    if (!date || !time) {
-      Alert.alert('تنبيه', 'الرجاء اختيار تاريخ ووقت الموعد');
-      return;
-    }
-
+  const handleConfirmBooking = async () => {
     try {
       setIsBooking(true);
-      // دمج التاريخ والوقت لتكوين ISO string
-      const appointmentDate = new Date(`${date}T${time}:00`).toISOString();
+      // تحويل AM/PM إلى 24h
+      const [time, modifier] = selectedSlot.split(' ');
+      let [hours, minutes] = time.split(':');
+      if (hours === '12') {
+        hours = '00';
+      }
+      if (modifier === 'PM') {
+        hours = (parseInt(hours, 10) + 12).toString();
+      }
+      
+      const appointmentDate = new Date(`${selectedDate}T${hours.padStart(2, '0')}:${minutes}:00`).toISOString();
       
       await patientAppointmentsApi.create({
         clinicId: Number(id),
@@ -58,14 +86,27 @@ export default function ClinicDetailsScreen() {
         type: 'consultation',
       });
       
-      Alert.alert('نجاح', 'تم حجز موعدك بنجاح وسوف تصلك رسالة تأكيد.', [
-        { text: 'حسناً', onPress: () => router.push('/(patient)/appointments') }
-      ]);
+      setIsConfirmModalVisible(false);
+      showToast('تم حجز الموعد بنجاح', 'success');
+      
+      setTimeout(() => {
+        router.push('/(patient)/appointments');
+      }, 1500);
+      
     } catch (err) {
-      Alert.alert('خطأ في الحجز', getErrorMessage(err));
+      setIsConfirmModalVisible(false);
+      showToast('حدث خطأ أثناء الحجز، يرجى المحاولة مرة أخرى', 'error');
     } finally {
       setIsBooking(false);
     }
+  };
+
+  const onBookPress = () => {
+    if (!selectedSlot) {
+      showToast('الرجاء اختيار وقت الموعد أولاً', 'warning');
+      return;
+    }
+    setIsConfirmModalVisible(true);
   };
 
   if (isLoading) {
@@ -78,93 +119,437 @@ export default function ClinicDetailsScreen() {
 
   if (!clinic) return null;
 
+  const isPharmacy = (clinic as any).role === 'PHARMACY';
+
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
-        
-        {/* Header Map/Image Placeholder */}
-        <View style={{ height: 200, backgroundColor: colors.surfaceLight, justifyContent: 'center', alignItems: 'center', position: 'relative' }}>
-          <Ionicons name="map-outline" size={64} color={colors.border} />
-          <TouchableOpacity 
-            onPress={() => router.back()} 
-            style={{ position: 'absolute', top: 20, left: 20, width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.white} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Clinic Info */}
-        <View style={{ padding: 20, marginTop: -30, backgroundColor: colors.background, borderTopLeftRadius: 24, borderTopRightRadius: 24 }}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 24, color: colors.textMain, textAlign: 'left' }}>{clinic.name}</Text>
-              <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 15, color: colors.primary, textAlign: 'left' }}>
-                {clinic.metadata?.specialty || 'تخصص عام'}
-              </Text>
-            </View>
-            <View style={{ backgroundColor: `${colors.success}20`, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 }}>
-              <Text style={{ fontFamily: 'Cairo-SemiBold', color: colors.success }}>متاح الآن</Text>
-            </View>
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+      <ScreenHeader title={clinic.name ?? 'عيادة'} showBack />
+      
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        {/* معلومات العيادة العلوية */}
+        <View style={styles.headerProfile}>
+          <View style={styles.logoWrapper}>
+            <Text style={styles.logoEmoji}>{clinic.metadata?.icon || (isPharmacy ? '💊' : '🏥')}</Text>
           </View>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8, gap: 8 }}>
-            <Ionicons name="location" size={18} color={colors.textSecondary} />
-            <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary }}>
-              {clinic.address || 'العنوان غير محدد بالتفصيل'}
-            </Text>
-          </View>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 24, gap: 8 }}>
-            <Ionicons name="call" size={18} color={colors.textSecondary} />
-            <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary }}>
-              {clinic.phone || 'رقم الهاتف غير متاح'}
-            </Text>
-          </View>
-
-          <View style={{ height: 1, backgroundColor: colors.border, marginBottom: 24 }} />
-
-          {/* Booking Form */}
-          <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 18, color: colors.textMain, marginBottom: 16, textAlign: 'left' }}>حجز موعد</Text>
+          <Text style={styles.clinicName}>{clinic.name}</Text>
+          <Text style={styles.specialty}>{clinic.metadata?.specialty || (isPharmacy ? 'صيدلية' : 'تخصص عام')}</Text>
           
-          <View style={{ flexDirection: 'row', gap: 12, marginBottom: 16 }}>
-            <View style={{ flex: 1 }}>
-              <Input 
-                label="التاريخ (مؤقتاً)" 
-                placeholder="YYYY-MM-DD" 
-                value={date} 
-                onChangeText={setDate}
-                icon={<Ionicons name="calendar-outline" size={20} color={colors.textSecondary} />}
-              />
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Ionicons name="star" size={16} color="#F59E0B" />
+              <Text style={styles.statValue}>{clinic.metadata?.rating || '4.8'}</Text>
+              <Text style={styles.statLabel}>(124 تقييم)</Text>
             </View>
-            <View style={{ flex: 1 }}>
-              <Input 
-                label="الوقت" 
-                placeholder="HH:MM" 
-                value={time} 
-                onChangeText={setTime}
-                icon={<Ionicons name="time-outline" size={20} color={colors.textSecondary} />}
-              />
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Ionicons name="time-outline" size={16} color={colors.primary} />
+              <Text style={styles.statValue}>10 ص - 10 م</Text>
             </View>
           </View>
 
-          <Input 
-            label="ملاحظات للطبيب (اختياري)" 
-            placeholder="مثال: أعاني من ألم في الرأس منذ يومين..." 
-            value={notes} 
-            onChangeText={setNotes}
-            multiline
-            numberOfLines={3}
-            style={{ marginBottom: 24 }}
-          />
+          <View style={styles.actionsRow}>
+            <TouchableOpacity style={styles.actionBtnPrimary} onPress={() => router.push(`/(patient)/chat/${clinic.id}` as any)}>
+              <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.white} />
+              <Text style={styles.actionBtnText}>مراسلة</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtnSecondary}>
+              <Ionicons name="call-outline" size={20} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.actionBtnSecondary}>
+              <Ionicons name="location-outline" size={20} color={colors.primary} />
+            </TouchableOpacity>
+          </View>
+        </View>
 
+        {isPharmacy ? (
+          <View style={styles.section}>
+             <View style={styles.pharmacyCard}>
+                <Ionicons name="document-text-outline" size={32} color={colors.accent} />
+                <Text style={styles.pharmacyTitle}>لديك وصفة طبية؟</Text>
+                <Text style={styles.pharmacyDesc}>قم بإرسال الوصفة الطبية للصيدلية لتحضير الدواء قبل وصولك.</Text>
+                <Button 
+                  title="صرف وصفة طبية" 
+                  onPress={() => showToast('سيتم إضافة صرف الوصفة لاحقاً', 'info')} 
+                  variant="accent"
+                  style={{ marginTop: 16 }}
+                />
+             </View>
+          </View>
+        ) : (
+          <>
+            {/* التقويم والأوقات */}
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>احجز موعداً</Text>
+                <Text style={styles.sectionSubtitle}>اختر اليوم المناسب</Text>
+              </View>
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.daysContainer}>
+                {nextDays.map(day => {
+                  const isActive = selectedDate === day.dateStr;
+                  return (
+                    <TouchableOpacity
+                      key={day.dateStr}
+                      style={[styles.dayCard, isActive && styles.dayCardActive]}
+                      onPress={() => {
+                        setSelectedDate(day.dateStr);
+                        setSelectedSlot(''); // تصفير الوقت عند تغيير اليوم
+                      }}
+                    >
+                      <Text style={[styles.dayName, isActive && styles.textActive]}>{day.dayName}</Text>
+                      <Text style={[styles.dayNum, isActive && styles.textActive]}>{day.dayNum}</Text>
+                      <Text style={[styles.dayMonth, isActive && styles.textActive]}>{day.month}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </View>
+
+            <View style={styles.section}>
+              <Text style={styles.sectionSubtitle}>الأوقات المتاحة</Text>
+              <View style={styles.slotsGrid}>
+                {MOCK_SLOTS.map(slot => {
+                  const isActive = selectedSlot === slot;
+                  return (
+                    <TouchableOpacity
+                      key={slot}
+                      style={[styles.slotCard, isActive && styles.slotCardActive]}
+                      onPress={() => setSelectedSlot(slot)}
+                    >
+                      <Text style={[styles.slotText, isActive && styles.slotTextActive]}>{slot}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.section}>
+              <Input
+                label="ملاحظات للطبيب (اختياري)"
+                placeholder="أخبر الطبيب عن حالتك أو أي تفاصيل مهمة..."
+                value={notes}
+                onChangeText={setNotes}
+                multiline
+                numberOfLines={3}
+              />
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      {/* زر الحجز العائم */}
+      {!isPharmacy && (
+        <View style={styles.bottomBar}>
+          <View style={styles.bottomBarPrice}>
+            <Text style={styles.priceLabel}>سعر الكشفية</Text>
+            <Text style={styles.priceValue}>{clinic.metadata?.price || '25'} دينار</Text>
+          </View>
           <Button 
-            title="تأكيد الحجز" 
-            onPress={handleBook} 
-            loading={isBooking}
-            icon={<Ionicons name="checkmark-circle-outline" size={20} color={colors.white} />}
+            title="حجز موعد" 
+            onPress={onBookPress} 
+            style={styles.bookBtn}
           />
         </View>
-      </ScrollView>
+      )}
+
+      {/* مودال التأكيد */}
+      <Modal visible={isConfirmModalVisible} onClose={() => setIsConfirmModalVisible(false)} size="sm">
+        <View style={styles.confirmModal}>
+          <View style={styles.confirmIcon}>
+            <Ionicons name="calendar" size={32} color={colors.primary} />
+          </View>
+          <Text style={styles.confirmTitle}>تأكيد الحجز</Text>
+          <Text style={styles.confirmDesc}>
+            سيتم حجز موعد في {clinic.name} يوم {nextDays.find(d => d.dateStr === selectedDate)?.dayName} الساعة {selectedSlot}.
+          </Text>
+          
+          <View style={styles.confirmActions}>
+            <TouchableOpacity style={styles.cancelBtn} onPress={() => setIsConfirmModalVisible(false)}>
+              <Text style={styles.cancelBtnText}>تراجع</Text>
+            </TouchableOpacity>
+            <Button title="تأكيد الموعد" onPress={handleConfirmBooking} loading={isBooking} style={{ flex: 1 }} />
+          </View>
+        </View>
+      </Modal>
+
+      <Toast {...toast} onHide={hideToast} />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  headerProfile: {
+    alignItems: 'center',
+    padding: 24,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  logoWrapper: {
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: `${colors.primary}15`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: `${colors.primary}40`,
+  },
+  logoEmoji: {
+    fontSize: 40,
+  },
+  clinicName: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 20,
+    color: colors.textMain,
+    marginBottom: 4,
+  },
+  specialty: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 14,
+    color: colors.primary,
+    marginBottom: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 16,
+    marginBottom: 24,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  statValue: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 14,
+    color: colors.textMain,
+  },
+  statLabel: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  statDivider: {
+    width: 1,
+    height: 16,
+    backgroundColor: colors.border,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  actionBtnPrimary: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    borderRadius: 14,
+  },
+  actionBtnText: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 14,
+    color: colors.white,
+  },
+  actionBtnSecondary: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: `${colors.primary}15`,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  section: {
+    padding: 20,
+    paddingBottom: 0,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 18,
+    color: colors.textMain,
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 12,
+  },
+  daysContainer: {
+    gap: 12,
+    paddingBottom: 10,
+  },
+  dayCard: {
+    width: 72,
+    height: 90,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 4,
+  },
+  dayCardActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  dayName: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  dayNum: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 20,
+    color: colors.textMain,
+  },
+  dayMonth: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 11,
+    color: colors.textSecondary,
+  },
+  textActive: {
+    color: colors.white,
+  },
+  slotsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  slotCard: {
+    width: '30%',
+    flexGrow: 1,
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    alignItems: 'center',
+  },
+  slotCardActive: {
+    backgroundColor: `${colors.primary}15`,
+    borderColor: colors.primary,
+  },
+  slotText: {
+    fontFamily: 'Cairo-SemiBold',
+    fontSize: 14,
+    color: colors.textMain,
+  },
+  slotTextActive: {
+    color: colors.primary,
+    fontFamily: 'Cairo-Bold',
+  },
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 20,
+    paddingBottom: 30, // for safe area
+    backgroundColor: colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    gap: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  bottomBarPrice: {
+    flex: 1,
+  },
+  priceLabel: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  priceValue: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 18,
+    color: colors.textMain,
+  },
+  bookBtn: {
+    flex: 2,
+  },
+  confirmModal: {
+    alignItems: 'center',
+    paddingVertical: 10,
+  },
+  confirmIcon: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: `${colors.primary}15`,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  confirmTitle: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 18,
+    color: colors.textMain,
+    marginBottom: 8,
+  },
+  confirmDesc: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+    marginBottom: 24,
+  },
+  confirmActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  cancelBtn: {
+    flex: 1,
+    paddingVertical: 14,
+    borderRadius: 14,
+    backgroundColor: colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  cancelBtnText: {
+    fontFamily: 'Cairo-SemiBold',
+    fontSize: 15,
+    color: colors.textMain,
+  },
+  pharmacyCard: {
+    backgroundColor: `${colors.accent}10`,
+    borderWidth: 1,
+    borderColor: `${colors.accent}40`,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+    gap: 8,
+  },
+  pharmacyTitle: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 18,
+    color: colors.textMain,
+    marginTop: 8,
+  },
+  pharmacyDesc: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+});

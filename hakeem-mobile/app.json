@@ -4,12 +4,12 @@
     "slug": "hakeem-jo",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/hakeem-logo.png",
     "scheme": "hakeemjo",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/hakeem-logo.png",
       "resizeMode": "contain",
       "backgroundColor": "#0F172A"
     },
@@ -23,7 +23,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/hakeem-logo.png",
         "backgroundColor": "#0F172A"
       },
       "package": "com.hakeemjo.app",
@@ -46,7 +46,7 @@
       [
         "expo-notifications",
         {
-          "icon": "./assets/notification-icon.png",
+          "icon": "./assets/hakeem-logo.png",
           "color": "#6C63FF",
           "sounds": []
         }

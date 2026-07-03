@@ -19,7 +19,7 @@ export default function DoctorLayout() {
         },
         tabBarLabelStyle: {
           fontFamily: 'Cairo-SemiBold',
-          fontSize: 12,
+          fontSize: 11,
         },
       }}
     >
@@ -31,21 +31,28 @@ export default function DoctorLayout() {
         }}
       />
       <Tabs.Screen
-        name="appointments"
+        name="appointments/index"
         options={{
           title: 'المواعيد',
           tabBarIcon: ({ color, size }) => <Ionicons name="calendar" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="patients"
+        name="patients/index"
         options={{
           title: 'المرضى',
           tabBarIcon: ({ color, size }) => <Ionicons name="people" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="financial/index"
+        options={{
+          title: 'المالية',
+          tabBarIcon: ({ color, size }) => <Ionicons name="wallet" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="settings/index"
         options={{
           title: 'حسابي',
           tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
