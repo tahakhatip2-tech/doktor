@@ -336,7 +336,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(37,99,235,0.4)',
   },
   inner: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
@@ -344,12 +344,12 @@ const styles = StyleSheet.create({
     minHeight: 60,
   },
   brandSlot: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
   },
   actionsSlot: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
   },
@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
   },
   brand: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
