@@ -106,17 +106,6 @@ export function AppHeader({
     }, 200);
   };
 
-  const handleProfile = () => {
-    closeMenu();
-    setTimeout(() => {
-      if (userType === 'doctor') {
-        router.push('/(doctor)/settings');
-      } else if (userType === 'patient') {
-        router.push('/(patient)/profile');
-      }
-    }, 200);
-  };
-
   const roleLabel =
     userType === 'doctor'
       ? 'بوابة الأطباء'
@@ -291,12 +280,50 @@ export function AppHeader({
             </View>
 
             <View style={styles.menuItems}>
-              {(userType === 'doctor' || userType === 'patient') && (
-                <TouchableOpacity style={styles.menuItem} onPress={handleProfile} activeOpacity={0.7}>
-                  <View style={[styles.menuItemIcon, { backgroundColor: '#eff6ff' }]}>
-                    <Ionicons name="person-outline" size={18} color="#2563eb" />
+              {userType === 'patient' && (
+                <>
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(patient)/profile'), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#eff6ff' }]}>
+                      <Ionicons name="person-outline" size={18} color="#2563eb" />
+                    </View>
+                    <Text style={styles.menuItemText}>الملف الشخصي</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(patient)/offers'), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#fef3c7' }]}>
+                      <Ionicons name="pricetag-outline" size={18} color="#d97706" />
+                    </View>
+                    <Text style={styles.menuItemText}>العروض والخصومات</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(patient)/settings'), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#f1f5f9' }]}>
+                      <Ionicons name="settings-outline" size={18} color="#475569" />
+                    </View>
+                    <Text style={styles.menuItemText}>الإعدادات</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+                </>
+              )}
+
+              {userType === 'doctor' && (
+                <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(doctor)/settings'), 200); }} activeOpacity={0.7}>
+                  <View style={[styles.menuItemIcon, { backgroundColor: '#f1f5f9' }]}>
+                    <Ionicons name="settings-outline" size={18} color="#475569" />
                   </View>
-                  <Text style={styles.menuItemText}>الملف الشخصي</Text>
+                  <Text style={styles.menuItemText}>الإعدادات</Text>
+                  <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                </TouchableOpacity>
+              )}
+
+              {userType === 'pharmacy' && (
+                <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(pharmacy)/settings'), 200); }} activeOpacity={0.7}>
+                  <View style={[styles.menuItemIcon, { backgroundColor: '#f1f5f9' }]}>
+                    <Ionicons name="settings-outline" size={18} color="#475569" />
+                  </View>
+                  <Text style={styles.menuItemText}>الإعدادات</Text>
                   <Ionicons name="chevron-back" size={16} color="#94a3b8" />
                 </TouchableOpacity>
               )}

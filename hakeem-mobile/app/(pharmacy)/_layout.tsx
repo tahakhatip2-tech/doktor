@@ -1,26 +1,14 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
+import { CustomTabBar } from '../../src/components/common';
 
 export default function PharmacyLayout() {
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.success,
-        tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontFamily: 'Cairo-SemiBold',
-          fontSize: 11,
-        },
       }}
     >
       <Tabs.Screen
@@ -47,8 +35,8 @@ export default function PharmacyLayout() {
       <Tabs.Screen
         name="settings/index"
         options={{
-          title: 'حسابي',
-          tabBarIcon: ({ color, size }) => <Ionicons name="storefront" size={size} color={color} />,
+          href: null,
+          tabBarStyle: { display: 'none' }
         }}
       />
     </Tabs>

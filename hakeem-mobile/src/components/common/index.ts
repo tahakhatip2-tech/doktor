@@ -3,6 +3,7 @@ export { Button } from './Button';
 export { Card } from './Card';
 export { Input } from './Input';
 export { LoadingSpinner } from './LoadingSpinner';
+export * from './CustomTabBar';
 export * from './AppHeader';
 export { ScreenHeader } from './ScreenHeader';
 export { EmptyState } from './EmptyState';

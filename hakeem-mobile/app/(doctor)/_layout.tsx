@@ -1,26 +1,14 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../src/theme/colors';
+import { CustomTabBar } from '../../src/components/common';
 
 export default function DoctorLayout() {
   return (
     <Tabs
+      tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.textSecondary,
-        tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopWidth: 1,
-          borderTopColor: colors.border,
-          height: 60,
-          paddingBottom: 8,
-          paddingTop: 8,
-        },
-        tabBarLabelStyle: {
-          fontFamily: 'Cairo-SemiBold',
-          fontSize: 11,
-        },
       }}
     >
       <Tabs.Screen
@@ -51,11 +39,13 @@ export default function DoctorLayout() {
           tabBarIcon: ({ color, size }) => <Ionicons name="wallet" size={size} color={color} />,
         }}
       />
+      
+      {/* مخفية من الشريط وتنتقل للقائمة المنسدلة */}
       <Tabs.Screen
         name="settings/index"
         options={{
-          title: 'حسابي',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+          href: null,
+          tabBarStyle: { display: 'none' }
         }}
       />
     </Tabs>
