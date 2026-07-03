@@ -6,6 +6,7 @@ import { CustomTabBar } from '../../src/components/common';
 export default function DoctorLayout() {
   return (
     <Tabs
+      initialRouteName="dashboard"
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,

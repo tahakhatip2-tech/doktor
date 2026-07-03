@@ -6,6 +6,7 @@ import { CustomTabBar } from '../../src/components/common';
 export default function PatientLayout() {
   return (
     <Tabs
+      initialRouteName="home"
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={{
         headerShown: false,

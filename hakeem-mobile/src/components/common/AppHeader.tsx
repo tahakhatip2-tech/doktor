@@ -249,7 +249,7 @@ export function AppHeader({
             >
               <View style={styles.dropLogoWrap}>
                 <Image
-                  source={require('../../../assets/images/logo.png')}
+                  source={require('../../../assets/hakeem-logo.png')}
                   style={styles.dropLogo}
                   resizeMode="contain"
                 />
