@@ -136,8 +136,8 @@ export function AppHeader({
         <View style={styles.glowLine} />
 
         <View style={styles.inner}>
-          {/* Left: Back or Profile */}
-          <View style={styles.leftSlot}>
+          {/* ── LEFT: Logo + App Name (or Back Arrow) ── */}
+          <View style={styles.brandSlot}>
             {showBack ? (
               <TouchableOpacity
                 style={styles.iconCircle}
@@ -146,29 +146,7 @@ export function AppHeader({
               >
                 <Ionicons name="arrow-forward" size={20} color="#fff" />
               </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={styles.avatarWrap}
-                onPress={openMenu}
-                activeOpacity={0.8}
-              >
-                {avatarUri ? (
-                  <Image source={{ uri: avatarUri }} style={styles.avatarImg} />
-                ) : (
-                  <LinearGradient
-                    colors={['#2563eb', '#1e40af']}
-                    style={styles.avatarFallback}
-                  >
-                    <Text style={styles.avatarInitials}>{initials}</Text>
-                  </LinearGradient>
-                )}
-                <View style={styles.onlineDot} />
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Center: Brand */}
-          <View style={styles.centerSlot}>
+            ) : null}
             <View style={styles.brand}>
               <View style={styles.logoWrap}>
                 <LinearGradient
@@ -183,22 +161,22 @@ export function AppHeader({
                   resizeMode="contain"
                 />
               </View>
-              <View style={styles.brandText}>
-                <Text style={styles.appName} numberOfLines={1}>{title || 'DOCTOR JO'}</Text>
-                <Text style={styles.appSub} numberOfLines={1}>{subtitle || roleLabel || 'Clinic Management'}</Text>
-              </View>
+              <Text style={styles.appName}>
+                <Text style={{ color: '#60a5fa' }}>DOCTOR</Text>
+                <Text style={{ color: '#fb923c' }}> JO</Text>
+              </Text>
             </View>
           </View>
 
-          {/* Right: Actions */}
-          <View style={styles.rightSlot}>
+          {/* ── RIGHT: Actions + Profile ── */}
+          <View style={styles.actionsSlot}>
             {rightComponent ? (
               rightComponent
             ) : (
               <>
                 {showMessages && (
                   <TouchableOpacity
-                    style={[styles.iconCircle, { marginRight: 8 }]}
+                    style={styles.iconCircle}
                     onPress={onMessagesPress}
                     activeOpacity={0.7}
                   >
@@ -228,6 +206,32 @@ export function AppHeader({
                     )}
                   </TouchableOpacity>
                 )}
+
+                {/* Profile with Hamburger */}
+                <TouchableOpacity
+                  style={[styles.avatarWrap, { marginLeft: 4 }]}
+                  onPress={openMenu}
+                  activeOpacity={0.8}
+                >
+                  {avatarUri ? (
+                    <Image source={{ uri: avatarUri }} style={styles.avatarImg} />
+                  ) : (
+                    <LinearGradient
+                      colors={['#2563eb', '#1e40af']}
+                      style={styles.avatarFallback}
+                    >
+                      <Text style={styles.avatarInitials}>{initials}</Text>
+                    </LinearGradient>
+                  )}
+                  {/* Hamburger Menu Badge */}
+                  <View style={styles.hamburgerBadge}>
+                    <View style={styles.hamburgerLine} />
+                    <View style={[styles.hamburgerLine, { width: 5 }]} />
+                    <View style={styles.hamburgerLine} />
+                    {/* Green online dot */}
+                    <View style={styles.hamburgerDot} />
+                  </View>
+                </TouchableOpacity>
               </>
             )}
           </View>
@@ -339,22 +343,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     minHeight: 60,
   },
-  leftSlot: {
-    minWidth: 42,
-    alignItems: 'flex-start',
-    justifyContent: 'center',
-  },
-  centerSlot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 8,
-  },
-  rightSlot: {
-    minWidth: 42,
+  brandSlot: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'flex-end',
+    gap: 8,
+  },
+  actionsSlot: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   avatarWrap: {
     position: 'relative',
@@ -380,16 +377,37 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: 'Cairo-Bold',
   },
-  onlineDot: {
+  hamburgerBadge: {
     position: 'absolute',
-    bottom: 1,
-    right: 1,
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#22c55e',
+    bottom: -2,
+    right: -4,
+    width: 22,
+    height: 22,
+    backgroundColor: '#fff',
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: '#0d1b40',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 2.5,
+  },
+  hamburgerLine: {
+    width: 10,
+    height: 1.5,
+    backgroundColor: '#2563eb',
+    borderRadius: 1,
+  },
+  hamburgerDot: {
+    position: 'absolute',
+    top: -2,
+    left: -2,
+    width: 7,
+    height: 7,
+    backgroundColor: '#22c55e',
+    borderRadius: 3.5,
+    borderWidth: 1.5,
+    borderColor: '#fff',
   },
   brand: {
     flexDirection: 'row',
