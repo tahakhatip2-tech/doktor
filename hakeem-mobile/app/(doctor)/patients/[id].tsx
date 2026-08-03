@@ -6,24 +6,20 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
 import { AppHeader, Card, Button } from '../../../src/components/common';
 
-const MOCK_PATIENT = {
-  id: 1,
-  name: 'أحمد محمود',
-  phone: '0791234567',
-  age: '28 سنة',
-  bloodType: 'O+',
-  insurance: 'التعاونية',
-};
-
-const MOCK_HISTORY = [
-  { id: 1, date: '2023-10-15', type: 'prescription', title: 'وصفة طبية - التهاب قصبات', details: 'أموكسيسيلين 500 ملغ كل 8 ساعات.' },
-  { id: 2, date: '2023-08-22', type: 'diagnosis', title: 'تشخيص - مراجعة دورية', details: 'الضغط طبيعي، تم التوصية بممارسة الرياضة.' },
-  { id: 3, date: '2023-05-10', type: 'appointment', title: 'زيارة عيادة', details: 'موعد استشارة عامة.' },
-];
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../../src/api/client';
+import { Skeleton } from '../../../src/components/common';
+import moment from 'moment';
 
 export default function DoctorPatientRecordScreen() {
   const { id } = useLocalSearchParams();
   const [activeTab, setActiveTab] = useState<'info' | 'history'>('info');
+
+  const { data: patient, isLoading } = useQuery({
+    queryKey: ['doctor-patient', id],
+    queryFn: () => apiClient.get(`/contacts/${id}`).then(res => res.data),
+    enabled: !!id,
+  });
 
   const renderIcon = (type: string) => {
     switch (type) {
@@ -32,6 +28,71 @@ export default function DoctorPatientRecordScreen() {
       default: return { name: 'calendar', color: colors.primary, bg: `${colors.primary}15` };
     }
   };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <AppHeader title="السجل الطبي للمريض" showBack />
+        <View style={{ padding: 20 }}>
+           <Skeleton width={80} height={80} borderRadius={40} style={{ alignSelf: 'center', marginBottom: 12 }} />
+           <Skeleton width={150} height={20} style={{ alignSelf: 'center', marginBottom: 8 }} />
+           <Skeleton width={100} height={16} style={{ alignSelf: 'center', marginBottom: 20 }} />
+           <Skeleton width="100%" height={200} borderRadius={12} />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!patient) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <AppHeader title="السجل الطبي للمريض" showBack />
+        <View style={{ padding: 20, alignItems: 'center', marginTop: 100 }}>
+          <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 18, color: colors.textSecondary }}>المريض غير موجود</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Flatten history (appointments and medical records)
+  const history: any[] = [];
+  if (patient.appointment) {
+    patient.appointment.forEach((appt: any) => {
+      history.push({
+        id: `appt-${appt.id}`,
+        date: appt.appointmentDate,
+        type: 'appointment',
+        title: 'زيارة عيادة',
+        details: appt.notes || 'موعد كشفية'
+      });
+      if (appt.medicalRecords) {
+        appt.medicalRecords.forEach((rec: any) => {
+          history.push({
+            id: `rec-${rec.id}`,
+            date: rec.createdAt,
+            type: rec.type === 'prescription' ? 'prescription' : 'diagnosis',
+            title: rec.type === 'prescription' ? 'وصفة طبية' : 'تشخيص',
+            details: rec.details || rec.description || 'لا يوجد تفاصيل'
+          });
+        });
+      }
+    });
+  }
+  
+  if (patient.medicalRecords) {
+     patient.medicalRecords.forEach((rec: any) => {
+          history.push({
+            id: `rec-dir-${rec.id}`,
+            date: rec.createdAt,
+            type: rec.type === 'prescription' ? 'prescription' : 'diagnosis',
+            title: rec.type === 'prescription' ? 'وصفة طبية' : 'تشخيص',
+            details: rec.details || rec.description || 'لا يوجد تفاصيل'
+          });
+      });
+  }
+
+  // Sort history by date desc
+  history.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -44,12 +105,12 @@ export default function DoctorPatientRecordScreen() {
           <View style={styles.avatar}>
              <Text style={styles.avatarText}>🧑</Text>
           </View>
-          <Text style={styles.name}>{MOCK_PATIENT.name}</Text>
-          <Text style={styles.phone}>{MOCK_PATIENT.phone}</Text>
+          <Text style={styles.name}>{patient.name}</Text>
+          <Text style={styles.phone}>{patient.phone}</Text>
           
           <View style={styles.quickTags}>
-            <View style={styles.tag}><Text style={styles.tagText}>{MOCK_PATIENT.age}</Text></View>
-            <View style={styles.tag}><Text style={styles.tagText}>{MOCK_PATIENT.bloodType}</Text></View>
+            {patient.ageRange && <View style={styles.tag}><Text style={styles.tagText}>{patient.ageRange}</Text></View>}
+            {patient.bloodType && <View style={styles.tag}><Text style={styles.tagText}>{patient.bloodType}</Text></View>}
           </View>
         </View>
 
@@ -75,47 +136,59 @@ export default function DoctorPatientRecordScreen() {
             <Card style={styles.card}>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>رقم الملف</Text>
-                <Text style={styles.infoValue}>PT-{MOCK_PATIENT.id}009</Text>
+                <Text style={styles.infoValue}>PT-{patient.id}</Text>
               </View>
               <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>شركة التأمين</Text>
-                <Text style={styles.infoValue}>{MOCK_PATIENT.insurance}</Text>
+                <Text style={styles.infoLabel}>الرقم الوطني</Text>
+                <Text style={styles.infoValue}>{patient.nationalId || 'غير متوفر'}</Text>
               </View>
               <View style={styles.infoRow}>
                 <Text style={styles.infoLabel}>تاريخ التسجيل</Text>
-                <Text style={styles.infoValue}>12 يناير 2023</Text>
+                <Text style={styles.infoValue}>{moment(patient.createdAt).format('LL')}</Text>
               </View>
             </Card>
 
             <Card style={styles.card}>
               <Text style={styles.sectionTitle}>الأمراض المزمنة والحساسية</Text>
-              <View style={styles.emptyBox}>
-                <Text style={styles.emptyText}>لا توجد بيانات مسجلة.</Text>
-              </View>
-              <Button title="عرض التفاصيل" variant="outline" size="sm" style={{ marginTop: 12 }} onPress={() => {}} />
+              
+              {(!patient.allergies && !patient.chronicDiseases) ? (
+                  <View style={styles.emptyBox}>
+                    <Text style={styles.emptyText}>لا توجد بيانات مسجلة.</Text>
+                  </View>
+              ) : (
+                  <View style={{ gap: 8 }}>
+                     {patient.allergies && <Text style={{ fontFamily: 'Cairo-SemiBold', fontSize: 14, color: colors.error }}>الحساسية: {patient.allergies}</Text>}
+                     {patient.chronicDiseases && <Text style={{ fontFamily: 'Cairo-SemiBold', fontSize: 14, color: colors.warning }}>الأمراض المزمنة: {patient.chronicDiseases}</Text>}
+                  </View>
+              )}
             </Card>
           </View>
         ) : (
           <View style={{ gap: 16 }}>
-            {MOCK_HISTORY.map(item => {
-              const iconConf = renderIcon(item.type);
-              return (
-                <Card key={item.id} style={styles.historyCard}>
-                  <View style={styles.historyHeader}>
-                    <View style={styles.historyTitleRow}>
-                      <View style={[styles.iconBox, { backgroundColor: iconConf.bg }]}>
-                        <Ionicons name={iconConf.name as any} size={18} color={iconConf.color} />
-                      </View>
-                      <Text style={styles.historyTitle}>{item.title}</Text>
+            {history.length === 0 ? (
+                <View style={styles.emptyBox}>
+                    <Text style={styles.emptyText}>لا يوجد تاريخ طبي مسجل</Text>
+                </View>
+            ) : (
+                history.map(item => {
+                const iconConf = renderIcon(item.type);
+                return (
+                    <Card key={item.id} style={styles.historyCard}>
+                    <View style={styles.historyHeader}>
+                        <View style={styles.historyTitleRow}>
+                        <View style={[styles.iconBox, { backgroundColor: iconConf.bg }]}>
+                            <Ionicons name={iconConf.name as any} size={18} color={iconConf.color} />
+                        </View>
+                        <Text style={styles.historyTitle}>{item.title}</Text>
+                        </View>
+                        <Text style={styles.historyDate}>{moment(item.date).format('ll')}</Text>
                     </View>
-                    <Text style={styles.historyDate}>{item.date}</Text>
-                  </View>
-                  <Text style={styles.historyDetails}>{item.details}</Text>
-                </Card>
-              );
-            })}
+                    <Text style={styles.historyDetails}>{item.details}</Text>
+                    </Card>
+                );
+                })
+            )}
             
-            <Button title="تحميل التقرير" icon={<Ionicons name="download-outline" size={20} color={colors.white} />} onPress={() => {}} />
           </View>
         )}
 

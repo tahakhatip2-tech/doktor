@@ -1,10 +1,10 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
-import { Card, Input, AppHeader, EmptyState, Skeleton, useToast, Toast } from '../../../src/components/common';
+import { Card, Input, AppHeader, EmptyState, Skeleton, useToast, Toast, PageHero } from '../../../src/components/common';
 import { contactsApi } from '../../../src/api/modules.api';
 import { getErrorMessage } from '../../../src/api/client';
 
@@ -14,21 +14,29 @@ export default function DoctorPatientsScreen() {
   
   const [patients, setPatients] = useState<any[]>([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = (text: string) => {
+    setSearch(text);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => setDebouncedSearch(text), 400);
+  };
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchPatients = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await contactsApi.getAll({ search });
-      setPatients(res.data?.data || []);
+      const res = await contactsApi.getAll({ search: debouncedSearch });
+      setPatients(Array.isArray(res.data) ? res.data : (res.data?.data || []));
     } catch (err) {
       show(getErrorMessage(err), 'error');
     } finally {
       setIsLoading(false);
       setRefreshing(false);
     }
-  }, [search]);
+  }, [debouncedSearch]);
 
   useFocusEffect(
     useCallback(() => {
@@ -69,11 +77,18 @@ export default function DoctorPatientsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppHeader title="مرضى العيادة" showBack={false} />
+      <PageHero
+        title="سجلات المرضى"
+        subtitle="قاعدة بيانات المرضى والتاريخ الطبي"
+        icon="people-outline"
+        iconColor="#06b6d4"
+        showClock={false}
+      />
       
       <View style={styles.header}>
         <Input 
           value={search}
-          onChangeText={setSearch}
+          onChangeText={handleSearchChange}
           placeholder="ابحث بالاسم أو رقم الهاتف..."
           icon={<Ionicons name="search" size={20} color={colors.textSecondary} />}
           style={{ marginBottom: 0 }}

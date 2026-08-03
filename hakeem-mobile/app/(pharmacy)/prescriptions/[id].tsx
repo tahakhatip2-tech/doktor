@@ -5,47 +5,45 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
 import { AppHeader, Card, Button, StatusBadge, ConfirmModal, useToast, Toast } from '../../../src/components/common';
+import { pharmacyPrescriptionsApi, PharmacyPrescription } from '../../../src/api/pharmacy.api';
+import { getErrorMessage } from '../../../src/api/client';
 
 export default function PrescriptionDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { toast, show, hide } = useToast();
   
-  const [prescription, setPrescription] = useState<any>(null);
+  const [prescription, setPrescription] = useState<PharmacyPrescription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [dispenseModal, setDispenseModal] = useState(false);
   const [isDispensing, setIsDispensing] = useState(false);
 
   useEffect(() => {
-    // محاكاة جلب تفاصيل الوصفة
-    setTimeout(() => {
-      setPrescription({
-        id,
-        patientName: 'أحمد محمود',
-        patientId: '1092837465',
-        doctorName: 'د. خالد سعيد',
-        specialty: 'باطنية',
-        date: '2026-06-15',
-        status: 'pending',
-        notes: 'يرجى مراجعة العيادة بعد أسبوعين في حال استمرار الأعراض.',
-        items: [
-          { name: 'Amoxil 500mg', dosage: '1 حبة كل 8 ساعات', duration: '7 أيام', inStock: true },
-          { name: 'Panadol Advance', dosage: 'حبتين عند اللزوم', duration: '-', inStock: true },
-          { name: 'Vitamin C 1000mg', dosage: 'حبة فوارة يومياً', duration: '14 يوم', inStock: false },
-        ]
-      });
-      setIsLoading(false);
-    }, 800);
+    const fetchPrescription = async () => {
+      try {
+        const res = await pharmacyPrescriptionsApi.getById(Number(id));
+        setPrescription(res.data);
+      } catch (err) {
+        show(getErrorMessage(err), 'error');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchPrescription();
   }, [id]);
 
-  const handleDispense = () => {
-    setIsDispensing(true);
-    setTimeout(() => {
-      setIsDispensing(false);
+  const handleDispense = async () => {
+    try {
+      setIsDispensing(true);
+      await pharmacyPrescriptionsApi.dispense(Number(id));
       setDispenseModal(false);
-      setPrescription({ ...prescription, status: 'dispensed' });
+      setPrescription(prev => prev ? { ...prev, status: 'dispensed' as const } : prev);
       show('تم صرف الوصفة وتحديث مخزون الأدوية بنجاح', 'success');
-    }, 1500);
+    } catch (err) {
+      show(getErrorMessage(err), 'error');
+    } finally {
+      setIsDispensing(false);
+    }
   };
 
   if (isLoading) {

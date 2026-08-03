@@ -23,10 +23,11 @@ export class AiService {
     async getAIResponse(userId: number, userMessage: string, phone?: string, contactName: string = 'غير معروف', audioFilePath?: string, historyStrOverride?: string, source: 'whatsapp' | 'app' = 'whatsapp'): Promise<string | null> {
         try {
             // 1. Fetch ALL Settings & Templates for deep context
-            const [settings, templates, services] = await Promise.all([
+            const [settings, templates, services, clinicDoctors] = await Promise.all([
                 this.prisma.setting.findMany({ where: { userId } }),
                 this.prisma.autoReplyTemplate.findMany({ where: { userId, isActive: true } }),
-                this.prisma.service.findMany({ where: { userId, isActive: true } })
+                this.prisma.service.findMany({ where: { userId, isActive: true } }),
+                this.prisma.clinicDoctor.findMany({ where: { clinicId: userId, isActive: true } })
             ]);
 
             const getSetting = (key: string) => settings.find(s => s.key === key)?.value || "";
@@ -58,6 +59,9 @@ export class AiService {
 
             const knowledgeBase = templates.map(t => `- س: ${t.trigger}\n  ج: ${t.response}`).join('\n');
             const servicesList = services.map(s => `- ${s.name}: ${s.description || ''} (${s.price || 'السعر عند الطبيب'})`).join('\n');
+            const doctorsList = clinicDoctors.length > 0 
+                ? clinicDoctors.map(d => `- د. ${d.name} (${d.specialty || 'طبيب'}). دوامه: ${d.workingDays || 'طوال الأسبوع'} ${d.workingHours || d.shiftTiming || 'حسب دوام العيادة'}`).join('\n')
+                : `الطبيب الرئيسي: ${doctorName}`;
 
             // 3. Fetch Availability
             const todayStr = new Date().toISOString().split('T')[0];
@@ -81,6 +85,8 @@ export class AiService {
 - العنوان: ${address}
 - ساعات العمل: من ${workStart} إلى ${workEnd}
 - الهاتف: ${phoneNum}
+- الأطباء المتواجدون في العيادة وأوقات دوامهم:
+${doctorsList}
 - الخدمات:
 ${servicesList}
 
@@ -111,8 +117,8 @@ ${knowledgeBase}
      \`[[RESCHEDULE_APPOINTMENT: YYYY-MM-DD | HH:MM]]\`
    - إذا كان الوقت غير متاح، أخبره واقترح بديلاً من القائمة المتاحة.
 
-5. إذا سأل هل الطبيب موجود؟ أجب بناءً على ساعات العمل.
-${source === 'app' ? '6. في نهاية رسالتك دائماً (وبعد تأكيد الحجز إن وجد)، ذكّر المريض بلطف أنه يمكنه في المستقبل استخدام "موظف الواتساب الآلي" الخاص بالعيادة للحجز والاستفسار بشكل أسرع.' : ''}
+5. إذا سأل المريض عن الأطباء المتواجدين أو أوقات دوامهم، أجب بناءً على ساعات العمل ومعلومات العيادة المتاحة لديك.
+6. ركز دائماً على مساعدة المريض في حجز المواعيد والإجابة عن كافة الاستفسارات الخاصة بالعيادة بشكل احترافي وودي.
 
 تعليمات المالك (System Prompt Override):
 ${getSetting('ai_system_instruction')}
@@ -156,7 +162,11 @@ ${getSetting('ai_system_instruction')}
             }
 
             // 7. Call Gemini API
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            // دعم كلا تنسيقي المفاتيح: AIza (قديم ?key=) و AQ. (جديد X-goog-api-key header)
+            const isNewKeyFormat = apiKey.startsWith('AQ.');
+            const geminiUrl = isNewKeyFormat
+                ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`
+                : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
             const requestBody = {
                 system_instruction: { parts: [{ text: systemInstruction }] },
@@ -167,9 +177,14 @@ ${getSetting('ai_system_instruction')}
                 }
             };
 
+            const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (isNewKeyFormat) {
+                headers['X-goog-api-key'] = apiKey;
+            }
+
             const response = await fetch(geminiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers,
                 body: JSON.stringify(requestBody)
             });
 

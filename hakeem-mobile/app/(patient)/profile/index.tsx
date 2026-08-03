@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../../src/theme/colors';
 import { AppHeader, Input, Button, Card, useToast, Toast } from '../../../src/components/common';
 import { useAuthStore } from '../../../src/store/auth.store';
+import { patientProfileApi } from '../../../src/api/patient.api';
 
 export default function ProfileScreen() {
   const { patientUser } = useAuthStore() as any;
@@ -19,12 +20,22 @@ export default function ProfileScreen() {
     insurance: 'التعاونية للتأمين',
   });
 
-  const handleSave = () => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+  const handleSave = async () => {
+    try {
+      setLoading(true);
+      await patientProfileApi.update({
+        fullName: form.name,
+        phone: form.phone,
+        age: form.age ? Number(form.age) : undefined,
+        bloodType: form.bloodType || undefined,
+        insurance: form.insurance || undefined,
+      });
       show('تم تحديث بياناتك بنجاح', 'success');
-    }, 1500);
+    } catch {
+      show('حدث خطأ أثناء الحفظ، يرجى المحاولة مرة أخرى', 'error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

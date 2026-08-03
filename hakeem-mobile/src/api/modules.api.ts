@@ -7,6 +7,9 @@ import { Clinic, PatientNotification, MedicalRecord, Offer, InternalMessage } fr
 export const clinicsApi = {
   getAll: (params?: { specialty?: string; search?: string }) =>
     apiClient.get<Clinic[]>('/patient/clinics', { params }),
+    
+  getPharmacies: (params?: { search?: string }) =>
+    apiClient.get<Clinic[]>('/patient/pharmacies', { params }),
 
   getById: (id: number) =>
     apiClient.get<Clinic>(`/patient/clinics/${id}`),
@@ -34,10 +37,10 @@ export const notificationsApi = {
 // ============================
 export const medicalRecordsApi = {
   getAll: () =>
-    apiClient.get<MedicalRecord[]>('/patient/medical-records'),
+    apiClient.get<MedicalRecord[]>('/patient/appointments/medical-records/all'),
 
   getById: (id: number) =>
-    apiClient.get<MedicalRecord>(`/patient/medical-records/${id}`),
+    apiClient.get<MedicalRecord>(`/patient/appointments/medical-records/${id}/advice`),
 };
 
 // ============================
@@ -45,13 +48,16 @@ export const medicalRecordsApi = {
 // ============================
 export const offersApi = {
   getAll: () =>
-    apiClient.get<Offer[]>('/patient/offers'),
+    apiClient.get<Offer[]>('/patient/offers/feed'),
 
   like: (id: number) =>
     apiClient.post(`/patient/offers/${id}/like`),
 
   unlike: (id: number) =>
-    apiClient.delete(`/patient/offers/${id}/like`),
+    apiClient.post(`/patient/offers/${id}/like`),
+
+  addComment: (id: number, content: string) =>
+    apiClient.post(`/patient/offers/${id}/comments`, { content }),
 };
 
 // ============================

@@ -5,7 +5,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
 import { 
   AppointmentCard, AppHeader, EmptyState, 
-  AppointmentSkeleton, ConfirmModal, useToast, Toast
+  AppointmentSkeleton, ConfirmModal, useToast, Toast, PageHero
 } from '../../../src/components/common';
 import { patientAppointmentsApi } from '../../../src/api/appointments.api';
 import { Appointment } from '../../../src/types/appointment.types';
@@ -84,6 +84,13 @@ export default function AppointmentsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppHeader title="سجل المواعيد" showBack />
+      <PageHero
+        title="مواعيدي"
+        subtitle="سجل جميع مواعيدك الطبية"
+        icon="calendar-outline"
+        iconColor="#f97316"
+        showClock={false}
+      />
       
       <View style={styles.header}>
         <View style={styles.filtersRow}>

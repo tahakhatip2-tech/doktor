@@ -10,8 +10,9 @@ import { getErrorMessage } from '../../../src/api/client';
 import { formatDate, formatTime } from '../../../src/utils/format.utils';
 import { 
   AppHeader, StatusBadge, Button, 
-  ConfirmModal, useToast, Toast, Card
+  ConfirmModal, useToast, Toast, Card, Modal
 } from '../../../src/components/common';
+import { reviewsApi } from '../../../src/api/patient.api';
 
 export default function AppointmentDetailsScreen() {
   const { id } = useLocalSearchParams();
@@ -22,6 +23,10 @@ export default function AppointmentDetailsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
   const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [reviewModalVisible, setReviewModalVisible] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [reviewComment, setReviewComment] = useState('');
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   useEffect(() => {
     fetchDetails();
@@ -43,6 +48,22 @@ export default function AppointmentDetailsScreen() {
       showToast(getErrorMessage(err), 'error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (rating === 0) { showToast('الرجاء اختيار تقييم', 'warning'); return; }
+    if (!appointment) return;
+    try {
+      setIsSubmittingReview(true);
+      const clinicId = (appointment as any).clinicId || appointment.clinic?.id;
+      await reviewsApi.submit(clinicId, { rating, comment: reviewComment, appointmentId: appointment.id });
+      setReviewModalVisible(false);
+      showToast('شكراً! تم إرسال تقييمك بنجاح', 'success');
+    } catch {
+      showToast('حدث خطأ أثناء إرسال التقييم', 'error');
+    } finally {
+      setIsSubmittingReview(false);
     }
   };
 
@@ -133,23 +154,35 @@ export default function AppointmentDetailsScreen() {
           </View>
         </Card>
 
-        {/* Prescription (If Completed) */}
+        {/* Prescription + Review (If Completed) */}
         {isCompleted && (
-          <Card style={[styles.card, { borderColor: colors.success, borderWidth: 1.5 }] as any}>
-            <View style={styles.cardHeader}>
-              <Ionicons name="flask" size={24} color={colors.success} />
-              <Text style={styles.cardTitle}>الوصفة الطبية</Text>
-            </View>
-            <Text style={styles.infoValue}>
-              تم إتمام الموعد وإصدار وصفة طبية. يمكنك عرضها وصرفها من الصيدلية.
-            </Text>
-            <Button 
-              title="عرض الوصفة" 
-              variant="outline" 
-              style={{ marginTop: 12, borderColor: colors.success }}
-              onPress={() => showToast('سيتم عرض الوصفة قريباً', 'info')}
-            />
-          </Card>
+          <>
+            <Card style={[styles.card, { borderColor: colors.success, borderWidth: 1.5 }] as any}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="flask" size={24} color={colors.success} />
+                <Text style={styles.cardTitle}>الوصفة الطبية</Text>
+              </View>
+              <Text style={styles.infoValue}>
+                تم إتمام الموعد وإصدار وصفة طبية. يمكنك عرضها وصرفها من الصيدلية.
+              </Text>
+            </Card>
+
+            <Card style={[styles.card, { borderColor: `${colors.accent}50`, borderWidth: 1.5 }] as any}>
+              <View style={styles.cardHeader}>
+                <Ionicons name="star" size={24} color={colors.accent} />
+                <Text style={styles.cardTitle}>قيّم تجربتك</Text>
+              </View>
+              <Text style={[styles.infoValue, { color: colors.textSecondary, fontFamily: 'Cairo-Regular' }]}>
+                شاركنا رأيك لمساعدة المرضى الآخرين في اختيار الطبيب المناسب.
+              </Text>
+              <Button
+                title="إرسال تقييم"
+                style={{ marginTop: 12, backgroundColor: colors.accent, borderColor: colors.accent }}
+                icon={<Ionicons name="star-outline" size={18} color="#fff" />}
+                onPress={() => setReviewModalVisible(true)}
+              />
+            </Card>
+          </>
         )}
 
       </ScrollView>
@@ -164,6 +197,41 @@ export default function AppointmentDetailsScreen() {
           />
         )}
       </View>
+
+      {/* Review Modal */}
+      <Modal visible={reviewModalVisible} onClose={() => setReviewModalVisible(false)} size="sm">
+        <View style={{ alignItems: 'center', paddingVertical: 8, gap: 16 }}>
+          <Text style={{ fontFamily: 'Cairo-Bold', fontSize: 18, color: colors.textMain }}>تقييم الطبيب</Text>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            {[1,2,3,4,5].map(star => (
+              <TouchableOpacity key={star} onPress={() => setRating(star)} activeOpacity={0.7}>
+                <Ionicons
+                  name={star <= rating ? 'star' : 'star-outline'}
+                  size={36}
+                  color={star <= rating ? '#F59E0B' : colors.textMuted}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
+          <View style={{ width: '100%', backgroundColor: colors.surfaceLight, borderRadius: 12, padding: 12, borderWidth: 1, borderColor: colors.borderLight }}>
+            <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, marginBottom: 6 }}>تعليق (اختياري)</Text>
+            <View style={{ minHeight: 60 }}>
+              <Text
+                style={{ fontFamily: 'Cairo-Regular', fontSize: 14, color: reviewComment ? colors.textMain : colors.textMuted }}
+                onPress={() => {}}
+              >
+                {reviewComment || 'اكتب تعليقك هنا...'}
+              </Text>
+            </View>
+          </View>
+          <Button
+            title="إرسال التقييم"
+            onPress={handleSubmitReview}
+            loading={isSubmittingReview}
+            style={{ width: '100%' }}
+          />
+        </View>
+      </Modal>
 
       <ConfirmModal
         visible={cancelModalVisible}

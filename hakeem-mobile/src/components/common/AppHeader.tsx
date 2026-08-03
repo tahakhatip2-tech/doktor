@@ -115,6 +115,30 @@ export function AppHeader({
       ? 'بوابة الصيدليات'
       : '';
 
+  const handleMessagesPress = () => {
+    if (onMessagesPress) {
+      onMessagesPress();
+    } else {
+      if (userType === 'patient') {
+        router.push('/(patient)/chat');
+      } else if (userType === 'doctor') {
+        router.push('/(doctor)/chat');
+      }
+    }
+  };
+
+  const handleNotificationPress = () => {
+    if (onNotificationPress) {
+      onNotificationPress();
+    } else {
+      if (userType === 'patient') {
+        router.push('/(patient)/notifications');
+      } else {
+        Alert.alert('قريباً', 'الإشعارات ستكون متاحة قريباً في التحديث القادم!');
+      }
+    }
+  };
+
   return (
     <>
       <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -166,7 +190,7 @@ export function AppHeader({
                 {showMessages && (
                   <TouchableOpacity
                     style={styles.iconCircle}
-                    onPress={onMessagesPress}
+                    onPress={handleMessagesPress}
                     activeOpacity={0.7}
                   >
                     <Ionicons name="chatbubbles-outline" size={20} color="#fff" />
@@ -182,7 +206,7 @@ export function AppHeader({
                 {showNotification && (
                   <TouchableOpacity
                     style={styles.iconCircle}
-                    onPress={onNotificationPress}
+                    onPress={handleNotificationPress}
                     activeOpacity={0.7}
                   >
                     <Ionicons name="notifications-outline" size={20} color="#fff" />
@@ -298,6 +322,14 @@ export function AppHeader({
                     <Ionicons name="chevron-back" size={16} color="#94a3b8" />
                   </TouchableOpacity>
 
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(patient)/notifications'), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#f5f3ff' }]}>
+                      <Ionicons name="notifications-outline" size={18} color="#8b5cf6" />
+                    </View>
+                    <Text style={styles.menuItemText}>الإشعارات</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+
                   <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(patient)/settings'), 200); }} activeOpacity={0.7}>
                     <View style={[styles.menuItemIcon, { backgroundColor: '#f1f5f9' }]}>
                       <Ionicons name="settings-outline" size={18} color="#475569" />
@@ -309,13 +341,39 @@ export function AppHeader({
               )}
 
               {userType === 'doctor' && (
-                <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(doctor)/settings'), 200); }} activeOpacity={0.7}>
-                  <View style={[styles.menuItemIcon, { backgroundColor: '#f1f5f9' }]}>
-                    <Ionicons name="settings-outline" size={18} color="#475569" />
-                  </View>
-                  <Text style={styles.menuItemText}>الإعدادات</Text>
-                  <Ionicons name="chevron-back" size={16} color="#94a3b8" />
-                </TouchableOpacity>
+                <>
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(doctor)/clinic-doctors' as any), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#f5f3ff' }]}>
+                      <Ionicons name="medkit-outline" size={18} color="#8b5cf6" />
+                    </View>
+                    <Text style={styles.menuItemText}>أطباء العيادة</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(doctor)/offers' as any), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#fef3c7' }]}>
+                      <Ionicons name="newspaper-outline" size={18} color="#d97706" />
+                    </View>
+                    <Text style={styles.menuItemText}>آخر الأخبار</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(doctor)/templates' as any), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#fff7ed' }]}>
+                      <Ionicons name="document-text-outline" size={18} color="#f97316" />
+                    </View>
+                    <Text style={styles.menuItemText}>نماذج الرسائل</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={styles.menuItem} onPress={() => { closeMenu(); setTimeout(() => router.push('/(doctor)/settings'), 200); }} activeOpacity={0.7}>
+                    <View style={[styles.menuItemIcon, { backgroundColor: '#f1f5f9' }]}>
+                      <Ionicons name="settings-outline" size={18} color="#475569" />
+                    </View>
+                    <Text style={styles.menuItemText}>الإعدادات</Text>
+                    <Ionicons name="chevron-back" size={16} color="#94a3b8" />
+                  </TouchableOpacity>
+                </>
               )}
 
               {userType === 'pharmacy' && (

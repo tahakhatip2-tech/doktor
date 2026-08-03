@@ -12,3 +12,8 @@ export { AppointmentCard } from './AppointmentCard';
 export { Modal, ConfirmModal } from './Modal';
 export { Toast, useToast } from './Toast';
 export { Skeleton, AppointmentSkeleton, ClinicSkeleton } from './Skeleton';
+export { NotificationItem } from './NotificationItem';
+export { ChatBubble } from './ChatBubble';
+export { CompleteModal } from './CompleteModal';
+export { PreliminaryExamsModal } from './PreliminaryExamsModal';
+export { PageHero } from './PageHero';

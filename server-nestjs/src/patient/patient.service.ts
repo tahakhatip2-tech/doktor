@@ -203,7 +203,7 @@ export class PatientService {
     async getClinics() {
         const users = await this.prisma.user.findMany({
             where: {
-                role: 'USER',
+                role: { in: ['USER', 'ADMIN'] },
                 status: 'active',
             },
             select: {

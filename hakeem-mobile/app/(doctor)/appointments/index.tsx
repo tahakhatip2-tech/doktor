@@ -3,7 +3,7 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, RefreshControl } fr
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
-import { AppHeader, AppointmentCard, AppointmentSkeleton, EmptyState, useToast, Toast } from '../../../src/components/common';
+import { AppHeader, AppointmentCard, AppointmentSkeleton, EmptyState, useToast, Toast, PageHero } from '../../../src/components/common';
 import { doctorAppointmentsApi } from '../../../src/api/appointments.api';
 import { Appointment } from '../../../src/types/appointment.types';
 import { getErrorMessage } from '../../../src/api/client';
@@ -55,6 +55,13 @@ export default function DoctorAppointmentsScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppHeader title="إدارة المواعيد" showBack={false} />
+      <PageHero
+        title="إدارة المواعيد"
+        subtitle="متابعة طلبات الحجز وتغيير الحالات"
+        icon="calendar-outline"
+        iconColor="#6C63FF"
+        showClock={false}
+      />
       
       <View style={styles.header}>
         <View style={styles.tabsContainer}>

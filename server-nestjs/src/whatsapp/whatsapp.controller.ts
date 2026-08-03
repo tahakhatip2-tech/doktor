@@ -4,6 +4,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { extname } from 'path';
 import { WhatsAppService } from './whatsapp.service';
+import { DoctorChatService } from './doctor-chat.service';
 import { SupabaseService } from '../storage/supabase.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { WhatsAppSendMessageDto, WhatsAppSettingsDto, CreateTemplateDto, WhatsAppStatusResponseDto } from './dto/whatsapp.dto';
@@ -13,6 +14,7 @@ import { WhatsAppSendMessageDto, WhatsAppSettingsDto, CreateTemplateDto, WhatsAp
 export class WhatsAppController {
     constructor(
         private whatsappService: WhatsAppService,
+        private doctorChatService: DoctorChatService,
         private supabaseService: SupabaseService
     ) { }
 
@@ -218,11 +220,38 @@ export class WhatsAppController {
     @Delete('contacts/:phone/tags/:tagId')
     @ApiBearerAuth('JWT-auth')
     @UseGuards(JwtAuthGuard)
-    @ApiOperation({ summary: 'حذف تصنيف من مريض', description: 'فك ارتباط Tag معين عن جهة اتصال' })
-    @ApiParam({ name: 'phone', description: 'رقم الهاتف' })
-    @ApiParam({ name: 'tagId', description: 'معرف التصنيف' })
+    @ApiOperation({ summary: 'إزالة وسم من جهة اتصال' })
     async removeContactTag(@Param('phone') phone: string, @Param('tagId', ParseIntPipe) tagId: number, @Request() req) {
         return this.whatsappService.removeContactTag(phone, tagId, req.user.id);
     }
-}
 
+    // ─── Doctor Chat Endpoints ───────────────────────────────────────────────
+
+    @Post('doctor-command')
+    @ApiBearerAuth('JWT-auth')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'إرسال أمر للموظف الآلي من الطبيب' })
+    @ApiBody({ schema: { type: 'object', properties: { message: { type: 'string' } } } })
+    async doctorCommand(@Body('message') message: string, @Request() req) {
+        if (!message) throw new Error('Message is required');
+        const response = await this.doctorChatService.handleDoctorCommand(req.user.id, message);
+        return { success: true, response };
+    }
+
+    @Get('doctor-chat/history')
+    @ApiBearerAuth('JWT-auth')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'جلب سجل محادثة الطبيب مع الموظف الآلي' })
+    getDoctorChatHistory(@Request() req) {
+        const history = this.doctorChatService.getHistory(req.user.id);
+        return { success: true, data: history };
+    }
+
+    @Delete('doctor-chat/history')
+    @ApiBearerAuth('JWT-auth')
+    @UseGuards(JwtAuthGuard)
+    @ApiOperation({ summary: 'مسح سجل محادثة الطبيب' })
+    clearDoctorChatHistory(@Request() req) {
+        return this.doctorChatService.clearHistory(req.user.id);
+    }
+}

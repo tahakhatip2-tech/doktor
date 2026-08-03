@@ -162,7 +162,22 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
           sock.ev.removeAllListeners('creds.update');
           sock.ev.removeAllListeners('messages.upsert');
           if (fs.existsSync(userSessionPath)) {
-            fs.rmSync(userSessionPath, { recursive: true, force: true });
+            try {
+              // حذف جميع الملفات داخل المجلد أولاً ثم المجلد (Windows يحتاج هذا)
+              const entries = fs.readdirSync(userSessionPath);
+              for (const entry of entries) {
+                const entryPath = path.join(userSessionPath, entry);
+                const stat = fs.statSync(entryPath);
+                if (stat.isDirectory()) {
+                  fs.rmSync(entryPath, { recursive: true, force: true });
+                } else {
+                  fs.unlinkSync(entryPath);
+                }
+              }
+              fs.rmdirSync(userSessionPath);
+            } catch (rmErr) {
+              this.logger.warn(`[WhatsApp] Could not fully clear session dir: ${rmErr.message}`);
+            }
           }
           fs.mkdirSync(userSessionPath, { recursive: true });
           // Restart after 2s to show new QR code

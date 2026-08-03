@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAuthStore } from '../src/store/auth.store';
-import { registerForPushNotificationsAsync } from '../src/utils/notifications.utils';
+import { syncPushTokenWithServer, getNotificationRoute } from '../src/utils/notifications.utils';
 import * as Notifications from 'expo-notifications';
 
 // ── إجبار RTL من البداية ──
@@ -33,15 +33,24 @@ function AuthGuard() {
   const router = useRouter();
   useEffect(() => {
     initialize();
-    
-    // طلب أذونات الإشعارات والحصول على التوكن
-    registerForPushNotificationsAsync().then(token => {
-      if (token) {
-        // يمكن حفظ التوكن في Store أو إرساله للباك-إند
-        console.log('Got token:', token);
-      }
-    });
   }, []);
+
+  // ربط push token بالخادم بعد تحديد نوع المستخدم
+  useEffect(() => {
+    if (userType) {
+      syncPushTokenWithServer(userType);
+    }
+  }, [userType]);
+
+  // التوجيه عند الضغط على إشعار
+  useEffect(() => {
+    const sub = Notifications.addNotificationResponseReceivedListener(response => {
+      if (!userType) return;
+      const route = getNotificationRoute(response.notification, userType);
+      if (route) router.push(route as any);
+    });
+    return () => sub.remove();
+  }, [userType]);
 
   useEffect(() => {
     if (!isInitialized) return;

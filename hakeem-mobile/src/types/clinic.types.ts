@@ -65,6 +65,16 @@ export interface PatientNotification {
 // أنواع بيانات السجلات الطبية
 // =====================
 
+export interface Prescription {
+  id: number;
+  status: string;
+  medications?: string;
+  notes?: string;
+  createdAt: string;
+  pharmacy?: { id: number; name?: string; clinic_name?: string };
+  doctor?: { id: number; name?: string; clinic_name?: string };
+}
+
 export interface MedicalRecord {
   id: number;
   appointmentId: number;
@@ -73,16 +83,28 @@ export interface MedicalRecord {
   aiAdvice?: string;
   recordType: string;
   feeAmount?: number;
+  sickLeaveDays?: number;
+  sickLeaveReason?: string;
+  referralTo?: string;
   createdAt: string;
   appointment?: {
+    id: number;
     appointmentDate: string;
-    clinic?: {
+    type?: string;
+    notes?: string;
+    user?: {
+      id: number;
+      name?: string;
       clinic_name?: string;
       clinic_specialty?: string;
+      clinic_address?: string;
+      clinic_phone?: string;
+      avatar?: string;
     };
-    assignedDoctor?: {
-      name: string;
-    };
+    prescriptions?: Prescription[];
+    // legacy fields
+    clinic?: { clinic_name?: string; clinic_specialty?: string };
+    assignedDoctor?: { name: string };
   };
 }
 

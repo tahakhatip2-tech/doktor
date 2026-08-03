@@ -1,139 +1,196 @@
-import React from 'react';
-import { View, Text, FlatList, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { ScreenHeader, EmptyState } from '../../../src/components/common';
 import { colors } from '../../../src/theme/colors';
-import { AppHeader, EmptyState } from '../../../src/components/common';
-
-const MOCK_CHATS = [
-  { id: 1, clinicId: 1, clinicName: 'عيادة د. أحمد للأسنان', lastMessage: 'نعم، يمكنك الحضور غداً في نفس الموعد.', time: '10:30 ص', unread: 2 },
-  { id: 2, clinicId: 2, clinicName: 'مستشفى الشفاء - قسم الجلدية', lastMessage: 'شكراً لك.', time: 'أمس', unread: 0 },
-];
+import { apiClient } from '../../../src/api/client';
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function ChatListScreen() {
   const router = useRouter();
+  const [chats, setChats] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const renderItem = ({ item }: { item: typeof MOCK_CHATS[0] }) => (
-    <TouchableOpacity 
-      style={styles.chatCard}
-      onPress={() => router.push(`/(patient)/chat/${item.clinicId}` as any)}
-      activeOpacity={0.8}
-    >
-      <View style={styles.avatarContainer}>
-        <View style={styles.avatarGlow} />
-        <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{item.clinicName.charAt(0)}</Text>
-        </View>
-      </View>
+  const fetchChats = async () => {
+    try {
+      const res = await apiClient.get('/patient/chat/conversations');
+      const data = Array.isArray(res.data) ? res.data : (res.data?.data || []);
+      setChats(data);
+    } catch (err) {
+      // ignore
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      <View style={styles.content}>
-        <View style={styles.row}>
-          <Text style={styles.name} numberOfLines={1}>{item.clinicName}</Text>
-          <Text style={styles.time}>{item.time}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={[styles.message, item.unread > 0 && styles.messageUnread]} numberOfLines={1}>
-            {item.lastMessage}
-          </Text>
-          {item.unread > 0 && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{item.unread}</Text>
-            </View>
-          )}
-        </View>
-      </View>
-    </TouchableOpacity>
+  useFocusEffect(
+    useCallback(() => {
+      fetchChats();
+    }, [])
   );
+
+  const renderChatItem = ({ item }: { item: any }) => {
+    const lastMsg = item.messages?.[0];
+    const unreadCount = item.unreadPatientCount || 0;
+    const timeString = lastMsg 
+      ? new Date(lastMsg.createdAt).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' }) 
+      : '';
+      
+    return (
+      <TouchableOpacity
+        style={styles.chatItem}
+        onPress={() => router.push(`/(patient)/chat/${item.id}`)}
+        activeOpacity={0.7}
+      >
+        <View style={styles.avatar}>
+           <Text style={{ fontSize: 24, textAlign: 'center', lineHeight: 56 }}>🏥</Text>
+        </View>
+        <View style={styles.chatInfo}>
+          <View style={styles.chatHeader}>
+            <Text style={styles.clinicName} numberOfLines={1}>
+              {item.clinic?.name || 'العيادة'}
+            </Text>
+            <Text style={[styles.time, unreadCount > 0 && styles.unreadTime]}>
+              {timeString}
+            </Text>
+          </View>
+          <Text style={styles.doctorName} numberOfLines={1}>
+            د. {item.clinic?.doctorName || 'طبيب'}
+          </Text>
+          <View style={styles.lastMessageRow}>
+            <Text
+              style={[styles.lastMessage, unreadCount > 0 && styles.unreadMessage]}
+              numberOfLines={1}
+            >
+              {lastMsg?.content || 'لا توجد رسائل'}
+            </Text>
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>{unreadCount}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <AppHeader title="المحادثات" showBack={false} />
-      
-      <FlatList
-        data={MOCK_CHATS}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <EmptyState
-            icon="chatbubbles-outline"
-            title="لا توجد محادثات"
-            subtitle="لم تقم ببدء أي محادثة مع العيادات أو الصيدليات بعد."
-          />
-        }
-      />
+      <ScreenHeader title="المحادثات" showBack />
+
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      ) : (
+        <FlatList
+          data={chats}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderChatItem}
+          contentContainerStyle={chats.length === 0 ? styles.emptyList : styles.list}
+          ListEmptyComponent={
+            <EmptyState 
+              icon="chatbubbles-outline"
+              title="لا توجد محادثات"
+              subtitle="لم تقم ببدء أي محادثة مع طبيب حتى الآن."
+            />
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.background },
-  list: { padding: 20, gap: 16 },
-  chatCard: {
+  container: {
+    flex: 1,
+    backgroundColor: '#f8fafc',
+  },
+  list: {
+    paddingBottom: 24,
+  },
+  emptyList: {
+    flexGrow: 1,
+  },
+  chatItem: {
     flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.surface,
     padding: 16,
-    borderRadius: 20,
-    gap: 16,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  avatarContainer: {
-    position: 'relative',
-    justifyContent: 'center',
+    backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
     alignItems: 'center',
-  },
-  avatarGlow: {
-    position: 'absolute',
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: colors.primary,
-    opacity: 0.3,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 1,
-    shadowRadius: 15,
-    elevation: 8,
   },
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: `${colors.primary}15`,
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: `${colors.primary}40`,
-    zIndex: 1,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#e2e8f0',
+    marginLeft: 12, // RTL
   },
-  avatarText: { fontFamily: 'Cairo-Bold', fontSize: 20, color: colors.primaryLight },
-  content: { flex: 1, gap: 6 },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 8 },
-  name: { flex: 1, fontFamily: 'Cairo-Bold', fontSize: 16, color: colors.textMain },
-  time: { fontFamily: 'Cairo-SemiBold', fontSize: 11, color: colors.textSecondary },
-  message: { flex: 1, fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary },
-  messageUnread: { fontFamily: 'Cairo-SemiBold', color: colors.textMain },
+  chatInfo: {
+    flex: 1,
+  },
+  chatHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 2,
+  },
+  clinicName: {
+    fontSize: 16,
+    fontFamily: 'Cairo-Bold',
+    color: '#334155',
+    flex: 1,
+    textAlign: 'left',
+  },
+  doctorName: {
+    fontSize: 13,
+    fontFamily: 'Cairo-Medium',
+    color: colors.primary,
+    marginBottom: 4,
+    textAlign: 'left',
+  },
+  time: {
+    fontSize: 12,
+    fontFamily: 'Cairo-Regular',
+    color: '#94a3b8',
+    marginLeft: 8,
+  },
+  unreadTime: {
+    color: colors.primary,
+    fontFamily: 'Cairo-Bold',
+  },
+  lastMessageRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  lastMessage: {
+    fontSize: 14,
+    fontFamily: 'Cairo-Regular',
+    color: '#64748b',
+    flex: 1,
+    textAlign: 'left',
+  },
+  unreadMessage: {
+    color: '#0f172a',
+    fontFamily: 'Cairo-SemiBold',
+  },
   badge: {
     backgroundColor: colors.primary,
-    minWidth: 22,
-    height: 22,
-    borderRadius: 11,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: 6,
-    shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 4,
+    paddingVertical: 2,
+    borderRadius: 10,
+    minWidth: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginLeft: 8,
   },
-  badgeText: { fontFamily: 'Cairo-Bold', fontSize: 11, color: colors.white },
+  badgeText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontFamily: 'Cairo-Bold',
+  },
 });

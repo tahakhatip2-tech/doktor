@@ -5,7 +5,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors } from '../../src/theme/colors';
-import { Card, AppHeader, Skeleton } from '../../src/components/common';
+import { Card, AppHeader, Skeleton, PageHero } from '../../src/components/common';
 import { useAuthStore } from '../../src/store/auth.store';
 import { doctorAppointmentsApi } from '../../src/api/appointments.api';
 import { AppointmentStats } from '../../src/types/appointment.types';
@@ -59,9 +59,9 @@ export default function DoctorDashboard() {
       route: '/(doctor)/appointments'
     },
     {
-      title: 'بحث عن مريض',
-      sub: 'الوصول السريع لملف المريض',
-      icon: 'search' as const,
+      title: 'المرضى',
+      sub: 'قاعدة بيانات المرضى',
+      icon: 'people' as const,
       color: colors.info,
       route: '/(doctor)/patients'
     },
@@ -72,15 +72,62 @@ export default function DoctorDashboard() {
       color: colors.success,
       route: '/(doctor)/financial'
     },
+    {
+      title: 'رسائل المرضى',
+      sub: 'محادثات داخلية مع المرضى',
+      icon: 'chatbubbles' as const,
+      color: '#EC4899',
+      route: '/(doctor)/chat' as any
+    },
+    {
+      title: 'أطباء العيادة',
+      sub: 'إدارة الطاقم الطبي',
+      icon: 'medkit' as const,
+      color: '#8B5CF6',
+      route: '/(doctor)/clinic-doctors' as any
+    },
+    {
+      title: 'آخر الأخبار',
+      sub: 'العروض والأخبار الطبية',
+      icon: 'newspaper' as const,
+      color: colors.warning,
+      route: '/(doctor)/offers' as any
+    },
+    {
+      title: 'نماذج الرسائل',
+      sub: 'رسائل جاهزة للإرسال',
+      icon: 'document-text' as const,
+      color: colors.accent,
+      route: '/(doctor)/templates' as any
+    },
+    {
+      title: 'الموظف الذكي',
+      sub: 'اسأل عن المواعيد ونفذ الأوامر',
+      icon: 'logo-android' as const,
+      color: '#A855F7',
+      route: '/(doctor)/ai-chat' as any
+    },
+    {
+      title: 'الإعدادات',
+      sub: 'ضبط إعدادات العيادة',
+      icon: 'settings' as const,
+      color: colors.textSecondary,
+      route: '/(doctor)/settings'
+    },
   ];
+
 
   const doctorName = doctorUser?.name || 'الطبيب';
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <AppHeader 
-        title="لوحة تحكم الطبيب" 
-        showBack={false}
+      <AppHeader title="لوحة تحكم الطبيب" showBack={false} />
+      <PageHero
+        title={`مرحباً، ${doctorName}`}
+        subtitle="لوحة تحكم العيادة"
+        icon="stethoscope-outline"
+        iconColor="#6C63FF"
+        showClock
       />
       <ScrollView 
         contentContainerStyle={styles.scroll} 

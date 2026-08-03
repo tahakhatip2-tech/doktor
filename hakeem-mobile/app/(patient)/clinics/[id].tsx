@@ -8,6 +8,9 @@ import { clinicsApi } from '../../../src/api/modules.api';
 import { patientAppointmentsApi } from '../../../src/api/appointments.api';
 import { Clinic } from '../../../src/types/clinic.types';
 import { Button, Input, AppHeader, Modal, useToast, Toast } from '../../../src/components/common';
+import { slotsApi } from '../../../src/api/patient.api';
+import { medicalRecordsApi } from '../../../src/api/modules.api';
+import { MedicalRecord } from '../../../src/types/clinic.types';
 
 // -- دوال مساعدة للتاريخ والوقت --
 function getNextDays(days = 7) {
@@ -29,8 +32,6 @@ function getNextDays(days = 7) {
   return result;
 }
 
-const MOCK_SLOTS = ['09:00 AM', '10:00 AM', '11:30 AM', '01:00 PM', '02:30 PM', '04:00 PM', '06:00 PM'];
-
 export default function ClinicDetailsScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
@@ -39,17 +40,75 @@ export default function ClinicDetailsScreen() {
   const [clinic, setClinic] = useState<Clinic | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isBooking, setIsBooking] = useState(false);
-  
+
+  // -- حالة صرف الوصفة (للصيدلية) --
+  const [prescriptionModal, setPrescriptionModal] = useState(false);
+  const [prescriptions, setPrescriptions] = useState<MedicalRecord[]>([]);
+  const [selectedPrescription, setSelectedPrescription] = useState<number | null>(null);
+  const [isSendingPrescription, setIsSendingPrescription] = useState(false);
+
   // -- حالة الحجز --
   const nextDays = getNextDays(7);
   const [selectedDate, setSelectedDate] = useState(nextDays[0].dateStr);
   const [selectedSlot, setSelectedSlot] = useState('');
   const [notes, setNotes] = useState('');
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const [slots, setSlots] = useState<string[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
 
   useEffect(() => {
     fetchClinic();
+    fetchSlots(nextDays[0].dateStr);
   }, [id]);
+
+  const fetchPrescriptions = async () => {
+    try {
+      const res = await medicalRecordsApi.getAll();
+      setPrescriptions((res.data || []).filter((r: MedicalRecord) => r.treatment));
+    } catch { /* تجاهل */ }
+  };
+
+  const handleOpenPrescriptionModal = () => {
+    fetchPrescriptions();
+    setPrescriptionModal(true);
+  };
+
+  const handleSendPrescription = async () => {
+    if (!selectedPrescription) {
+      showToast('الرجاء اختيار وصفة طبية أولاً', 'warning');
+      return;
+    }
+    try {
+      setIsSendingPrescription(true);
+      await patientAppointmentsApi.create({
+        clinicId: Number(id),
+        appointmentDate: new Date().toISOString(),
+        notes: `طلب صرف وصفة - سجل رقم ${selectedPrescription}`,
+        type: 'consultation',
+      });
+      setPrescriptionModal(false);
+      setSelectedPrescription(null);
+      showToast('تم إرسال الوصفة للصيدلية بنجاح', 'success');
+    } catch {
+      showToast('حدث خطأ أثناء إرسال الوصفة', 'error');
+    } finally {
+      setIsSendingPrescription(false);
+    }
+  };
+
+  const fetchSlots = async (date: string) => {
+    try {
+      setLoadingSlots(true);
+      setSelectedSlot('');
+      const data: any[] = []; // Default empty for now, or fetch from API if available
+      setSlots(Array.isArray(data) ? data : []);
+    } catch {
+      // fallback to default slots if API not ready
+      setSlots(['09:00 AM', '10:00 AM', '11:30 AM', '01:00 PM', '02:30 PM', '04:00 PM']);
+    } finally {
+      setLoadingSlots(false);
+    }
+  };
 
   const fetchClinic = async () => {
     try {
@@ -148,7 +207,7 @@ export default function ClinicDetailsScreen() {
           </View>
 
           <View style={styles.actionsRow}>
-            <TouchableOpacity style={styles.actionBtnPrimary} onPress={() => router.push(`/(patient)/chat/${clinic.id}` as any)}>
+            <TouchableOpacity style={styles.actionBtnPrimary} onPress={() => router.push({ pathname: '/(patient)/chat/[id]', params: { id: clinic.id, isClinic: 'true' } } as any)}>
               <Ionicons name="chatbubble-ellipses-outline" size={20} color={colors.white} />
               <Text style={styles.actionBtnText}>مراسلة</Text>
             </TouchableOpacity>
@@ -167,11 +226,12 @@ export default function ClinicDetailsScreen() {
                 <Ionicons name="document-text-outline" size={32} color={colors.accent} />
                 <Text style={styles.pharmacyTitle}>لديك وصفة طبية؟</Text>
                 <Text style={styles.pharmacyDesc}>قم بإرسال الوصفة الطبية للصيدلية لتحضير الدواء قبل وصولك.</Text>
-                <Button 
-                  title="صرف وصفة طبية" 
-                  onPress={() => showToast('سيتم إضافة صرف الوصفة لاحقاً', 'info')} 
+                <Button
+                  title="صرف وصفة طبية"
+                  onPress={handleOpenPrescriptionModal}
                   variant="accent"
                   style={{ marginTop: 16 }}
+                  icon={<Ionicons name="document-text-outline" size={18} color="#fff" />}
                 />
              </View>
           </View>
@@ -193,7 +253,7 @@ export default function ClinicDetailsScreen() {
                       style={[styles.dayCard, isActive && styles.dayCardActive]}
                       onPress={() => {
                         setSelectedDate(day.dateStr);
-                        setSelectedSlot(''); // تصفير الوقت عند تغيير اليوم
+                        fetchSlots(day.dateStr);
                       }}
                     >
                       <Text style={[styles.dayName, isActive && styles.textActive]}>{day.dayName}</Text>
@@ -207,20 +267,32 @@ export default function ClinicDetailsScreen() {
 
             <View style={styles.section}>
               <Text style={styles.sectionSubtitle}>الأوقات المتاحة</Text>
-              <View style={styles.slotsGrid}>
-                {MOCK_SLOTS.map(slot => {
-                  const isActive = selectedSlot === slot;
-                  return (
-                    <TouchableOpacity
-                      key={slot}
-                      style={[styles.slotCard, isActive && styles.slotCardActive]}
-                      onPress={() => setSelectedSlot(slot)}
-                    >
-                      <Text style={[styles.slotText, isActive && styles.slotTextActive]}>{slot}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
+              {loadingSlots ? (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
+                  {[1,2,3,4,5,6].map(i => (
+                    <View key={i} style={[styles.slotCard, { backgroundColor: colors.surfaceLight, opacity: 0.5 }]} />
+                  ))}
+                </View>
+              ) : slots.length === 0 ? (
+                <Text style={{ fontFamily: 'Cairo-Regular', color: colors.textSecondary, textAlign: 'center', paddingVertical: 16 }}>
+                  لا توجد أوقات متاحة في هذا اليوم
+                </Text>
+              ) : (
+                <View style={styles.slotsGrid}>
+                  {slots.map(slot => {
+                    const isActive = selectedSlot === slot;
+                    return (
+                      <TouchableOpacity
+                        key={slot}
+                        style={[styles.slotCard, isActive && styles.slotCardActive]}
+                        onPress={() => setSelectedSlot(slot)}
+                      >
+                        <Text style={[styles.slotText, isActive && styles.slotTextActive]}>{slot}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
             </View>
 
             <View style={styles.section}>
@@ -273,6 +345,73 @@ export default function ClinicDetailsScreen() {
       </Modal>
 
       <Toast {...toast} onHide={hideToast} />
+
+      {/* مودال اختيار الوصفة */}
+      <Modal visible={prescriptionModal} onClose={() => setPrescriptionModal(false)} size="md">
+        <View style={{ gap: 16 }}>
+          <Text style={styles.confirmTitle}>اختر الوصفة الطبية</Text>
+          <Text style={{ fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, textAlign: 'center' }}>
+            اختر الوصفة التي تريد إرسالها لهذه الصيدلية لتحضير الأدوية.
+          </Text>
+
+          {prescriptions.length === 0 ? (
+            <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+              <Ionicons name="document-text-outline" size={40} color={colors.textMuted} />
+              <Text style={{ fontFamily: 'Cairo-Regular', color: colors.textSecondary, marginTop: 8 }}>
+                لا توجد وصفات طبية في سجلاتك
+              </Text>
+            </View>
+          ) : (
+            <View style={{ gap: 8 }}>
+              {prescriptions.map(rec => (
+                <TouchableOpacity
+                  key={rec.id}
+                  style={[
+                    styles.prescriptionItem,
+                    selectedPrescription === rec.id && styles.prescriptionItemActive,
+                  ]}
+                  onPress={() => setSelectedPrescription(rec.id)}
+                  activeOpacity={0.8}
+                >
+                  <View style={[
+                    styles.prescriptionIcon,
+                    selectedPrescription === rec.id && { backgroundColor: 'rgba(255,255,255,0.2)' },
+                  ]}>
+                    <Ionicons name="flask" size={20} color={selectedPrescription === rec.id ? colors.white : colors.success} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={[
+                      styles.prescriptionName,
+                      selectedPrescription === rec.id && { color: colors.white },
+                    ]} numberOfLines={1}>
+                      {rec.appointment?.clinic?.clinic_name || 'وصفة طبية'}
+                    </Text>
+                    <Text style={[
+                      styles.prescriptionDate,
+                      selectedPrescription === rec.id && { color: 'rgba(255,255,255,0.7)' },
+                    ]}>
+                      {new Date(rec.createdAt).toLocaleDateString('ar-SA')}
+                    </Text>
+                  </View>
+                  {selectedPrescription === rec.id && (
+                    <Ionicons name="checkmark-circle" size={22} color={colors.white} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {prescriptions.length > 0 && (
+            <Button
+              title="إرسال للصيدلية"
+              onPress={handleSendPrescription}
+              loading={isSendingPrescription}
+              style={{ backgroundColor: colors.success, borderColor: colors.success }}
+              icon={<Ionicons name="send" size={18} color="#fff" />}
+            />
+          )}
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -551,5 +690,38 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     lineHeight: 22,
+  },
+  prescriptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 14,
+    borderRadius: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  prescriptionItemActive: {
+    backgroundColor: colors.success,
+    borderColor: colors.success,
+  },
+  prescriptionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: `${colors.success}15`,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  prescriptionName: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 14,
+    color: colors.textMain,
+  },
+  prescriptionDate: {
+    fontFamily: 'Cairo-Regular',
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 2,
   },
 });

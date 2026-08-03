@@ -414,7 +414,96 @@ export class InternalChatService {
                 console.error('Bot appointment extraction failed:', err);
             }
         }
-        return processedText;
+
+        // 2. Cancellation Extraction: [[CANCEL_APPOINTMENT]]
+        const cancelRegex = /\[\[CANCEL_APPOINTMENT\]\]/g;
+        if (cancelRegex.test(processedText)) {
+            processedText = processedText.replace(cancelRegex, '');
+            try {
+                const upcomingAppt = await this.prisma.appointment.findFirst({
+                    where: { userId: clinicId, phone, status: { in: ['confirmed', 'pending'] }, appointmentDate: { gte: new Date() } },
+                    orderBy: { appointmentDate: 'asc' }
+                });
+
+                if (upcomingAppt) {
+                    await this.prisma.appointment.update({
+                        where: { id: upcomingAppt.id },
+                        data: { status: 'cancelled', cancelledAt: new Date(), cancellationReason: 'تم الإلغاء عبر المحادثات المباشرة' }
+                    });
+                    
+                    await this.prisma.notification.create({
+                        data: {
+                            userId: clinicId,
+                            type: 'APPOINTMENT_CANCELLED',
+                            title: 'إلغاء موعد',
+                            message: `تم إلغاء موعد ${upcomingAppt.customerName} المجدول في ${upcomingAppt.appointmentDate.toLocaleString('ar-EG')}`,
+                            priority: 'HIGH',
+                        },
+                    }).catch(() => {});
+                }
+            } catch (err) {
+                console.error('Bot cancel extraction failed:', err);
+            }
+        }
+
+        // 3. Reschedule Extraction: [[RESCHEDULE_APPOINTMENT: YYYY-MM-DD | HH:MM]]
+        const rescheduleRegex = /\[\[RESCHEDULE_APPOINTMENT:\s*([^|]*)?\|\s*([^\]]*)?\]\]/g;
+        let resMatch;
+        while ((resMatch = rescheduleRegex.exec(processedText)) !== null) {
+            const [fullMatch, dateStr, timeStr] = resMatch;
+            try {
+                const date = dateStr?.trim();
+                const time = timeStr?.trim();
+                if (date && time) {
+                    let finalDateStr = date;
+                    let finalTimeStr = time;
+                    if (time.includes('PM') || time.includes('م') || time.includes('ظهراً') || time.includes('مساءً')) {
+                        let [h, m] = time.replace(/[^\d:]/g, '').split(':');
+                        let hour = parseInt(h);
+                        if (hour < 12) hour += 12;
+                        finalTimeStr = `${hour.toString().padStart(2, '0')}:${m || '00'}`;
+                    }
+                    const newDate = new Date(`${finalDateStr}T${finalTimeStr}:00`);
+
+                    if (!isNaN(newDate.getTime())) {
+                        const isAvailable = await this.appointmentsService.isSlotAvailable(clinicId, newDate, 30);
+                        if (!isAvailable) {
+                            processedText = processedText.replace(fullMatch, '\n\n(عذراً، هذا الموعد غير متاح حالياً. يرجى اختيار وقت آخر)');
+                            continue;
+                        }
+
+                        const upcomingAppt = await this.prisma.appointment.findFirst({
+                            where: { userId: clinicId, phone, status: { in: ['confirmed', 'pending'] }, appointmentDate: { gte: new Date() } },
+                            orderBy: { appointmentDate: 'asc' }
+                        });
+
+                        if (upcomingAppt) {
+                            await this.prisma.appointment.update({
+                                where: { id: upcomingAppt.id },
+                                data: { appointmentDate: newDate, reminderSent: false, reminder24hSent: false, reminder1hSent: false }
+                            });
+                            
+                            await this.prisma.notification.create({
+                                data: {
+                                    userId: clinicId,
+                                    type: 'APPOINTMENT_RESCHEDULED',
+                                    title: 'تأجيل موعد',
+                                    message: `تم تأجيل موعد ${upcomingAppt.customerName} إلى ${newDate.toLocaleString('ar-EG')}`,
+                                    priority: 'HIGH',
+                                },
+                            }).catch(() => {});
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Bot reschedule extraction failed:', err);
+            }
+            if (processedText.includes(fullMatch)) {
+                processedText = processedText.replace(fullMatch, '');
+            }
+        }
+
+        return processedText.trim();
     }
 
     // ─── تمييز المحادثة كمقروءة ──────────────────────────────────────────────

@@ -1,33 +1,117 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, RefreshControl, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from 'expo-router';
 import { colors } from '../../../src/theme/colors';
-import { AppHeader, Card } from '../../../src/components/common';
+import { AppHeader, Card, Skeleton, PageHero } from '../../../src/components/common';
+import { financialApi, FinancialTransaction, FinancialSummary } from '../../../src/api/appointments.api';
+import { getErrorMessage } from '../../../src/api/client';
 
-const MOCK_TRANSACTIONS = [
-  { id: 1, patient: 'أحمد محمود', type: 'كشف عيادة', amount: 50, date: '2023-10-15', status: 'completed' },
-  { id: 2, patient: 'سارة محمد', type: 'استشارة فيديو', amount: 30, date: '2023-10-14', status: 'completed' },
-  { id: 3, patient: 'عمر خليل', type: 'كشف عيادة', amount: 50, date: '2023-10-14', status: 'completed' },
-  { id: 4, patient: 'خالد عبدلله', type: 'مراجعة', amount: 0, date: '2023-10-13', status: 'completed' },
-];
+const SCREEN_WIDTH = Dimensions.get('window').width;
+
+// رسم بياني بسيط بدون مكتبات خارجية
+function SimpleBarChart({ data }: { data: { label: string; value: number }[] }) {
+  const max = Math.max(...data.map(d => d.value), 1);
+  const chartWidth = SCREEN_WIDTH - 80;
+  const barWidth = Math.floor((chartWidth / data.length) - 8);
+
+  return (
+    <View style={chartStyles.container}>
+      <View style={chartStyles.bars}>
+        {data.map((item, i) => {
+          const height = Math.max((item.value / max) * 100, 4);
+          const isMax = item.value === max;
+          return (
+            <View key={i} style={chartStyles.barWrapper}>
+              {isMax && (
+                <Text style={chartStyles.valueLabel}>{item.value}</Text>
+              )}
+              <View
+                style={[
+                  chartStyles.bar,
+                  { height, width: barWidth, backgroundColor: isMax ? colors.primary : `${colors.primary}50` },
+                ]}
+              />
+              <Text style={chartStyles.barLabel} numberOfLines={1}>{item.label}</Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+const chartStyles = StyleSheet.create({
+  container: { paddingVertical: 8 },
+  bars: { flexDirection: 'row', alignItems: 'flex-end', height: 120, gap: 4 },
+  barWrapper: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', gap: 4 },
+  bar: { borderRadius: 6 },
+  barLabel: { fontFamily: 'Cairo-Regular', fontSize: 9, color: colors.textSecondary, textAlign: 'center' },
+  valueLabel: { fontFamily: 'Cairo-Bold', fontSize: 10, color: colors.primary },
+});
 
 export default function DoctorFinancialScreen() {
   const [filter, setFilter] = useState<'day' | 'week' | 'month'>('week');
+  const [summary, setSummary] = useState<FinancialSummary | null>(null);
+  const [transactions, setTransactions] = useState<FinancialTransaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  const stats = {
-    totalRevenue: 130,
-    appointmentsCount: 4,
-    pendingPayments: 0,
-  };
+  // بيانات الرسم البياني من المعاملات
+  const chartData = (() => {
+    if (transactions.length === 0) return [];
+    if (filter === 'week') {
+      const days = ['أحد', 'اثن', 'ثلا', 'أرب', 'خمي', 'جمع', 'سبت'];
+      const grouped: Record<string, number> = {};
+      transactions.forEach(tx => {
+        const day = days[new Date(tx.date).getDay()];
+        grouped[day] = (grouped[day] || 0) + tx.amount;
+      });
+      return days.map(d => ({ label: d, value: grouped[d] || 0 }));
+    }
+    if (filter === 'month') {
+      const weeks = ['أ1', 'أ2', 'أ3', 'أ4'];
+      const grouped: Record<string, number> = {};
+      transactions.forEach(tx => {
+        const week = `أ${Math.ceil(new Date(tx.date).getDate() / 7)}`;
+        grouped[week] = (grouped[week] || 0) + tx.amount;
+      });
+      return weeks.map(w => ({ label: w, value: grouped[w] || 0 }));
+    }
+    // day — كل ساعتين
+    const hours = ['8ص', '10ص', '12م', '2م', '4م', '6م'];
+    return hours.map(h => ({ label: h, value: 0 }));
+  })();
 
-  const renderTransaction = (item: typeof MOCK_TRANSACTIONS[0]) => (
+  const fetchData = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const [summaryRes, txRes] = await Promise.all([
+        financialApi.getSummary(filter),
+        financialApi.getTransactions(filter),
+      ]);
+      setSummary(summaryRes.data);
+      setTransactions(txRes.data || []);
+    } catch (err) {
+      console.log(getErrorMessage(err));
+    } finally {
+      setIsLoading(false);
+      setRefreshing(false);
+    }
+  }, [filter]);
+
+  useFocusEffect(useCallback(() => { fetchData(); }, [fetchData]));
+
+  const onRefresh = () => { setRefreshing(true); fetchData(); };
+
+  const renderTransaction = (item: FinancialTransaction, idx: number, arr: FinancialTransaction[]) => (
     <View key={item.id} style={styles.transactionItem}>
       <View style={styles.transactionIcon}>
         <Ionicons name={item.amount > 0 ? "arrow-down" : "checkmark"} size={20} color={item.amount > 0 ? colors.success : colors.textSecondary} />
       </View>
       <View style={styles.transactionInfo}>
-        <Text style={styles.transactionName}>{item.patient}</Text>
+        <Text style={styles.transactionName}>{item.patientName}</Text>
         <Text style={styles.transactionType}>{item.type} • {item.date}</Text>
       </View>
       <Text style={[styles.transactionAmount, { color: item.amount > 0 ? colors.success : colors.textSecondary }]}>
@@ -39,6 +123,13 @@ export default function DoctorFinancialScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppHeader title="التحليل المالي" showBack={false} />
+      <PageHero
+        title="التحليل المالي"
+        subtitle="إيرادات العيادة والتقارير المالية"
+        icon="wallet-outline"
+        iconColor="#10b981"
+        showClock={false}
+      />
 
       {/* Filters */}
       <View style={styles.filtersContainer}>
@@ -62,17 +153,27 @@ export default function DoctorFinancialScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.primary} />}
+      >
         
         {/* Main Stats */}
+        {isLoading ? (
+          <View style={[styles.revenueCard, { alignItems: 'center' }]}>
+            <Skeleton width={120} height={20} style={{ marginBottom: 12 }} />
+            <Skeleton width={160} height={40} style={{ marginBottom: 12 }} />
+            <Skeleton width={180} height={16} />
+          </View>
+        ) : (
         <Card style={styles.revenueCard} accent>
           <Text style={styles.revenueTitle}>إجمالي الإيرادات</Text>
-          <Text style={styles.revenueAmount}>{stats.totalRevenue} د.أ</Text>
+          <Text style={styles.revenueAmount}>{summary?.totalRevenue ?? 0} د.أ</Text>
           <View style={styles.revenueGrowth}>
             <Ionicons name="trending-up" size={16} color={colors.success} />
-            <Text style={styles.growthText}>+12% مقارنة بالفترة السابقة</Text>
+            <Text style={styles.growthText}>{summary?.growthPercent != null ? `+${summary.growthPercent}%` : '--'} مقارنة بالفترة السابقة</Text>
           </View>
         </Card>
+        )}
 
         {/* Mini Stats */}
         <View style={styles.miniStatsContainer}>
@@ -80,27 +181,43 @@ export default function DoctorFinancialScreen() {
             <View style={[styles.iconBox, { backgroundColor: `${colors.primary}15` }]}>
                <Ionicons name="people" size={20} color={colors.primary} />
             </View>
-            <Text style={styles.miniStatValue}>{stats.appointmentsCount}</Text>
+            <Text style={styles.miniStatValue}>{summary?.appointmentsCount ?? 0}</Text>
             <Text style={styles.miniStatLabel}>المرضى (مدفوع)</Text>
           </Card>
           <Card style={styles.miniStatCard}>
             <View style={[styles.iconBox, { backgroundColor: `${colors.warning}15` }]}>
                <Ionicons name="time" size={20} color={colors.warning} />
             </View>
-            <Text style={styles.miniStatValue}>{stats.pendingPayments}</Text>
+            <Text style={styles.miniStatValue}>{summary?.pendingPayments ?? 0}</Text>
             <Text style={styles.miniStatLabel}>دفعات معلقة</Text>
           </Card>
         </View>
 
+        {/* Bar Chart */}
+        {!isLoading && chartData.length > 0 && (
+          <Card style={[styles.transactionsCard, { marginBottom: 16 }]}>
+            <Text style={[styles.sectionTitle, { marginBottom: 12 }]}>توزيع الإيرادات</Text>
+            <SimpleBarChart data={chartData} />
+          </Card>
+        )}
+
         {/* Transactions List */}
         <Text style={styles.sectionTitle}>آخر المعاملات</Text>
         <Card style={styles.transactionsCard}>
-          {MOCK_TRANSACTIONS.map((item, index) => (
-            <View key={item.id}>
-              {renderTransaction(item)}
-              {index < MOCK_TRANSACTIONS.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))}
+          {isLoading ? (
+            [1,2,3].map(i => <Skeleton key={i} width="100%" height={56} style={{ marginBottom: 8, borderRadius: 8 }} />)
+          ) : transactions.length === 0 ? (
+            <Text style={{ fontFamily: 'Cairo-Regular', color: colors.textSecondary, textAlign: 'center', paddingVertical: 16 }}>
+              لا توجد معاملات في هذه الفترة
+            </Text>
+          ) : (
+            transactions.map((item, index) => (
+              <View key={item.id}>
+                {renderTransaction(item, index, transactions)}
+                {index < transactions.length - 1 && <View style={styles.divider} />}
+              </View>
+            ))
+          )}
         </Card>
 
       </ScrollView>

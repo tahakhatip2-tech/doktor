@@ -21,6 +21,7 @@ const SPECIALTIES = [
 
 export default function ClinicsScreen() {
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'CLINICS' | 'PHARMACIES'>('CLINICS');
   const [search, setSearch] = useState('');
   const [activeSpecialty, setActiveSpecialty] = useState('الكل');
   const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -30,18 +31,24 @@ export default function ClinicsScreen() {
   const fetchClinics = useCallback(async () => {
     try {
       setIsLoading(true);
-      const res = await clinicsApi.getAll({ 
-        search, 
-        specialty: activeSpecialty === 'الكل' ? undefined : activeSpecialty 
-      });
-      setClinics(res.data);
+      if (activeTab === 'CLINICS') {
+        const res = await clinicsApi.getAll({ 
+          search, 
+          specialty: activeSpecialty === 'الكل' ? undefined : activeSpecialty 
+        });
+        setClinics(res.data);
+      } else {
+        const res = await clinicsApi.getPharmacies({ search });
+        // The API returns users with role PHARMACY, map them to standard clinic type
+        setClinics(res.data);
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setIsLoading(false);
       setRefreshing(false);
     }
-  }, [search, activeSpecialty]);
+  }, [search, activeSpecialty, activeTab]);
 
   useEffect(() => {
     // Debounce search
@@ -98,37 +105,58 @@ export default function ClinicsScreen() {
       <AppHeader title="العيادات الطبية" showBack />
       
       <View style={styles.searchSection}>
+        <View style={styles.tabsContainer}>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'CLINICS' && styles.tabButtonActive]}
+            onPress={() => setActiveTab('CLINICS')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="medical" size={16} color={activeTab === 'CLINICS' ? colors.white : colors.textSecondary} />
+            <Text style={[styles.tabText, activeTab === 'CLINICS' && styles.tabTextActive]}>العيادات</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.tabButton, activeTab === 'PHARMACIES' && styles.tabButtonActive]}
+            onPress={() => setActiveTab('PHARMACIES')}
+            activeOpacity={0.8}
+          >
+            <Ionicons name="flask" size={16} color={activeTab === 'PHARMACIES' ? colors.white : colors.textSecondary} />
+            <Text style={[styles.tabText, activeTab === 'PHARMACIES' && styles.tabTextActive]}>الصيدليات</Text>
+          </TouchableOpacity>
+        </View>
+
         <Input 
           value={search}
           onChangeText={setSearch}
-          placeholder="ابحث عن عيادة أو طبيب..."
+          placeholder={activeTab === 'CLINICS' ? "ابحث عن عيادة أو طبيب..." : "ابحث عن صيدلية..."}
           icon={<Ionicons name="search" size={20} color={colors.textSecondary} />}
           style={styles.searchInput}
         />
 
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={SPECIALTIES}
-          keyExtractor={(item) => item}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={[
-                styles.filterChip,
-                activeSpecialty === item && styles.filterChipActive
-              ]}
-              onPress={() => setActiveSpecialty(item)}
-            >
-              <Text style={[
-                styles.filterText,
-                activeSpecialty === item && styles.filterTextActive
-              ]}>
-                {item}
-              </Text>
-            </TouchableOpacity>
-          )}
-          contentContainerStyle={styles.filtersContainer}
-        />
+        {activeTab === 'CLINICS' && (
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={SPECIALTIES}
+            keyExtractor={(item) => item}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={[
+                  styles.filterChip,
+                  activeSpecialty === item && styles.filterChipActive
+                ]}
+                onPress={() => setActiveSpecialty(item)}
+              >
+                <Text style={[
+                  styles.filterText,
+                  activeSpecialty === item && styles.filterTextActive
+                ]}>
+                  {item}
+                </Text>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={styles.filtersContainer}
+          />
+        )}
       </View>
 
       {isLoading && !refreshing ? (
@@ -174,6 +202,38 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     marginBottom: 16,
+  },
+  tabsContainer: {
+    flexDirection: 'row',
+    backgroundColor: colors.surfaceLight,
+    padding: 4,
+    borderRadius: 14,
+    marginBottom: 16,
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    borderRadius: 10,
+  },
+  tabButtonActive: {
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  tabText: {
+    fontFamily: 'Cairo-Bold',
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  tabTextActive: {
+    color: colors.white,
   },
   filtersContainer: {
     gap: 8,

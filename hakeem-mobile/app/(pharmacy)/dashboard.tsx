@@ -147,7 +147,7 @@ export default function PharmacyDashboard() {
           <View style={styles.noticeContent}>
             <Text style={styles.noticeTitle}>ربط التأمين الطبي</Text>
             <Text style={styles.noticeSub}>
-              تم تفعيل ميزة قراءة الموافقات الطبية لشركات التأمين مباشرة عبر نظام حكيم جو.
+              تم تفعيل ميزة قراءة الموافقات الطبية لشركات التأمين مباشرة عبر نظام Doctor Jo.
             </Text>
           </View>
         </View>

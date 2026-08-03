@@ -1,13 +1,14 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { MessageCircle, QrCode, Power, PowerOff, Loader2, Trash2 } from 'lucide-react';
+import { MessageCircle, QrCode, Power, PowerOff, Loader2, Trash2, Bot } from 'lucide-react';
 import { toastWithSound } from '@/lib/toast-with-sound';
 import { cn } from '@/lib/utils';
 import WhatsAppChat from '@/components/WhatsAppChat';
 import { whatsappApi } from '@/lib/api';
 import HeroSection from '@/components/HeroSection';
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
+import DoctorAIChat from '@/components/DoctorAIChat';
 
 interface WhatsAppBotProps {
     initialPhone?: string | null;
@@ -21,6 +22,7 @@ export default function WhatsAppBot({ initialPhone, initialName, doctorName, onB
     const [loading, setLoading] = useState(false);
     const [chats, setChats] = useState<any[]>([]);
     const [selectedChat, setSelectedChat] = useState<any | null>(null);
+    const [isAiChatOpen, setIsAiChatOpen] = useState(false);
 
     useEffect(() => {
         if (initialPhone) {
@@ -183,26 +185,37 @@ export default function WhatsAppBot({ initialPhone, initialName, doctorName, onB
                 icon={MessageCircle}
                 className="mb-8"
             >
-                {status.connected ? (
-                    <Button
-                        onClick={handleDisconnect}
-                        className="gap-2 bg-red-500/5 hover:bg-red-500/20 text-red-400 border border-red-500/30 backdrop-blur-[2px] shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] rounded-none h-10 px-6 font-bold transition-all hover:scale-105 text-xs uppercase tracking-wider relative group overflow-hidden"
-                    >
-                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-400/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                        <PowerOff className="h-3.5 w-3.5" />
-                        <span className="relative z-10 w-full text-center">قطع الاتصال</span>
-                    </Button>
-                ) : (
-                    <Button
-                        onClick={handleConnect}
-                        disabled={loading}
-                        className="gap-2 bg-blue-500/5 hover:bg-blue-500/20 text-blue-400 border border-blue-500/50 backdrop-blur-[2px] shadow-[0_0_20px_rgba(37,99,235,0.1)] hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] rounded-none h-10 px-8 font-bold transition-all hover:scale-105 text-xs uppercase tracking-wider group relative overflow-hidden"
-                    >
-                        <span className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                        {loading ? <Loader2 className="h-4 w-4 animate-spin text-blue-400" /> : <Power className="h-4 w-4 text-blue-400" />}
-                        <span className="relative z-10 text-shadow-sm">{loading ? 'جاري الاتصال...' : 'بدء الاتصال بالنظام'}</span>
-                    </Button>
-                )}
+                <div className="flex gap-4 items-center flex-wrap">
+                    {status.connected && (
+                        <Button
+                            onClick={() => setIsAiChatOpen(true)}
+                            className="gap-2 bg-purple-500/10 hover:bg-purple-500/20 text-purple-400 border border-purple-500/30 backdrop-blur-[2px] shadow-[0_0_20px_rgba(168,85,247,0.1)] rounded-none h-10 px-6 font-bold transition-all hover:scale-105 text-xs tracking-wider"
+                        >
+                            <Bot className="h-4 w-4" />
+                            تحدث مع الموظف الذكي
+                        </Button>
+                    )}
+                    {status.connected ? (
+                        <Button
+                            onClick={handleDisconnect}
+                            className="gap-2 bg-red-500/5 hover:bg-red-500/20 text-red-400 border border-red-500/30 backdrop-blur-[2px] shadow-[0_0_20px_rgba(239,68,68,0.1)] hover:shadow-[0_0_30px_rgba(239,68,68,0.3)] rounded-none h-10 px-6 font-bold transition-all hover:scale-105 text-xs uppercase tracking-wider relative group overflow-hidden"
+                        >
+                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-red-400/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                            <PowerOff className="h-3.5 w-3.5" />
+                            <span className="relative z-10 w-full text-center">قطع الاتصال</span>
+                        </Button>
+                    ) : (
+                        <Button
+                            onClick={handleConnect}
+                            disabled={loading}
+                            className="gap-2 bg-blue-500/5 hover:bg-blue-500/20 text-blue-400 border border-blue-500/50 backdrop-blur-[2px] shadow-[0_0_20px_rgba(37,99,235,0.1)] hover:shadow-[0_0_30px_rgba(37,99,235,0.3)] rounded-none h-10 px-8 font-bold transition-all hover:scale-105 text-xs uppercase tracking-wider group relative overflow-hidden"
+                        >
+                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-400/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                            {loading ? <Loader2 className="h-4 w-4 animate-spin text-blue-400" /> : <Power className="h-4 w-4 text-blue-400" />}
+                            <span className="relative z-10 text-shadow-sm">{loading ? 'جاري الاتصال...' : 'بدء الاتصال بالنظام'}</span>
+                        </Button>
+                    )}
+                </div>
             </HeroSection>
 
             {/* Connection Status Card */}
@@ -375,6 +388,30 @@ export default function WhatsAppBot({ initialPhone, initialName, doctorName, onB
                     )}
                 </motion.div>
             )}
+            
+            {/* AI Chat Drawer */}
+            <AnimatePresence>
+                {isAiChatOpen && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAiChatOpen(false)}
+                            className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
+                        />
+                        <motion.div
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            transition={{ type: 'spring', bounce: 0, duration: 0.4 }}
+                            className="fixed top-0 right-0 h-full w-full sm:w-[400px] z-50 bg-background shadow-2xl"
+                        >
+                            <DoctorAIChat onClose={() => setIsAiChatOpen(false)} />
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

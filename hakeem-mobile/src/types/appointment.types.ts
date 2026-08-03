@@ -8,6 +8,8 @@ export type AppointmentType = 'consultation' | 'followup' | 'checkup' | 'emergen
 export interface Appointment {
   id: number;
   userId?: number;
+  patientId?: number;       // Contact record ID
+  patientUserId?: number;   // Patient User ID (from Patient table)
   phone: string;
   customerName?: string;
   appointmentDate: string;
@@ -21,6 +23,17 @@ export interface Appointment {
   createdAt: string;
   updatedAt: string;
   // علاقات
+  contact?: {
+    id: number;
+    name?: string;
+    phone?: string;
+  };
+  patientUser?: {
+    id: number;
+    fullName?: string;
+    phone?: string;
+    avatar?: string;
+  };
   clinic?: {
     id: number;
     clinic_name?: string;

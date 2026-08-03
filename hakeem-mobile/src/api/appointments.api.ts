@@ -1,6 +1,22 @@
 import { apiClient } from './client';
 import { Appointment, CreateAppointmentDto, CancelAppointmentDto, AppointmentStats } from '../types/appointment.types';
 
+export interface FinancialSummary {
+  totalRevenue: number;
+  appointmentsCount: number;
+  pendingPayments: number;
+  growthPercent?: number;
+}
+
+export interface FinancialTransaction {
+  id: number;
+  patientName: string;
+  type: string;
+  amount: number;
+  date: string;
+  status: string;
+}
+
 // ============================
 // Patient Appointments API
 // ============================
@@ -38,11 +54,26 @@ export const doctorAppointmentsApi = {
     apiClient.post<Appointment>('/appointments', dto),
 
   update: (id: number, dto: any) =>
-    apiClient.put<Appointment>(`/appointments/${id}`, dto),
+    apiClient.patch<Appointment>(`/appointments/${id}`, dto),
 
-  delete: (id: number) =>
-    apiClient.delete(`/appointments/${id}`),
+  // تغيير حالة الموعد فقط (تأكيد / إلغاء / إكمال)
+  updateStatus: (id: number, status: string) =>
+    apiClient.patch<Appointment>(`/appointments/${id}/status`, { status }),
 
   complete: (id: number, data: any) =>
-    apiClient.post(`/appointments/${id}/complete`, data),
+    apiClient.post(`/appointments/${id}/medical-record`, data),
+
+  updateProcedures: (id: number, data: { initialTests?: string; medicalProcedures?: string }) =>
+    apiClient.put<Appointment>(`/appointments/${id}/procedures`, data),
+};
+
+// ============================
+// Financial API (Doctor)
+// ============================
+export const financialApi = {
+  getSummary: (period: 'day' | 'week' | 'month') =>
+    apiClient.get<FinancialSummary>('/financial/summary', { params: { period } }),
+
+  getTransactions: (period: 'day' | 'week' | 'month') =>
+    apiClient.get<FinancialTransaction[]>('/financial/transactions', { params: { period } }),
 };
