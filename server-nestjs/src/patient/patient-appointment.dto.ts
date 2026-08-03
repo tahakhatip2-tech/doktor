@@ -1,4 +1,5 @@
 import { IsNotEmpty, IsInt, IsDateString, IsString, IsOptional, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 
 export class CreatePatientAppointmentDto {
     @IsInt()
@@ -30,6 +31,7 @@ export class CreatePatientAppointmentDto {
     type?: string;
 
     @IsOptional()
+    @Transform(({ value }) => (value === '' || value === null || value === undefined ? undefined : Number(value)))
     @IsInt()
     clinicDoctorId?: number;
 }

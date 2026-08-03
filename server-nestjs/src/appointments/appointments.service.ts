@@ -661,6 +661,9 @@ export class AppointmentsService {
         medicalRecords: {
             include: { treatingDoctor: true }
         },
+        user: {
+          select: { id: true, name: true, clinic_name: true }
+        },
       },
     });
 
