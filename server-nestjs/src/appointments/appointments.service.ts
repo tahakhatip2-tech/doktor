@@ -658,7 +658,9 @@ export class AppointmentsService {
       where: whereClause,
       include: {
         contact: true,
-        medicalRecords: true,
+        medicalRecords: {
+            include: { treatingDoctor: true }
+        },
       },
     });
 
@@ -680,6 +682,8 @@ export class AppointmentsService {
     const clinicPhone =
       (await this.prisma.setting.findFirst({ where: { userId: clinicUserId, key: 'phone' } }))
         ?.value || '';
+
+    const doctorName = record.treatingDoctor ? record.treatingDoctor.name : (appointment.user?.name || clinicName);
 
     let mainTitle = '';
     let section1Title = '';
@@ -749,6 +753,7 @@ export class AppointmentsService {
                     <div>
                         <h1 style="color: #1d4ed8; margin: 0; font-size: 32px;">${clinicName}</h1>
                         <p style="color: #666; margin: 5px 0;">${mainTitle}</p>
+                        <p style="color: #333; margin: 5px 0; font-weight: bold;">الطبيب المعالج: د. ${doctorName.replace('د. ', '')}</p>
                     </div>
                     <div style="text-align: left;">
                         <p style="margin: 0; font-weight: bold;">رقم المرجع: #${appointmentId}</p>

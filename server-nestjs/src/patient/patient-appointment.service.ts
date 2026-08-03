@@ -70,6 +70,7 @@ export class PatientAppointmentService {
                 type: dto.type || 'consultation',
                 isVideo: dto.isVideo || false,
                 videoRoomId: dto.isVideo ? crypto.randomUUID() : null,
+                clinicDoctorId: dto.clinicDoctorId || null,
             },
             include: {
                 user: {
@@ -166,6 +167,14 @@ export class PatientAppointmentService {
                         avatar: true,
                     },
                 },
+                assignedDoctor: {
+                    select: {
+                        id: true,
+                        name: true,
+                        specialty: true,
+                        avatar: true,
+                    },
+                },
             },
             orderBy: {
                 appointmentDate: 'asc',
@@ -190,6 +199,14 @@ export class PatientAppointmentService {
                         clinic_address: true,
                         clinic_phone: true,
                         clinic_specialty: true,
+                    },
+                },
+                assignedDoctor: {
+                    select: {
+                        id: true,
+                        name: true,
+                        specialty: true,
+                        avatar: true,
                     },
                 },
                 medicalRecords: true,

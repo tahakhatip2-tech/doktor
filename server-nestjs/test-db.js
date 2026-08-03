@@ -1,22 +1,41 @@
-const { Client } = require('pg');
-require('dotenv').config();
-
-const client = new Client({
-    connectionString: process.env.DATABASE_URL.replace('%40', '@'),
-});
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 async function main() {
-    console.log('Testing connection to:', process.env.DATABASE_URL.split('@')[1]);
-    try {
-        await client.connect();
-        console.log('✅ Connected successfully!');
-        const res = await client.query('SELECT NOW()');
-        console.log('Current Time:', res.rows[0].now);
-        await client.end();
-    } catch (err) {
-        console.error('❌ Connection error:', err.message);
-        process.exit(1);
-    }
+  try {
+    console.log('Creating table DoctorReview...');
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE "DoctorReview" (
+        "id" SERIAL NOT NULL,
+        "clinicDoctorId" INTEGER NOT NULL,
+        "patientId" INTEGER NOT NULL,
+        "rating" INTEGER NOT NULL,
+        "comment" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "DoctorReview_pkey" PRIMARY KEY ("id")
+      );
+    `);
+    
+    console.log('Creating foreign key for clinicDoctorId...');
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "DoctorReview" 
+      ADD CONSTRAINT "DoctorReview_clinicDoctorId_fkey" 
+      FOREIGN KEY ("clinicDoctorId") REFERENCES "ClinicDoctor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    `);
+
+    console.log('Creating foreign key for patientId...');
+    await prisma.$executeRawUnsafe(`
+      ALTER TABLE "DoctorReview" 
+      ADD CONSTRAINT "DoctorReview_patientId_fkey" 
+      FOREIGN KEY ("patientId") REFERENCES "Patient"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+    `);
+
+    console.log('DoctorReview created successfully!');
+  } catch (e) {
+    console.error('Error:', e.message);
+  } finally {
+    await prisma.$disconnect();
+  }
 }
 
 main();

@@ -51,6 +51,7 @@ export default function PatientClinicDetail() {
     const [bookingOpen, setBookingOpen] = useState(false);
     const [notes, setNotes] = useState('');
     const [customerName, setCustomerName] = useState('');
+    const [selectedDoctorId, setSelectedDoctorId] = useState<string>('');
     const [bookingLoading, setBookingLoading] = useState(false);
     const [isVideo, setIsVideo] = useState(false);
 
@@ -165,6 +166,7 @@ export default function PatientClinicDetail() {
                     type: isVideo ? 'video-consultation' : 'consultation',
                     isVideo: isVideo,
                     ...(customerName.trim() ? { customerName: customerName.trim() } : {}),
+                    ...(selectedDoctorId ? { clinicDoctorId: Number(selectedDoctorId) } : {}),
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
@@ -709,6 +711,26 @@ export default function PatientClinicDetail() {
                             onChange={e => setCustomerName(e.target.value)}
                         />
                     </div>
+
+                    {/* اختيار الطبيب */}
+                    {clinic?.clinicDoctors && clinic.clinicDoctors.length > 0 && (
+                        <div className="space-y-2">
+                            <Label htmlFor="doctorSelect">الطبيب (اختياري)</Label>
+                            <select
+                                id="doctorSelect"
+                                value={selectedDoctorId}
+                                onChange={(e) => setSelectedDoctorId(e.target.value)}
+                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                <option value="">الطبيب الرئيسي للعيادة ({clinic.clinic_name || clinic.name})</option>
+                                {clinic.clinicDoctors.map((doc: any) => (
+                                    <option key={doc.id} value={doc.id}>
+                                        د. {doc.name} {doc.specialty ? `- ${doc.specialty}` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    )}
 
                     <p className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex gap-2">
                         <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />

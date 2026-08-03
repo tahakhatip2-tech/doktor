@@ -405,6 +405,7 @@ model Patient {
   updatedAt             DateTime               @updatedAt
   appointments          Appointment[]
   clinicReviews         ClinicReview[]
+  doctorReviews         DoctorReview[]
   medicalRecords        MedicalRecord[]
   offerLikes            OfferLike[]
   notifications         PatientNotification[]
@@ -522,6 +523,7 @@ model ClinicDoctor {
   appointments    Appointment[]
   clinic          User            @relation(fields: [clinicId], references: [id])
   medicalRecords  MedicalRecord[]
+  doctorReviews   DoctorReview[]
 }
 
 model ClinicReview {
@@ -536,6 +538,20 @@ model ClinicReview {
   patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   @@unique([clinicId, patientId])
+}
+
+model DoctorReview {
+  id             Int          @id @default(autoincrement())
+  clinicDoctorId Int
+  patientId      Int
+  rating         Int
+  comment        String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  doctor         ClinicDoctor @relation(fields: [clinicDoctorId], references: [id], onDelete: Cascade)
+  patient        Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([clinicDoctorId, patientId])
 }
 
 enum UserRole {

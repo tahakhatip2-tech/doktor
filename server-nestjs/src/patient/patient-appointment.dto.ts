@@ -28,6 +28,10 @@ export class CreatePatientAppointmentDto {
     @IsOptional()
     @IsString()
     type?: string;
+
+    @IsOptional()
+    @IsInt()
+    clinicDoctorId?: number;
 }
 
 export class CancelAppointmentDto {

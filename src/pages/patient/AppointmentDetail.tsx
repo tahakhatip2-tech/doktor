@@ -340,6 +340,30 @@ export default function AppointmentDetail() {
                             </div>
                         )}
 
+                        {appointment.assignedDoctor && !appointment.medicalRecords?.[0]?.treatingDoctor && (
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 text-blue-500">
+                                    <Stethoscope className="h-4 w-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] text-slate-400 font-bold">الطبيب المعين</p>
+                                    <p className="text-sm font-bold text-slate-800 line-clamp-1">د. {appointment.assignedDoctor.name.replace('د. ', '')}</p>
+                                </div>
+                            </div>
+                        )}
+
+                        {appointment.medicalRecords?.[0]?.treatingDoctor && (
+                            <div className="flex items-center gap-3">
+                                <div className="h-8 w-8 rounded-lg bg-teal-50 flex items-center justify-center border border-teal-100 text-teal-500">
+                                    <Stethoscope className="h-4 w-4" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-[10px] text-slate-400 font-bold">الطبيب المعالج</p>
+                                    <p className="text-sm font-bold text-slate-800 line-clamp-1">د. {appointment.medicalRecords[0].treatingDoctor.name.replace('د. ', '')}</p>
+                                </div>
+                            </div>
+                        )}
+
                         {phone && (
                             <div className="flex items-center gap-3">
                                 <div className="h-8 w-8 rounded-lg bg-purple-50 flex items-center justify-center border border-purple-100 text-purple-500">
