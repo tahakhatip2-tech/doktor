@@ -640,104 +640,106 @@ export default function PatientClinicDetail() {
                     </DialogHeader>
 
                     {/* ملخص الموعد */}
-                    <div className="bg-muted/50 rounded-xl p-4 space-y-3 border">
-                        <div className="flex items-center gap-3">
-                            <Building2 className="h-4 w-4 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">العيادة</p>
-                                <p className="font-semibold">{clinic.clinic_name || clinic.name}</p>
+                    <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                        <div className="bg-muted/50 rounded-xl p-4 space-y-3 border">
+                            <div className="flex items-center gap-3">
+                                <Building2 className="h-4 w-4 text-primary flex-shrink-0" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground">العيادة</p>
+                                    <p className="font-semibold">{clinic.clinic_name || clinic.name}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground">التاريخ</p>
+                                    <p className="font-semibold">
+                                        {selectedDate && format(selectedDate, 'EEEEطŒ dd MMMM yyyy', { locale: ar })}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <Clock className="h-4 w-4 text-primary flex-shrink-0" />
+                                <div>
+                                    <p className="text-xs text-muted-foreground">الوقت</p>
+                                    <p className="font-semibold">{selectedSlot}</p>
+                                </div>
                             </div>
                         </div>
-                        <div className="flex items-center gap-3">
-                            <Calendar className="h-4 w-4 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">التاريخ</p>
-                                <p className="font-semibold">
-                                    {selectedDate && format(selectedDate, 'EEEEطŒ dd MMMM yyyy', { locale: ar })}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Clock className="h-4 w-4 text-primary flex-shrink-0" />
-                            <div>
-                                <p className="text-xs text-muted-foreground">الوقت</p>
-                                <p className="font-semibold">{selectedSlot}</p>
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* ملاحظات */}
-                    <div className="space-y-2">
-                        <Label htmlFor="notes">ملاحظات للطبيب (اختياري)</Label>
-                        <Textarea
-                            id="notes"
-                            placeholder="أضف أي تفاصيل تساعد الطبيب في الاستعداد لزيارتك..."
-                            value={notes}
-                            onChange={e => setNotes(e.target.value)}
-                            rows={3}
-                        />
-                    </div>
-
-                    {/* استشارة فيديو */}
-                    <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50/50">
-                        <div>
-                            <h4 className="font-semibold text-sm">استشارة فيديو</h4>
-                            <p className="text-xs text-muted-foreground mt-0.5">هل ترغب بأن يكون الموعد عبر مكالمة فيديو؟</p>
-                        </div>
-                        <button
-                            onClick={() => setIsVideo(!isVideo)}
-                            className={cn(
-                                "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
-                                isVideo ? "bg-primary" : "bg-gray-200"
-                            )}
-                        >
-                            <span
-                                aria-hidden="true"
-                                className={cn(
-                                    "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
-                                    isVideo ? "-translate-x-5" : "translate-x-0"
-                                )}
-                            />
-                        </button>
-                    </div>
-
-                    {/* حجز لشخص آخر (جديد) */}
-                    <div className="space-y-2">
-                        <Label htmlFor="customerName">اسم المريض (إذا كنت تحجز لشخص آخر)</Label>
-                        <Input
-                            id="customerName"
-                            placeholder="اختياري - اترك الحقل فارغاً إذا كان الحجز لك"
-                            value={customerName}
-                            onChange={e => setCustomerName(e.target.value)}
-                        />
-                    </div>
-
-                    {/* اختيار الطبيب */}
-                    {clinic?.clinicDoctors && clinic.clinicDoctors.length > 0 && (
+                        {/* ملاحظات */}
                         <div className="space-y-2">
-                            <Label htmlFor="doctorSelect">الطبيب (اختياري)</Label>
-                            <select
-                                id="doctorSelect"
-                                value={selectedDoctorId}
-                                onChange={(e) => setSelectedDoctorId(e.target.value)}
-                                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                                <option value="">الطبيب الرئيسي للعيادة ({clinic.clinic_name || clinic.name})</option>
-                                {clinic.clinicDoctors.map((doc: any) => (
-                                    <option key={doc.id} value={doc.id}>
-                                        د. {doc.name} {doc.specialty ? `- ${doc.specialty}` : ''}
-                                    </option>
-                                ))}
-                            </select>
+                            <Label htmlFor="notes">ملاحظات للطبيب (اختياري)</Label>
+                            <Textarea
+                                id="notes"
+                                placeholder="أضف أي تفاصيل تساعد الطبيب في الاستعداد لزيارتك..."
+                                value={notes}
+                                onChange={e => setNotes(e.target.value)}
+                                rows={3}
+                            />
                         </div>
-                    )}
 
-                    <p className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex gap-2">
-                        <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                        سيتم إرسال طلب الموعد إلى الطبيب وستشعر عند التأكيد.
-                    </p>
+                        {/* استشارة فيديو */}
+                        <div className="flex items-center justify-between p-3 border rounded-lg bg-slate-50/50">
+                            <div>
+                                <h4 className="font-semibold text-sm">استشارة فيديو</h4>
+                                <p className="text-xs text-muted-foreground mt-0.5">هل ترغب بأن يكون الموعد عبر مكالمة فيديو؟</p>
+                            </div>
+                            <button
+                                onClick={() => setIsVideo(!isVideo)}
+                                className={cn(
+                                    "relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2",
+                                    isVideo ? "bg-primary" : "bg-gray-200"
+                                )}
+                            >
+                                <span
+                                    aria-hidden="true"
+                                    className={cn(
+                                        "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out",
+                                        isVideo ? "-translate-x-5" : "translate-x-0"
+                                    )}
+                                />
+                            </button>
+                        </div>
 
-                    <DialogFooter className="gap-2">
+                        {/* حجز لشخص آخر (جديد) */}
+                        <div className="space-y-2">
+                            <Label htmlFor="customerName">اسم المريض (إذا كنت تحجز لشخص آخر)</Label>
+                            <Input
+                                id="customerName"
+                                placeholder="اختياري - اترك الحقل فارغاً إذا كان الحجز لك"
+                                value={customerName}
+                                onChange={e => setCustomerName(e.target.value)}
+                            />
+                        </div>
+
+                        {/* اختيار الطبيب */}
+                        {clinic?.clinicDoctors && clinic.clinicDoctors.length > 0 && (
+                            <div className="space-y-2">
+                                <Label htmlFor="doctorSelect">الطبيب (اختياري)</Label>
+                                <select
+                                    id="doctorSelect"
+                                    value={selectedDoctorId}
+                                    onChange={(e) => setSelectedDoctorId(e.target.value)}
+                                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    <option value="">الطبيب الرئيسي للعيادة ({clinic.clinic_name || clinic.name})</option>
+                                    {clinic.clinicDoctors.map((doc: any) => (
+                                        <option key={doc.id} value={doc.id}>
+                                            د. {doc.name} {doc.specialty ? `- ${doc.specialty}` : ''}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
+                        <p className="text-xs text-muted-foreground bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex gap-2">
+                            <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                            سيتم إرسال طلب الموعد إلى الطبيب وستشعر عند التأكيد.
+                        </p>
+                    </div>
+
+                    <DialogFooter className="gap-2 pt-2">
                         <Button
                             variant="outline"
                             onClick={() => setBookingOpen(false)}
