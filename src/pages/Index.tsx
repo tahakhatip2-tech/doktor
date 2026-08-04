@@ -625,15 +625,15 @@ const Index = () => {
                                         </div>
                                     </div>
 
-                                    {/* Professional Divider */}
-                                    <div className="w-full flex items-center justify-center gap-4 my-8 opacity-60">
+                                    {/* Minimal Divider */}
+                                    <div className="w-full flex items-center justify-center gap-4 my-3 opacity-60">
                                         <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
-                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_rgba(249,115,22,0.6)]" />
+                                        <div className="h-1.5 w-1.5 rounded-full bg-orange-400" />
                                         <div className="h-px bg-gradient-to-r from-transparent via-blue-200 to-transparent flex-1" />
                                     </div>
 
                                     {contactsLoading ? (
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                                             {[...Array(8)].map((_, i) => (
                                                 <PatientCardSkeleton key={i} />
                                             ))}
@@ -655,7 +655,7 @@ const Index = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                                                 {filteredContacts
                                                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                                                     .map((contact: any) => (
