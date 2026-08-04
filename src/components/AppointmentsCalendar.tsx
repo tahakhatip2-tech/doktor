@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye, TestTube, Video } from 'lucide-react';
+import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye, TestTube, Video, Search } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toastWithSound } from '@/lib/toast-with-sound';
@@ -63,6 +64,7 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'today' | 'week' | 'pending_requests'>('today');
     const [statusFilter, setStatusFilter] = useState<string>('all');
+    const [searchTerm, setSearchTerm] = useState('');
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [selectedApt, setSelectedApt] = useState<any>(null);
     const [isCompleteDialogOpen, setIsCompleteDialogOpen] = useState(false);
@@ -174,9 +176,18 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
         }
     }, [selectedAppointmentForDetail, onViewingDetail]);
 
-    const filteredAppointments = statusFilter === 'all'
+    let filteredAppointments = statusFilter === 'all'
         ? appointments
         : appointments.filter(apt => apt.status === statusFilter);
+
+    if (searchTerm.trim() !== '') {
+        const lowerSearch = searchTerm.toLowerCase();
+        filteredAppointments = filteredAppointments.filter(apt => {
+            const name = (apt.customerName || apt.patient_name || apt.patient_name_new || '').toLowerCase();
+            const phone = (apt.phone || '').toLowerCase();
+            return name.includes(lowerSearch) || phone.includes(lowerSearch);
+        });
+    }
 
     const groupedByDate = filteredAppointments.reduce((acc, apt) => {
         const dateRaw = apt.appointmentDate || apt.appointment_date;
@@ -298,6 +309,21 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                             <option value="cancelled" className="bg-background">ملغي</option>
                             <option value="no-show" className="bg-background">لم يحضر</option>
                         </select>
+                    </div>
+
+                    <div className="h-6 w-px bg-white/10 hidden md:block" />
+
+                    {/* Search Input */}
+                    <div className="relative flex-1 min-w-[200px]">
+                        <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-blue-500/50">
+                            <Search className="h-4 w-4" />
+                        </div>
+                        <Input
+                            placeholder="بحث بالاسم أو رقم الهاتف..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="h-8 pl-3 pr-9 text-xs border border-white/10 rounded-none bg-white/5 focus-visible:ring-0 focus-visible:border-blue-500/50 transition-colors placeholder:text-muted-foreground/50"
+                        />
                     </div>
                 </div>
             </div>
