@@ -395,137 +395,141 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                 {dayAppointments.map((appointment) => (
                                     <Card
                                         key={appointment.id}
-                                        className="flex flex-col bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 rounded-xl overflow-hidden transition-all duration-200 group relative"
+                                        className={cn(
+                                            "flex flex-col bg-white border shadow-sm hover:shadow-lg rounded-xl overflow-hidden transition-all duration-200 group cursor-pointer relative",
+                                            appointment.status === 'completed' && "border-slate-200 opacity-80 hover:opacity-100",
+                                            appointment.status === 'cancelled' && "border-red-100 bg-red-50/20",
+                                            appointment.status === 'confirmed' && "border-blue-200",
+                                            appointment.status === 'pending' && "border-orange-200",
+                                            appointment.status === 'scheduled' && "border-blue-100",
+                                            !['completed','cancelled','confirmed','pending','scheduled'].includes(appointment.status) && "border-slate-200"
+                                        )}
                                     >
-                                        <div className="absolute top-0 right-0 w-1 h-full bg-blue-600 opacity-80" />
+                                        {/* Color accent bar based on status */}
+                                        <div className={cn(
+                                            "absolute top-0 right-0 w-1 h-full",
+                                            appointment.status === 'completed' && "bg-slate-400",
+                                            appointment.status === 'cancelled' && "bg-red-500",
+                                            appointment.status === 'confirmed' && "bg-blue-600",
+                                            appointment.status === 'pending' && "bg-orange-500",
+                                            appointment.status === 'scheduled' && "bg-blue-400",
+                                            !['completed','cancelled','confirmed','pending','scheduled'].includes(appointment.status) && "bg-slate-300"
+                                        )} />
 
-                                        <div className="p-4 flex flex-col gap-4 relative z-10">
-                                            {/* Top Row: Info & Status */}
-                                            <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
-                                                <div className="flex items-center gap-3 w-full sm:w-auto">
-                                                    <div className="h-10 w-10 rounded-full bg-blue-50/80 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
-                                                        <User className="h-5 w-5" />
+                                        <div className="p-4 flex flex-col gap-3 relative z-10">
+                                            {/* Header: Name + Status Badge */}
+                                            <div className="flex items-start justify-between gap-2">
+                                                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                                    <div className={cn(
+                                                        "h-9 w-9 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold",
+                                                        appointment.status === 'completed' && "bg-slate-400",
+                                                        appointment.status === 'cancelled' && "bg-red-400",
+                                                        appointment.status === 'confirmed' && "bg-blue-600",
+                                                        appointment.status === 'pending' && "bg-orange-500",
+                                                        appointment.status === 'scheduled' && "bg-blue-400",
+                                                        !['completed','cancelled','confirmed','pending','scheduled'].includes(appointment.status) && "bg-slate-400"
+                                                    )}>
+                                                        {(() => {
+                                                            const name = appointment.customerName || appointment.patient_name || '';
+                                                            if (!name || name === 'Unspecified') return <User className="h-4 w-4" />;
+                                                            return name.charAt(0);
+                                                        })()}
                                                     </div>
-                                                    <div className="min-w-0 flex-1">
-                                                        <h4 className="font-bold text-sm text-foreground leading-tight mb-1 truncate">
+                                                    <div className="min-w-0">
+                                                        <p className="font-bold text-[13px] text-slate-800 leading-tight truncate">
                                                             {(() => {
                                                                 const name = appointment.customerName || appointment.patient_name;
                                                                 if (!name || name === 'Unspecified') return 'غير محدد';
                                                                 return name;
                                                             })()}
-                                                        </h4>
-                                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium font-mono">
-                                                            <Phone className="h-2.5 w-2.5 opacity-70" />
-                                                            <a href={`tel:${appointment.phone}`} className="hover:text-blue-500 transition-colors truncate block">
-                                                                {appointment.phone.split('@')[0]}
-                                                            </a>
-                                                        </div>
+                                                        </p>
+                                                        <a href={`tel:${appointment.phone}`} className="text-[11px] text-slate-400 font-mono hover:text-blue-500 transition-colors block truncate mt-0.5">
+                                                            {appointment.phone?.split('@')[0]}
+                                                        </a>
                                                     </div>
                                                 </div>
-
                                                 <div className={cn(
-                                                    "px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide self-start sm:self-auto",
+                                                    "px-2 py-0.5 rounded-full text-[9px] font-bold border shrink-0",
                                                     statusConfig[appointment.status as keyof typeof statusConfig]?.color
                                                 )}>
                                                     {statusConfig[appointment.status as keyof typeof statusConfig]?.label}
                                                 </div>
                                             </div>
 
-                                            {/* Middle Row: Time & Type */}
-                                            <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50/80 border border-slate-100/80">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600">
-                                                        <Clock className="h-4 w-4" />
-                                                        <span className="tabular-nums mt-0.5">
+                                            {/* Divider */}
+                                            <div className="h-px bg-slate-100" />
+
+                                            {/* Time & Type Row */}
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-1.5">
+                                                    <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 text-blue-700 rounded-md px-2 py-1">
+                                                        <Clock className="h-3 w-3" />
+                                                        <span className="text-[11px] font-bold tabular-nums">
                                                             {format(new Date(appointment.appointmentDate || appointment.appointment_date || ""), 'hh:mm a', { locale: ar })}
                                                         </span>
                                                     </div>
-                                                    <div className="h-4 w-px bg-slate-200" />
-                                                    <div className="text-[10px] font-bold text-slate-600 flex items-center gap-2">
-                                                        <span>{typeConfig[(appointment.type || appointment.appointment_type) as keyof typeof typeConfig] || 'عام'}</span>
-
-                                                        {appointment.isVideo && (
-                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[9px]">
-                                                                <Video className="h-3 w-3" />
-                                                                <span>مكالمة فيديو</span>
-                                                            </div>
-                                                        )}
-
-                                                        {/* Source Indicator */}
-                                                        {((appointment.notes || '').includes('[BOT]') || (appointment.notes || '').toLowerCase().includes('ai generated')) ? (
-                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-purple-500/10 text-purple-600 border border-purple-500/20 text-[9px]">
-                                                                <Bot className="h-3 w-3" />
-                                                                <span>آلي</span>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-gray-500/10 text-gray-600 border border-gray-500/20 text-[9px] opacity-70">
-                                                                <PenTool className="h-3 w-3" />
-                                                                <span>يدوي</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    <span className="text-[10px] text-slate-500 font-medium">
+                                                        {typeConfig[(appointment.type || appointment.appointment_type) as keyof typeof typeConfig] || 'عام'}
+                                                    </span>
                                                 </div>
-
                                                 <div className="flex items-center gap-1">
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        className="h-6 w-6 rounded-sm text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10"
-                                                        title="عرض التفاصيل"
-                                                        onClick={() => setSelectedAppointmentForDetail(appointment)}
-                                                    >
-                                                        <Eye className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    <Button
-                                                        size="icon"
-                                                        variant="ghost"
-                                                        className="h-6 w-6 rounded-sm text-muted-foreground hover:text-green-500 hover:bg-green-500/10"
-                                                        title="فتح المحادثة"
-                                                        onClick={() => {
-                                                            if (appointment.phone) {
-                                                                if (onOpenChat) {
-                                                                    onOpenChat(appointment.phone);
-                                                                } else {
-                                                                    toastWithSound.error('خدمة الدردشة غير متاحة');
-                                                                }
-                                                            } else {
-                                                                toastWithSound.error('رقم الهاتف غير صالح');
-                                                            }
-                                                        }}
-                                                    >
-                                                        <MessageCircle className="h-3.5 w-3.5" />
-                                                    </Button>
+                                                    {appointment.isVideo && (
+                                                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600 border border-emerald-100 text-[9px] font-bold">
+                                                            <Video className="h-2.5 w-2.5" /> فيديو
+                                                        </span>
+                                                    )}
+                                                    {((appointment.notes || '').includes('[BOT]') || (appointment.notes || '').toLowerCase().includes('ai generated')) ? (
+                                                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-purple-50 text-purple-600 border border-purple-100 text-[9px] font-bold">
+                                                            <Bot className="h-2.5 w-2.5" /> آلي
+                                                        </span>
+                                                    ) : (
+                                                        <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-slate-50 text-slate-500 border border-slate-100 text-[9px]">
+                                                            <PenTool className="h-2.5 w-2.5" /> يدوي
+                                                        </span>
+                                                    )}
                                                 </div>
                                             </div>
 
-                                            {/* Notes if any */}
-                                            {(appointment.notes || appointment.notes === '') && (
-                                                <div className="bg-orange-50 border-r-2 border-orange-400 px-3 py-2 text-[11px] text-slate-600 italic line-clamp-2 text-right rounded-l-md shadow-sm">
-                                                    {(() => {
-                                                        const noteRaw = appointment.notes || '';
-                                                        const noteLower = noteRaw.toLowerCase().trim();
-
-                                                        // Filter out system tags for display
-                                                        const cleanNote = noteRaw.replace('[BOT]', '').replace('AI Generated Appointment', '').trim();
-
-                                                        if (!cleanNote || cleanNote === 'notes' || cleanNote === 'null') return 'لا توجد ملاحظات إضافية';
-
-                                                        // If it was JUST the tag, show specific message or nothing
-                                                        if (cleanNote === '') return 'تم الحجز آلياً عبر واتساب';
-
-                                                        return cleanNote;
-                                                    })()}
-                                                </div>
-                                            )}
+                                            {/* Notes */}
+                                            {appointment.notes && (() => {
+                                                const cleanNote = (appointment.notes || '').replace('[BOT]', '').replace('AI Generated Appointment', '').trim();
+                                                if (!cleanNote || cleanNote === 'notes' || cleanNote === 'null') return null;
+                                                return (
+                                                    <p className="text-[10px] text-slate-500 bg-slate-50/80 border border-slate-100 rounded-md px-2.5 py-1.5 line-clamp-1 italic">
+                                                        {cleanNote === '' ? 'تم الحجز آلياً عبر واتساب' : cleanNote}
+                                                    </p>
+                                                );
+                                            })()}
 
                                             {/* Actions Footer */}
-                                            <div className="pt-3 mt-auto border-t border-slate-100 flex gap-2">
+                                            <div className="flex items-center gap-1.5 pt-1">
+                                                {/* Quick icon actions */}
+                                                <button
+                                                    title="عرض التفاصيل"
+                                                    onClick={() => setSelectedAppointmentForDetail(appointment)}
+                                                    className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 border border-slate-100 hover:border-blue-200 transition-all"
+                                                >
+                                                    <Eye className="h-3.5 w-3.5" />
+                                                </button>
+                                                <button
+                                                    title="فتح المحادثة"
+                                                    onClick={() => {
+                                                        if (appointment.phone) {
+                                                            if (onOpenChat) onOpenChat(appointment.phone);
+                                                            else toastWithSound.error('خدمة الدردشة غير متاحة');
+                                                        } else toastWithSound.error('رقم الهاتف غير صالح');
+                                                    }}
+                                                    className="h-7 w-7 flex items-center justify-center rounded-lg text-slate-400 hover:text-green-600 hover:bg-green-50 border border-slate-100 hover:border-green-200 transition-all"
+                                                >
+                                                    <MessageCircle className="h-3.5 w-3.5" />
+                                                </button>
+
+                                                {/* Status actions */}
                                                 {(appointment.status === 'scheduled' || appointment.status === 'pending') && (
                                                     <>
                                                         <Button
                                                             size="sm"
-                                                            variant="ghost"
-                                                            className="flex-1 h-7 text-[10px] font-bold rounded-sm bg-blue-500/5 text-blue-500 hover:bg-blue-500 hover:text-white border border-blue-500/10 hover:border-blue-500 transition-all uppercase tracking-wide"
+                                                            className="flex-1 h-7 text-[10px] font-bold rounded-lg bg-blue-600 text-white hover:bg-blue-700 border-0 transition-all"
                                                             onClick={() => updateStatus(appointment.id, 'confirmed', appointment)}
                                                         >
                                                             تأكيد
@@ -533,7 +537,7 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                                         <Button
                                                             size="sm"
                                                             variant="ghost"
-                                                            className="flex-1 h-7 text-[10px] font-bold rounded-sm bg-red-500/5 text-red-500 hover:bg-red-500 hover:text-white border border-red-500/10 hover:border-red-500 transition-all uppercase tracking-wide"
+                                                            className="flex-1 h-7 text-[10px] font-bold rounded-lg text-red-500 hover:bg-red-50 hover:text-red-600 border border-red-100 transition-all"
                                                             onClick={() => updateStatus(appointment.id, 'cancelled', appointment)}
                                                         >
                                                             إلغاء
@@ -544,40 +548,30 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                                     (!appointment.initialTests && !appointment.medicalProcedures) ? (
                                                         <Button
                                                             size="sm"
-                                                            className="w-full h-8 text-[11px] font-bold rounded-md bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 shadow-sm transition-all uppercase tracking-wider relative group/btn overflow-hidden"
+                                                            className="flex-1 h-7 text-[10px] font-bold rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 hover:border-blue-600 transition-all"
                                                             onClick={() => openProceduresDialog(appointment)}
                                                         >
-                                                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
-                                                            <span className="relative z-10 flex items-center justify-center gap-2">
-                                                                الفحوصات والإجراءات
-                                                                <TestTube className="h-3 w-3" />
-                                                            </span>
+                                                            <TestTube className="h-3 w-3 ml-1" />
+                                                            الفحوصات
                                                         </Button>
                                                     ) : (
                                                         <Button
                                                             size="sm"
-                                                            className="w-full h-8 text-[11px] font-bold rounded-md bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white border border-orange-200 hover:border-orange-500 shadow-sm transition-all uppercase tracking-wider relative group/btn overflow-hidden"
+                                                            className="flex-1 h-7 text-[10px] font-bold rounded-lg bg-orange-500 text-white hover:bg-orange-600 border-0 transition-all"
                                                             onClick={() => updateStatus(appointment.id, 'completed', appointment)}
                                                         >
-                                                            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700" />
-                                                            <span className="relative z-10 flex items-center justify-center gap-2">
-                                                                تسجيل إتمام الكشف
-                                                                <CheckCircle2 className="h-3 w-3" />
-                                                            </span>
+                                                            <CheckCircle2 className="h-3 w-3 ml-1" />
+                                                            إتمام الكشف
                                                         </Button>
                                                     )
                                                 )}
                                                 {['completed', 'cancelled', 'no-show'].includes(appointment.status) && (
-                                                    <div className="hidden group-hover:block w-full text-center">
-                                                        <Button
-                                                            size="sm"
-                                                            variant="ghost"
-                                                            className="w-full h-7 text-[10px] text-muted-foreground hover:text-foreground"
-                                                            onClick={() => updateStatus(appointment.id, 'scheduled')} // Re-open fallback
-                                                        >
-                                                            إعادة فتح الموعد
-                                                        </Button>
-                                                    </div>
+                                                    <button
+                                                        className="flex-1 h-7 text-[10px] text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-50 border border-slate-100 transition-all hidden group-hover:block"
+                                                        onClick={() => updateStatus(appointment.id, 'scheduled')}
+                                                    >
+                                                        إعادة فتح
+                                                    </button>
                                                 )}
                                             </div>
                                         </div>
