@@ -1,5 +1,6 @@
-﻿import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { dataApi, apiFetch } from "@/lib/api";
+import { exportToExcel } from "../lib/exportUtils";
 import { toastWithSound } from '@/lib/toast-with-sound';
 
 export interface Contact {
@@ -46,31 +47,20 @@ export const useContacts = () => {
 
   const exportContacts = () => {
     if (contacts.length === 0) {
-      toastWithSound.error("لا توجد جهاطھ اطھصال للطھصدظٹر");
+      toastWithSound.error("لا توجد جهات اتصال للتصدير");
       return;
     }
 
-    const csvContent = [
-      ["الاسم", "الهاتف", "المصدر", "المنصة", "مسطھخرج من"],
-      ...contacts.map((c: any) => [
-        c.name || "",
-        c.phone,
-        c.source || "",
-        c.platform,
-        c.extracted_from || "",
-      ]),
-    ]
-      .map((row) => row.join(","))
-      .join("\n");
+    const dataToExport = contacts.map((c: any) => ({
+      "الاسم": c.name || "",
+      "الهاتف": c.phone,
+      "المصدر": c.source || "",
+      "المنصة": c.platform,
+      "مستخرج من": c.extracted_from || "",
+    }));
 
-    const blob = new Blob(["\ufeff" + csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `contacts_${new Date().toISOString().split("T")[0]}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
-    toastWithSound.success("تم طھصدظٹر جهاطھ الاطھصال بنجاح");
+    exportToExcel(dataToExport, 'المرضى');
+    toastWithSound.success("تم تصدير جهات الاتصال بنجاح");
   };
 
   const updateStatus = useMutation({

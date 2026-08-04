@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye, TestTube, Video, Search } from 'lucide-react';
+import { Calendar, Clock, User, Phone, FileText, Plus, Filter, MessageCircle, CheckCircle2, Bot, PenTool, Eye, TestTube, Video, Search, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { exportToExcel } from '../lib/exportUtils';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { toastWithSound } from '@/lib/toast-with-sound';
@@ -325,6 +326,27 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                             className="h-8 pl-3 pr-9 text-xs border border-white/10 rounded-none bg-white/5 focus-visible:ring-0 focus-visible:border-blue-500/50 transition-colors placeholder:text-muted-foreground/50"
                         />
                     </div>
+
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 gap-2 text-xs font-bold border-blue-200 hover:bg-blue-50 text-blue-700 shadow-sm rounded-md ml-2 bg-white"
+                        onClick={() => {
+                            const dataToExport = filteredAppointments.map(apt => ({
+                                "رقم الموعد": apt.id,
+                                "الاسم": apt.customerName || apt.patient_name || apt.patient_name_new || 'غير محدد',
+                                "الهاتف": apt.phone,
+                                "التاريخ والوقت": format(new Date(apt.appointmentDate || apt.appointment_date || ""), 'yyyy-MM-dd hh:mm a'),
+                                "النوع": typeConfig[(apt.type || apt.appointment_type) as keyof typeof typeConfig] || 'عام',
+                                "الحالة": statusConfig[apt.status as keyof typeof statusConfig]?.label || apt.status,
+                                "ملاحظات": apt.notes || ''
+                            }));
+                            exportToExcel(dataToExport, 'المواعيد');
+                        }}
+                    >
+                        <Download className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">تصدير Excel</span>
+                    </Button>
                 </div>
             </div>
 
@@ -373,19 +395,19 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                 {dayAppointments.map((appointment) => (
                                     <Card
                                         key={appointment.id}
-                                        className="flex flex-col bg-white border border-slate-100/60 shadow-lg shadow-slate-200/40 hover:shadow-xl hover:shadow-blue-900/10 rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 group"
+                                        className="flex flex-col bg-white border border-slate-200 shadow-sm hover:shadow-md hover:border-blue-300 rounded-xl overflow-hidden transition-all duration-200 group relative"
                                     >
-                                        <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-blue-600 to-orange-500" />
+                                        <div className="absolute top-0 right-0 w-1 h-full bg-blue-600 opacity-80" />
 
                                         <div className="p-4 flex flex-col gap-4 relative z-10">
                                             {/* Top Row: Info & Status */}
                                             <div className="flex flex-col sm:flex-row items-start justify-between gap-3">
                                                 <div className="flex items-center gap-3 w-full sm:w-auto">
-                                                    <div className="h-10 w-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm group-hover:scale-105 transition-transform shrink-0">
+                                                    <div className="h-10 w-10 rounded-full bg-blue-50/80 border border-blue-100 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
                                                         <User className="h-5 w-5" />
                                                     </div>
                                                     <div className="min-w-0 flex-1">
-                                                        <h4 className="font-black text-sm text-foreground leading-tight mb-1 truncate">
+                                                        <h4 className="font-bold text-sm text-foreground leading-tight mb-1 truncate">
                                                             {(() => {
                                                                 const name = appointment.customerName || appointment.patient_name;
                                                                 if (!name || name === 'Unspecified') return 'غير محدد';
@@ -402,7 +424,7 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                                 </div>
 
                                                 <div className={cn(
-                                                    "px-2 py-0.5 rounded-sm text-[9px] font-black border uppercase tracking-wide self-start sm:self-auto",
+                                                    "px-2.5 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wide self-start sm:self-auto",
                                                     statusConfig[appointment.status as keyof typeof statusConfig]?.color
                                                 )}>
                                                     {statusConfig[appointment.status as keyof typeof statusConfig]?.label}
@@ -410,9 +432,9 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                             </div>
 
                                             {/* Middle Row: Time & Type */}
-                                            <div className="flex items-center justify-between p-2 rounded-md bg-slate-50 border border-slate-100 shadow-inner">
+                                            <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50/80 border border-slate-100/80">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="flex items-center gap-1.5 text-xs font-black text-blue-600">
+                                                    <div className="flex items-center gap-1.5 text-xs font-bold text-blue-600">
                                                         <Clock className="h-4 w-4" />
                                                         <span className="tabular-nums mt-0.5">
                                                             {format(new Date(appointment.appointmentDate || appointment.appointment_date || ""), 'hh:mm a', { locale: ar })}
