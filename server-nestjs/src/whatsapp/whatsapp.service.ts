@@ -28,8 +28,12 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
   private sockets = new Map<number, any>();
   private qrCodes = new Map<number, string>();
   private connectionStatus = new Map<number, boolean>();
+  private reconnectAttempts = new Map<number, number>();  // track reconnect attempts per user
+  private wasEverConnected = new Map<number, boolean>();  // track if session was ever authenticated
   private sessionPath = path.join(process.cwd(), 'sessions');
   private readonly INDIVIDUAL_JID_SUFFIX = '@s.whatsapp.net';
+  private readonly MAX_RECONNECT_ATTEMPTS = 10;
+  private readonly RECONNECT_BASE_DELAY_MS = 3000;
 
   private isIndividualJid(jid: string): boolean {
     return jid?.endsWith(this.INDIVIDUAL_JID_SUFFIX) || jid?.endsWith('@lid');
@@ -106,7 +110,22 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       return { status: 'already_connected' };
     }
 
+    // Close old socket if exists
+    const oldSock = this.sockets.get(userId);
+    if (oldSock) {
+      try {
+        oldSock.ev.removeAllListeners('connection.update');
+        oldSock.ev.removeAllListeners('creds.update');
+        oldSock.ev.removeAllListeners('messages.upsert');
+        oldSock.ws?.close();
+      } catch (_) { }
+      this.sockets.delete(userId);
+    }
+
     const userSessionPath = path.join(this.sessionPath, `user_${userId}`);
+    if (!fs.existsSync(userSessionPath)) {
+      fs.mkdirSync(userSessionPath, { recursive: true });
+    }
     const { state, saveCreds } = await useMultiFileAuthState(userSessionPath);
     const { version } = await fetchLatestBaileysVersion();
 
@@ -119,15 +138,26 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
       markOnlineOnConnect: false,
       syncFullHistory: false,
       generateHighQualityLinkPreview: false,
+      connectTimeoutMs: 60_000,
+      keepAliveIntervalMs: 30_000,
     });
 
     this.sockets.set(userId, sock);
 
-    sock.ev.on('connection.update', (update) => {
+    sock.ev.on('connection.update', async (update) => {
       const { connection, lastDisconnect, qr } = update;
 
       if (qr) {
         this.qrCodes.set(userId, qr);
+        this.logger.log(`[WhatsApp] QR generated for user ${userId}`);
+      }
+
+      if (connection === 'open') {
+        this.connectionStatus.set(userId, true);
+        this.wasEverConnected.set(userId, true);
+        this.reconnectAttempts.set(userId, 0);
+        this.qrCodes.delete(userId);
+        this.logger.log(`[WhatsApp] ✅ Connected for user ${userId}`);
       }
 
       if (connection === 'close') {
@@ -137,9 +167,8 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
 
         const isLoggedOut = statusCode === DisconnectReason.loggedOut;
         const isRestartRequired = statusCode === DisconnectReason.restartRequired || statusCode === 515;
+        const isQrTimeout = statusCode === 408; // QR refs attempts ended
 
-        // ─── Crypto / corrupted-session error ──────────────────────────────
-        // Do NOT treat 515 Restart Required as a crypto error, even if it happens inside noise-handler
         const isCryptoError =
           !isRestartRequired && (
             errorMsg.includes('authenticate data') ||
@@ -147,72 +176,79 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
             (lastDisconnect?.error as any)?.stack?.includes('noise-handler')
           );
 
-        this.logger.error(`[WhatsApp] Connection closed! Status: ${statusCode}, Error: ${errorMsg}`);
-        if (lastDisconnect?.error) {
-            console.error(lastDisconnect.error);
-        }
+        this.logger.warn(`[WhatsApp] Connection closed for user ${userId}. Status: ${statusCode}, Error: ${errorMsg}`);
 
         if (isLoggedOut || isCryptoError) {
-          this.logger.warn(
-            `[WhatsApp] Session for user ${userId} is ${isCryptoError ? 'corrupted (crypto error)' : 'logged out'}. Clearing session files...`,
-          );
+          // ── User explicitly logged out or session corrupted ──────────────
+          this.logger.warn(`[WhatsApp] User ${userId} logged out or session corrupted. Clearing session.`);
+          this.wasEverConnected.set(userId, false);
+          this.reconnectAttempts.set(userId, 0);
           this.qrCodes.delete(userId);
           this.sockets.delete(userId);
           sock.ev.removeAllListeners('connection.update');
           sock.ev.removeAllListeners('creds.update');
           sock.ev.removeAllListeners('messages.upsert');
+
+          // Clear session files to force new QR scan
           if (fs.existsSync(userSessionPath)) {
             try {
-              // حذف جميع الملفات داخل المجلد أولاً ثم المجلد (Windows يحتاج هذا)
-              const entries = fs.readdirSync(userSessionPath);
-              for (const entry of entries) {
-                const entryPath = path.join(userSessionPath, entry);
-                const stat = fs.statSync(entryPath);
-                if (stat.isDirectory()) {
-                  fs.rmSync(entryPath, { recursive: true, force: true });
-                } else {
-                  fs.unlinkSync(entryPath);
-                }
-              }
-              fs.rmdirSync(userSessionPath);
+              fs.rmSync(userSessionPath, { recursive: true, force: true });
             } catch (rmErr) {
-              this.logger.warn(`[WhatsApp] Could not fully clear session dir: ${rmErr.message}`);
+              this.logger.warn(`[WhatsApp] Could not clear session: ${rmErr.message}`);
             }
           }
           fs.mkdirSync(userSessionPath, { recursive: true });
-          // Restart after 2s to show new QR code
+          // Restart after 2s to show new QR
           setTimeout(() => this.startSession(userId), 2000);
+
+        } else if (isQrTimeout && !this.wasEverConnected.get(userId)) {
+          // ── QR timeout and user was never connected → stop trying automatically ──
+          // The user needs to scan the QR manually. Don't loop forever.
+          this.logger.warn(`[WhatsApp] QR timeout for user ${userId} - waiting for manual scan trigger.`);
+          this.sockets.delete(userId);
+          sock.ev.removeAllListeners('connection.update');
+          sock.ev.removeAllListeners('creds.update');
+          sock.ev.removeAllListeners('messages.upsert');
+          // Clear partial session that Baileys may have created
+          if (fs.existsSync(userSessionPath)) {
+            try {
+              fs.rmSync(userSessionPath, { recursive: true, force: true });
+            } catch (_) { }
+          }
+          fs.mkdirSync(userSessionPath, { recursive: true });
+          // Restart after 5s to show fresh QR code
+          setTimeout(() => {
+            this.reconnectAttempts.set(userId, 0);
+            this.startSession(userId);
+          }, 5000);
+
         } else {
-          // Normal transient disconnect — just reconnect
-          this.startSession(userId);
+          // ── Transient disconnect (was connected before) → reconnect with backoff ──
+          const attempts = (this.reconnectAttempts.get(userId) || 0) + 1;
+          this.reconnectAttempts.set(userId, attempts);
+
+          if (attempts > this.MAX_RECONNECT_ATTEMPTS) {
+            this.logger.error(`[WhatsApp] Max reconnect attempts reached for user ${userId}. Giving up.`);
+            this.sockets.delete(userId);
+            sock.ev.removeAllListeners('connection.update');
+            sock.ev.removeAllListeners('creds.update');
+            sock.ev.removeAllListeners('messages.upsert');
+            return;
+          }
+
+          const delay = Math.min(this.RECONNECT_BASE_DELAY_MS * Math.pow(2, attempts - 1), 60_000);
+          this.logger.log(`[WhatsApp] Reconnecting user ${userId} in ${delay}ms (attempt ${attempts}/${this.MAX_RECONNECT_ATTEMPTS})...`);
+          setTimeout(() => this.startSession(userId), delay);
         }
-      } else if (connection === 'open') {
-        this.connectionStatus.set(userId, true);
-        this.qrCodes.delete(userId);
-        this.logger.log(`WhatsApp connected for user ${userId}`);
       }
     });
-
 
     sock.ev.on('creds.update', saveCreds);
 
     sock.ev.on('messages.upsert', async ({ messages, type }) => {
-      console.log(
-        `[WhatsApp Debug] Received 'messages.upsert' event. Type: ${type}, Count: ${messages.length}`,
-      );
-
       for (const msg of messages) {
-        console.log(`[WhatsApp Debug] Raw Message:`, JSON.stringify(msg.key));
-
         if (!msg.key.fromMe && type === 'notify') {
-          console.log(
-            `[WhatsApp Debug] Processing incoming message from ${msg.key.remoteJid}`,
-          );
           await this.handleMessage(userId, msg);
-        } else {
-          console.log(
-            `[WhatsApp Debug] Skipped message. fromMe: ${msg.key.fromMe}, type: ${type}`,
-          );
         }
       }
     });
