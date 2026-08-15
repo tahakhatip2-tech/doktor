@@ -159,8 +159,9 @@ export class PharmacyService {
   }
 
   async getPrescriptionById(pharmacyId: number, prescriptionId: number) {
-    const prescription = await this.prisma.prescription.findFirst({
-      where: { id: prescriptionId, pharmacyId },
+    // Any pharmacy can view a prescription by ID (for dispensing via QR)
+    const prescription = await this.prisma.prescription.findUnique({
+      where: { id: prescriptionId },
       include: {
         patient: {
           select: {
@@ -189,12 +190,17 @@ export class PharmacyService {
   }
 
   async dispensePrescription(pharmacyId: number, prescriptionId: number) {
-    const prescription = await this.prisma.prescription.findFirst({
-      where: { id: prescriptionId, pharmacyId },
+    // Any pharmacy can dispense a prescription via QR scan
+    const prescription = await this.prisma.prescription.findUnique({
+      where: { id: prescriptionId },
     });
 
     if (!prescription) {
       throw new NotFoundException('الوصفة غير موجودة');
+    }
+
+    if (prescription.status === 'DISPENSED') {
+      throw new Error('هذه الوصفة تم صرفها مسبقاً');
     }
 
     const updated = await this.prisma.prescription.update({

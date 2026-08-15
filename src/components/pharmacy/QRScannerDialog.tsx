@@ -21,12 +21,14 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
     const [loading, setLoading] = useState(false);
     const [scannedPrescription, setScannedPrescription] = useState<any>(null);
     const [scannerInit, setScannerInit] = useState(false);
+    const [scanError, setScanError] = useState<string | null>(null);
     const scannerRef = useRef<Html5QrcodeScanner | null>(null);
+    const isProcessingRef = useRef(false); // prevent duplicate scans
 
     useEffect(() => {
         let timeoutId: NodeJS.Timeout;
         
-        if (isOpen && !scannedPrescription && !scannerInit) {
+        if (isOpen && !scannedPrescription && !scannerInit && !scanError) {
             // Wait for Dialog to mount in DOM
             timeoutId = setTimeout(() => {
                 const readerElement = document.getElementById("reader");
@@ -41,11 +43,14 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
 
                 scanner.render(
                     (decodedText) => {
-                        // Success callback
-                        scanner.pause(true);
+                        // Prevent duplicate processing
+                        if (isProcessingRef.current) return;
+                        isProcessingRef.current = true;
+                        // Pause scanner immediately
+                        try { scanner.pause(true); } catch {}
                         handleScanSuccess(decodedText);
                     },
-                    (error) => {
+                    (_error) => {
                         // Ignore normal scanning errors
                     }
                 );
@@ -57,37 +62,40 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
             if (timeoutId) clearTimeout(timeoutId);
             if (scannerRef.current) {
                 scannerRef.current.clear().catch(console.error);
+                scannerRef.current = null;
                 setScannerInit(false);
             }
         };
-    }, [isOpen, scannedPrescription]);
+    }, [isOpen, scannedPrescription, scanError]);
 
     const handleScanSuccess = async (prescriptionId: string) => {
         setLoading(true);
+        setScanError(null);
         try {
             const token = localStorage.getItem('pharmacy_token');
-            const res = await axios.get(`${API_URL}/pharmacy/prescriptions/${prescriptionId}`, {
+            // Clean the scanned value (remove whitespace/newlines)
+            const cleanId = prescriptionId.trim();
+            const numericId = parseInt(cleanId);
+            if (isNaN(numericId)) {
+                throw new Error('رمز QR غير صالح');
+            }
+            const res = await axios.get(`${API_URL}/pharmacy/prescriptions/${numericId}`, {
                 headers: { 
                     Authorization: `Bearer ${token}`,
                     'ngrok-skip-browser-warning': 'true'
                 }
             });
             setScannedPrescription(res.data);
-            
-            toast({
-                title: 'تم قراءة الوصفة بنجاح',
-                description: 'تم العثور على الوصفة الطبية.',
-            });
+            isProcessingRef.current = false;
         } catch (error: any) {
+            const msg = error.response?.data?.message || error.message || 'لم يتم العثور على الوصفة';
+            setScanError(msg);
             toast({
                 variant: 'destructive',
-                title: 'خطأ',
-                description: error.response?.data?.message || 'لم يتم العثور على الوصفة أو لا تملك صلاحية للوصول إليها.'
+                title: 'خطأ في قراءة الوصفة',
+                description: msg,
             });
-            // Resume scanning on error
-            if (scannerRef.current) {
-                scannerRef.current.resume();
-            }
+            isProcessingRef.current = false;
         } finally {
             setLoading(false);
         }
@@ -123,8 +131,12 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
 
     const resetScan = () => {
         setScannedPrescription(null);
+        setScanError(null);
+        setScannerInit(false);
+        isProcessingRef.current = false;
         if (scannerRef.current) {
-            scannerRef.current.resume();
+            scannerRef.current.clear().catch(console.error);
+            scannerRef.current = null;
         }
     };
 
@@ -157,9 +169,11 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => {
             if (!open) {
-                if (scannerRef.current) scannerRef.current.clear().catch(console.error);
+                if (scannerRef.current) { scannerRef.current.clear().catch(console.error); scannerRef.current = null; }
                 setScannerInit(false);
                 setScannedPrescription(null);
+                setScanError(null);
+                isProcessingRef.current = false;
                 onClose();
             }
         }}>
@@ -177,19 +191,36 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
                             <Loader2 className="h-10 w-10 text-blue-500 animate-spin" />
                             <p className="text-slate-500 text-sm font-medium">جاري معالجة البيانات...</p>
                         </div>
+                    ) : scanError ? (
+                        <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                            <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                                <span className="text-3xl">⚠️</span>
+                            </div>
+                            <div className="text-center">
+                                <p className="font-bold text-red-700 text-sm">فشل في قراءة الوصفة</p>
+                                <p className="text-slate-500 text-xs mt-1">{scanError}</p>
+                            </div>
+                            <Button
+                                className="bg-blue-600 hover:bg-blue-700 text-white"
+                                onClick={resetScan}
+                            >
+                                <Search className="h-4 w-4 ml-2" />
+                                إعادة المسح
+                            </Button>
+                        </div>
                     ) : scannedPrescription ? (
                         <div className="space-y-4 animate-in slide-in-from-bottom-4 duration-300">
                             <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl space-y-2">
                                 <div className="flex justify-between items-start">
                                     <h3 className="font-bold text-lg text-blue-900">
-                                        مريض: {scannedPrescription.patient?.name}
+                                        مريض: {scannedPrescription.patient?.fullName || scannedPrescription.patient?.name}
                                     </h3>
                                     <div className={`px-2 py-1 rounded text-xs font-bold ${
                                         scannedPrescription.status === 'DISPENSED' 
                                             ? 'bg-green-100 text-green-700' 
                                             : 'bg-yellow-100 text-yellow-700'
                                     }`}>
-                                        {scannedPrescription.status === 'DISPENSED' ? 'مصروفة' : 'بانتظار الصرف'}
+                                        {scannedPrescription.status === 'DISPENSED' ? 'تم الصرف' : 'بانتظار الصرف'}
                                     </div>
                                 </div>
                                 <p className="text-sm text-slate-600">
