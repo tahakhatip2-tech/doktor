@@ -49,7 +49,10 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
         const fetchProfile = async () => {
             try {
                 const res = await axios.get(`${API_URL}/pharmacy/profile`, {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { 
+                        Authorization: `Bearer ${token}`,
+                        'ngrok-skip-browser-warning': 'true'
+                    },
                 });
                 if (cancelled) return;
                 if (res.data?.role !== 'PHARMACY') throw new Error('Not a pharmacy');
@@ -80,7 +83,10 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
         if (!t) return;
         try {
             const res = await axios.get(`${API_URL}/pharmacy/profile`, {
-                headers: { Authorization: `Bearer ${t}` },
+                headers: { 
+                    Authorization: `Bearer ${t}`,
+                    'ngrok-skip-browser-warning': 'true'
+                },
             });
             if (res.data?.role !== 'PHARMACY') throw new Error('Not a pharmacy');
             setPharmacy(res.data as PharmacyUser);

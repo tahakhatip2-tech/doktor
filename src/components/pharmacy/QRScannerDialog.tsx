@@ -24,29 +24,37 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
     const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
     useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+        
         if (isOpen && !scannedPrescription && !scannerInit) {
-            // Start scanner
-            const scanner = new Html5QrcodeScanner(
-                "reader",
-                { fps: 10, qrbox: { width: 250, height: 250 } },
-                /* verbose= */ false
-            );
-            scannerRef.current = scanner;
+            // Wait for Dialog to mount in DOM
+            timeoutId = setTimeout(() => {
+                const readerElement = document.getElementById("reader");
+                if (!readerElement) return;
 
-            scanner.render(
-                (decodedText) => {
-                    // Success callback
-                    scanner.pause(true);
-                    handleScanSuccess(decodedText);
-                },
-                (error) => {
-                    // Ignore normal scanning errors
-                }
-            );
-            setScannerInit(true);
+                const scanner = new Html5QrcodeScanner(
+                    "reader",
+                    { fps: 10, qrbox: { width: 250, height: 250 } },
+                    /* verbose= */ false
+                );
+                scannerRef.current = scanner;
+
+                scanner.render(
+                    (decodedText) => {
+                        // Success callback
+                        scanner.pause(true);
+                        handleScanSuccess(decodedText);
+                    },
+                    (error) => {
+                        // Ignore normal scanning errors
+                    }
+                );
+                setScannerInit(true);
+            }, 300);
         }
 
         return () => {
+            if (timeoutId) clearTimeout(timeoutId);
             if (scannerRef.current) {
                 scannerRef.current.clear().catch(console.error);
                 setScannerInit(false);
