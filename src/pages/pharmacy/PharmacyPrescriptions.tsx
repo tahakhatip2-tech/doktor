@@ -15,7 +15,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const STATUS_LABELS: Record<string, { label: string; className: string }> = {
     PENDING: { label: 'قيد الانتظار', className: 'bg-amber-50 text-amber-600 border-amber-200' },
     SENT_TO_PHARMACY: { label: 'أرسلت للصيدلية', className: 'bg-blue-50 text-blue-600 border-blue-200' },
-    DISPENSED: { label: 'مصروفة', className: 'bg-green-50 text-green-600 border-green-200' },
+    DISPENSED: { label: 'تم الصرف', className: 'bg-green-50 text-green-600 border-green-200' },
     REJECTED: { label: 'مرفوضة', className: 'bg-red-50 text-red-600 border-red-200' },
 };
 
@@ -48,7 +48,7 @@ export default function PharmacyPrescriptions() {
     const handleDispense = async (id: number) => {
         try {
             setDispensingId(id);
-            await axios.post(
+            await axios.patch(
                 `${API_URL}/pharmacy/prescriptions/${id}/dispense`,
                 {},
                 { headers: { Authorization: `Bearer ${token}` } },
@@ -64,9 +64,9 @@ export default function PharmacyPrescriptions() {
 
     const filters = [
         { key: 'ALL', label: 'الكل' },
-        { key: 'PENDING', label: 'الانتظار' },
-        { key: 'SENT_TO_PHARMACY', label: 'أرسلت' },
-        { key: 'DISPENSED', label: 'مصروفة' },
+        { key: 'PENDING', label: 'قيد الانتظار' },
+        { key: 'SENT_TO_PHARMACY', label: 'أرسلت للصيدلية' },
+        { key: 'DISPENSED', label: 'تم الصرف' },
         { key: 'REJECTED', label: 'مرفوضة' },
     ];
 

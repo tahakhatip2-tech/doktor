@@ -87,7 +87,7 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
         setLoading(true);
         try {
             const token = localStorage.getItem('pharmacy_token');
-            await axios.post(`${API_URL}/pharmacy/prescriptions/${scannedPrescription.id}/dispense`, {}, {
+            await axios.patch(`${API_URL}/pharmacy/prescriptions/${scannedPrescription.id}/dispense`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
             toast({

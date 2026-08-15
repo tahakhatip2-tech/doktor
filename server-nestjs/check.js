@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function main() { const users = await prisma.user.findMany({where: {role: 'USER'}}); console.log(users.map(u => ({id: u.id, name: u.name, clinic_name: u.clinic_name, clinic_logo: u.clinic_logo}))); } main().finally(() => prisma.$disconnect());

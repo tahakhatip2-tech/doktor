@@ -8,6 +8,7 @@ import {
   Patch,
   Param,
   UseInterceptors,
+  Query,
   UploadedFile,
   BadRequestException,
   InternalServerErrorException,
@@ -56,7 +57,7 @@ export class PharmacyController {
 
   @UseGuards(JwtAuthGuard)
   @Get('prescriptions')
-  async getPrescriptions(@Request() req, @Body('status') status?: string) {
+  async getPrescriptions(@Request() req, @Query('status') status?: string) {
     return this.pharmacyService.getPrescriptions(req.user.id, status);
   }
 
@@ -67,6 +68,7 @@ export class PharmacyController {
 
   @UseGuards(JwtAuthGuard)
   @Patch('prescriptions/:id/dispense')
+  @Post('prescriptions/:id/dispense')
   async dispensePrescription(@Request() req, @Param('id') id: string) {
     return this.pharmacyService.dispensePrescription(req.user.id, parseInt(id));
   }
