@@ -38,6 +38,11 @@ export class WhatsAppSettingsDto {
     @IsString()
     clinic_logo?: string;
 
+    @ApiPropertyOptional({ description: 'تصنيف المنشأة' })
+    @IsOptional()
+    @IsString()
+    clinic_category?: string;
+
     @ApiPropertyOptional({ description: 'اسم الطبيب' })
     @IsOptional()
     @IsString()

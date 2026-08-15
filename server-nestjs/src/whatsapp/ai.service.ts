@@ -1,10 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppointmentsService } from '../appointments/appointments.service';
-import * as googleTTS from 'google-tts-api';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as crypto from 'crypto';
 
 @Injectable()
 export class AiService {
@@ -210,19 +208,7 @@ ${getSetting('ai_system_instruction')}
         }
     }
 
-    async generateVoice(text: string, lang: string = 'ar'): Promise<string | null> {
-        try {
-            if (!text) return null;
-            const results = await googleTTS.getAllAudioBase64(text, { lang, slow: false, host: 'https://translate.google.com' });
-            const finalBuffer = Buffer.concat(results.map(r => Buffer.from(r.base64, 'base64')));
-            const filename = `voice_${crypto.randomBytes(4).toString('hex')}.mp3`;
-            fs.writeFileSync(path.join(this.uploadsDir, filename), finalBuffer);
-            return filename;
-        } catch (e) {
-            this.logger.error(`TTS Error: ${e.message}`);
-            return null;
-        }
-    }
+    // Voice generation is now handled by VoiceService
 
     async generateMedicalAdvice(userId: number, diagnosis: string, treatment: string): Promise<string | null> {
         const prompt = `أنت طبيب استشاري خبير. بناءً على التشخيص والعلاج التاليين لمريض، قدم 3-5 نصائح طبية عملية ومختصرة للمريض لمساعدته في رحلة العلاج.

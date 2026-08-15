@@ -15,6 +15,7 @@ import makeWASocket, {
 import { Boom } from '@hapi/boom';
 import { PrismaService } from '../prisma/prisma.service';
 import { AiService } from './ai.service';
+import { VoiceService } from './voice.service';
 import * as path from 'path';
 import * as bcrypt from 'bcryptjs';
 import * as fs from 'fs';
@@ -43,6 +44,7 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     private prisma: PrismaService,
     private aiService: AiService,
     private appointmentsService: AppointmentsService,
+    private voiceService: VoiceService,
   ) {
     if (!fs.existsSync(this.sessionPath)) {
       fs.mkdirSync(this.sessionPath, { recursive: true });
@@ -733,18 +735,20 @@ export class WhatsAppService implements OnModuleInit, OnModuleDestroy {
     const aiResponse = await this.extractAndProcessActions(userId, aiResponseRaw, from);
 
     try {
-      if (isAudio) {
+      // Get ai_api_key directly from settings for TTS
+      const apiKey = settings['ai_api_key'] || process.env.GEMINI_API_KEY;
+
+      if (isAudio && apiKey) {
         // ─── Reply with voice ──────────────────────────────────────────────
-        const voiceFile = await this.aiService.generateVoice(aiResponse);
-        if (voiceFile) {
-          const voicePath = path.join(process.cwd(), 'uploads', voiceFile);
-          const audioBuffer = fs.readFileSync(voicePath);
+        const oggFilePath = await this.voiceService.textToWhatsAppAudio(aiResponse, apiKey);
+        if (oggFilePath && fs.existsSync(oggFilePath)) {
+          const audioBuffer = fs.readFileSync(oggFilePath);
           await sock.sendMessage(from, {
             audio: audioBuffer,
-            mimetype: 'audio/mp4',
+            mimetype: 'audio/ogg; codecs=opus',
             ptt: true,
           });
-          fs.unlinkSync(voicePath);
+          this.voiceService.cleanup(oggFilePath);
           this.logger.log(`[WhatsApp] Sent voice reply to ${from}`);
         } else {
           // Fallback to text if TTS fails

@@ -31,9 +31,10 @@ import { useActiveDoctor } from "@/context/ActiveDoctorContext";
 interface SidebarProps {
     activeTab: string;
     setActiveTab: (tab: string) => void;
+    clinicCategory?: string;
 }
 
-const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
+const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
     const navigate = useNavigate();
     const { signOut, user } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
@@ -67,7 +68,7 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
     const allNavItems = [
         { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
         { id: 'whatsapp-bot', label: 'محادثات واتساب', icon: MessageCircle },
-        { id: 'internal-chat', label: 'رسائل المرضى', icon: MessagesSquare },
+        { id: 'internal-chat', label: 'الرسائل', icon: MessagesSquare },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
         { id: 'finance', label: 'المحاسبة', icon: Wallet },
@@ -75,6 +76,11 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
     ];
+
+    if (clinicCategory === 'beauty_center') {
+        // Insert right after dashboard (index 1)
+        allNavItems.splice(1, 0, { id: 'beauty-services', label: 'إدارة الخدمات', icon: Sparkles });
+    }
 
     const mainNavItems = allNavItems.filter(item => {
         if (!activeDoctor) return true; // Admin sees everything
@@ -131,8 +137,12 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
                             className={cn(
                                 "w-full flex-row-reverse justify-start gap-3 transition-all duration-300 relative overflow-hidden group mb-1",
                                 activeTab === item.id
-                                    ? "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1"
-                                    : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1"
+                                    ? clinicCategory === 'beauty_center'
+                                        ? "bg-white text-fuchsia-600 shadow-md font-black border-r-4 border-fuchsia-500 rounded-l-lg rounded-r-none translate-x-1"
+                                        : "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1"
+                                    : clinicCategory === 'beauty_center'
+                                        ? "text-fuchsia-600/70 font-medium hover:text-fuchsia-600 hover:bg-white/50 hover:font-bold hover:translate-x-1"
+                                        : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1"
                             )}
                             onClick={() => handleNavClick(item)}
                         >
@@ -173,7 +183,16 @@ const Sidebar = ({ activeTab, setActiveTab }: SidebarProps) => {
                                 </Button>
                                 <Button
                                     variant={activeTab === 'clinic-settings' ? "secondary" : "ghost"}
-                                    className={cn("w-full flex-row-reverse justify-start gap-3 transition-all duration-300", activeTab === 'clinic-settings' ? "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1" : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1")}
+                                    className={cn(
+                                        "w-full flex-row-reverse justify-start gap-3 transition-all duration-300", 
+                                        activeTab === 'clinic-settings' 
+                                            ? clinicCategory === 'beauty_center'
+                                                ? "bg-white text-fuchsia-600 shadow-md font-black border-r-4 border-fuchsia-500 rounded-l-lg rounded-r-none translate-x-1"
+                                                : "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1" 
+                                            : clinicCategory === 'beauty_center'
+                                                ? "text-fuchsia-600/70 font-medium hover:text-fuchsia-600 hover:bg-white/50 hover:font-bold hover:translate-x-1"
+                                                : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1"
+                                    )}
                                     onClick={() => setActiveTab('clinic-settings')}
                                 >
                                     <Settings className="h-5 w-5 flex-shrink-0" />

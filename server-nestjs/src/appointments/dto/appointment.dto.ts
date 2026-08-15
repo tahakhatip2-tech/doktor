@@ -257,6 +257,10 @@ export class SaveMedicalRecordDto {
     @ApiPropertyOptional({ description: 'قائمة الأدوية الموصوفة' })
     @IsOptional()
     medications?: any;
+
+    @ApiPropertyOptional({ description: 'بيانات النموذج الطبي المخصص (عيون / أسنان / نسائية)' })
+    @IsOptional()
+    templateData?: Record<string, any>;
 }
 
 export class AppointmentResponseDto {

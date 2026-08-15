@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
     Building2, MapPin, Phone, Clock, Search, Calendar, Pill,
     MessageCircle, Star, Share2, Eye, Navigation,
-    LocateFixed, X, ChevronDown, Stethoscope,
+    LocateFixed, X, ChevronDown, Stethoscope, Sparkles,
 } from 'lucide-react';
 import axios from 'axios';
 import { BASE_URL } from '@/lib/api';
@@ -56,7 +56,8 @@ export default function PatientClinics() {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locating, setLocating] = useState(false);
     const [mapClinic, setMapClinic] = useState<Clinic | null>(null);
-    const [activeTab, setActiveTab] = useState<'clinics' | 'pharmacies'>('clinics');
+    const [activeTab, setActiveTab] = useState<'clinics' | 'pharmacies' | 'beauty'>('clinics');
+    const [beautyCenters, setBeautyCenters] = useState<Clinic[]>();
 
     // Unique specialties list
     const [specialties, setSpecialties] = useState<string[]>([]);
@@ -64,11 +65,12 @@ export default function PatientClinics() {
     useEffect(() => { 
         fetchClinics(); 
         fetchPharmacies();
+        fetchBeautyCenters();
     }, []);
 
     // ── Build filtered list whenever deps change ──
     useEffect(() => {
-        const sourceData = activeTab === 'clinics' ? clinics : pharmacies;
+        const sourceData = activeTab === 'clinics' ? clinics : activeTab === 'pharmacies' ? pharmacies : (beautyCenters || []);
         let result = [...sourceData];
 
         // Text filter
@@ -144,6 +146,23 @@ export default function PatientClinics() {
         }
     };
 
+    const fetchBeautyCenters = async () => {
+        try {
+            const token = localStorage.getItem('patient_token');
+            const res = await axios.get(`${API_URL}/patient/beauty-centers`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                    'bypass-tunnel-reminder': 'true',
+                },
+            });
+            const data: Clinic[] = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+            setBeautyCenters(data);
+        } catch {
+            // ليس خطأً حرجاً إذا لم توجد مراكز تجميل
+        }
+    };
+
     // ── Nearest clinic via Geolocation ──
     const handleNearestClinic = useCallback(() => {
         if (!navigator.geolocation) {
@@ -213,10 +232,10 @@ export default function PatientClinics() {
             {/* Hero */}
             <PatientHero
                 showBackButton={true}
-                title={activeTab === 'clinics' ? "العيادات المتاحة" : "الصيدليات المتاحة"}
-                subtitle={activeTab === 'clinics' ? "اكتشف أفضل الأطباء" : "اكتشف أقرب الصيدليات"}
-                description={activeTab === 'clinics' ? "اختر العيادة المناسبة واحجز موعدك من المواعيد المتاحة." : "تواصل مع الصيدليات وأرسل وصفاتك الطبية بكل سهولة."}
-                badgeText={activeTab === 'clinics' ? "صحتك أولاً" : "دوائك عندنا"}
+                title={activeTab === 'clinics' ? "العيادات المتاحة" : activeTab === 'pharmacies' ? "الصيدليات المتاحة" : "مراكز التجميل"}
+                subtitle={activeTab === 'clinics' ? "اكتشف أفضل الأطباء" : activeTab === 'pharmacies' ? "اكتشف أقرب الصيدليات" : "عناية بالبشرة والتجميل"}
+                description={activeTab === 'clinics' ? "اختر العيادة المناسبة واحجز موعدك من المواعيد المتاحة." : activeTab === 'pharmacies' ? "تواصل مع الصيدليات وأرسل وصفاتك الطبية بكل سهولة." : "ليزر، بوتوكس، فيلر، وعناية كاملة بالبشرة بأيدي خبراء."}
+                badgeText={activeTab === 'clinics' ? "صحتك أولاً" : activeTab === 'pharmacies' ? "دوائك عندنا" : "جمالك يهمنا"}
             />
 
             <div className="px-4 sm:px-0 space-y-4 pt-6">
@@ -224,23 +243,36 @@ export default function PatientClinics() {
                 <div className="flex bg-slate-100/80 backdrop-blur-sm p-1 rounded-2xl border border-slate-200">
                     <button
                         onClick={() => { setActiveTab('clinics'); setActiveSpec('الكل'); setSearchTerm(''); }}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'clinics'
-                            ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60'
-                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-                            }`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                            activeTab === 'clinics'
+                                ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60'
+                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                        }`}
                     >
                         <Stethoscope className="w-4 h-4" />
                         العيادات
                     </button>
                     <button
                         onClick={() => { setActiveTab('pharmacies'); setActiveSpec('الكل'); setSearchTerm(''); }}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'pharmacies'
-                            ? 'bg-white text-green-600 shadow-sm border border-slate-200/60'
-                            : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-                            }`}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                            activeTab === 'pharmacies'
+                                ? 'bg-white text-green-600 shadow-sm border border-slate-200/60'
+                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                        }`}
                     >
                         <Building2 className="w-4 h-4" />
                         الصيدليات
+                    </button>
+                    <button
+                        onClick={() => { setActiveTab('beauty'); setActiveSpec('الكل'); setSearchTerm(''); }}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+                            activeTab === 'beauty'
+                                ? 'bg-white text-pink-600 shadow-sm border border-slate-200/60'
+                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                        }`}
+                    >
+                        <Sparkles className="w-4 h-4" />
+                        التجميل
                     </button>
                 </div>
                 {/* ── Search + Nearest button ── */}
@@ -327,13 +359,27 @@ export default function PatientClinics() {
                                 : null;
 
                             return (
-                                <Card
+                    <Card
                                     key={clinic.id}
-                                    className="relative rounded-2xl border border-orange-100 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col"
-                                    onClick={() => navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`)}
+                                    className={`relative rounded-2xl border bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group cursor-pointer flex flex-col ${
+                                        activeTab === 'beauty'
+                                            ? 'border-pink-100'
+                                            : activeTab === 'pharmacies'
+                                                ? 'border-green-100'
+                                                : 'border-orange-100'
+                                    }`}
+                                    onClick={() => activeTab === 'beauty'
+                                        ? navigate(`/patient/beauty/${clinic.id}`)
+                                        : navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`)}
                                 >
                                     {/* Top gradient accent */}
-                                    <div className="h-1 w-full bg-gradient-to-r from-blue-600 via-blue-400 to-orange-400" />
+                                    <div className={`h-1 w-full bg-gradient-to-r ${
+                                        activeTab === 'beauty'
+                                            ? 'from-pink-500 via-purple-400 to-rose-400'
+                                            : activeTab === 'pharmacies'
+                                                ? 'from-green-500 via-teal-400 to-green-400'
+                                                : 'from-blue-600 via-blue-400 to-orange-400'
+                                    }`} />
 
                                     {/* Distance badge top-left */}
                                     {distStr && (
@@ -346,13 +392,23 @@ export default function PatientClinics() {
                                     {/* Card header */}
                                     <div className="flex items-start gap-4 p-5 pb-3">
                                         <div className="relative flex-shrink-0">
-                                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[5px] opacity-50 group-hover:opacity-80 transition-opacity" />
+                                            <div className={`absolute inset-0 rounded-full blur-[5px] opacity-50 group-hover:opacity-80 transition-opacity bg-gradient-to-tr ${
+                                                activeTab === 'beauty'
+                                                    ? 'from-pink-500 to-purple-500'
+                                                    : 'from-orange-500 to-blue-600'
+                                            }`} />
                                             <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
-                                                <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white">
+                                                <div className={`h-full w-full rounded-full flex items-center justify-center overflow-hidden border border-white bg-gradient-to-br ${
+                                                    activeTab === 'beauty'
+                                                        ? 'from-pink-100 to-purple-50'
+                                                        : 'from-blue-100 to-orange-50'
+                                                }`}>
                                                     {logo ? (
                                                         <img src={logo} alt={displayName} className="h-full w-full object-cover" />
                                                     ) : (
-                                                        <span className="font-black text-xl text-blue-800">{displayName.charAt(0)}</span>
+                                                        <span className={`font-black text-xl ${
+                                                            activeTab === 'beauty' ? 'text-pink-700' : 'text-blue-800'
+                                                        }`}>{displayName.charAt(0)}</span>
                                                     )}
                                                 </div>
                                             </div>
@@ -415,19 +471,28 @@ export default function PatientClinics() {
                                     {/* Action bar */}
                                     <div className="flex items-center gap-2 p-3 bg-slate-50/80 border-t border-slate-100 mt-auto backdrop-blur-sm">
                                         <button
-                                            onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`); }}
-                                            className="flex-1 flex justify-center items-center gap-2 h-10 rounded-xl text-sm font-bold bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:shadow-lg hover:shadow-blue-500/30 active:scale-95 transition-all"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                if (activeTab === 'beauty') {
+                                                    navigate(`/patient/beauty/${clinic.id}`);
+                                                } else {
+                                                    navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`);
+                                                }
+                                            }}
+                                            className={`flex-1 flex justify-center items-center gap-2 h-10 rounded-xl text-sm font-bold text-white hover:shadow-lg active:scale-95 transition-all bg-gradient-to-r ${
+                                                activeTab === 'beauty'
+                                                    ? 'from-pink-500 to-purple-600 hover:shadow-pink-400/30'
+                                                    : activeTab === 'pharmacies'
+                                                        ? 'from-green-500 to-teal-600 hover:shadow-green-400/30'
+                                                        : 'from-blue-600 to-blue-500 hover:shadow-blue-500/30'
+                                            }`}
                                         >
-                                            {activeTab === 'clinics' ? (
-                                                <>
-                                                    <Calendar className="h-4 w-4 shadow-sm" />
-                                                    احجز موعد
-                                                </>
+                                            {activeTab === 'beauty' ? (
+                                                <><Sparkles className="h-4 w-4" />احجز جلسة</>
+                                            ) : activeTab === 'clinics' ? (
+                                                <><Calendar className="h-4 w-4 shadow-sm" />احجز موعد</>
                                             ) : (
-                                                <>
-                                                    <Pill className="h-4 w-4 shadow-sm" />
-                                                    صرف وصفة
-                                                </>
+                                                <><Pill className="h-4 w-4 shadow-sm" />صرف وصفة</>
                                             )}
                                         </button>
 
@@ -443,10 +508,17 @@ export default function PatientClinics() {
                                             )}
 
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`); }}
-                                                className="flex justify-center items-center h-10 w-10 rounded-xl text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 active:scale-95 transition-all"
-                                                title="عرض التفاصيل"
-                                            >
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        if (activeTab === 'beauty') {
+                                                            navigate(`/patient/beauty/${clinic.id}`);
+                                                        } else {
+                                                            navigate(`/clinic/${clinic.id}/${generateSlug(displayName)}`);
+                                                        }
+                                                    }}
+                                                    className="flex justify-center items-center h-10 w-10 rounded-xl text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 active:scale-95 transition-all"
+                                                    title="عرض التفاصيل"
+                                                >
                                                 <Eye className="h-4 w-4" />
                                             </button>
 

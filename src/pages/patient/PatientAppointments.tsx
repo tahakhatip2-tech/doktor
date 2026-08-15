@@ -15,13 +15,14 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2, Star } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import PatientHero from '@/components/patient/PatientHero';
 import { buildAppointmentUrl } from '@/lib/slug';
 import { BASE_URL } from '@/lib/api';
+import DoctorReviewDialog from '@/components/patient/DoctorReviewDialog';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
@@ -34,6 +35,12 @@ export default function PatientAppointments() {
     const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
     const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
     const [cancelLoading, setCancelLoading] = useState(false);
+
+    // ── Doctor Review State ──
+    const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+    const [reviewDoctor, setReviewDoctor] = useState<any>(null);
+    const [existingReview, setExistingReview] = useState<any>(null);
+    const [reviewedDoctorIds, setReviewedDoctorIds] = useState<Set<number>>(new Set());
 
     useEffect(() => {
         fetchAppointments();
@@ -241,6 +248,34 @@ export default function PatientAppointments() {
                                                     إلغاء
                                                 </button>
                                             )}
+
+                                            {/* Rate Doctor button — only for completed appointments with a doctor */}
+                                            {appointment.status === 'completed' && appointment.clinicDoctorId && (
+                                                <button
+                                                    onClick={async () => {
+                                                        const token = localStorage.getItem('patient_token');
+                                                        let existing = null;
+                                                        try {
+                                                            const res = await axios.get(
+                                                                `${API_URL}/patient/doctors/${appointment.clinicDoctorId}/my-review`,
+                                                                { headers: { Authorization: `Bearer ${token}` } }
+                                                            );
+                                                            existing = res.data;
+                                                        } catch { /* no review yet */ }
+                                                        setReviewDoctor(appointment.clinicDoctor || { id: appointment.clinicDoctorId, name: appointment.clinicDoctorName || 'الطبيب' });
+                                                        setExistingReview(existing);
+                                                        setReviewDialogOpen(true);
+                                                    }}
+                                                    className={`flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 shadow-sm ${
+                                                        reviewedDoctorIds.has(appointment.clinicDoctorId)
+                                                            ? 'bg-amber-50 text-amber-700 border border-amber-200'
+                                                            : 'bg-amber-500 text-white hover:bg-amber-600'
+                                                    }`}
+                                                >
+                                                    <Star className="h-3.5 w-3.5 fill-current" />
+                                                    {reviewedDoctorIds.has(appointment.clinicDoctorId) ? 'تعديل تقييمك' : 'قيّم الطبيب'}
+                                                </button>
+                                            )}
                                         </div>
 
                                     </Card>
@@ -251,6 +286,19 @@ export default function PatientAppointments() {
                 </Tabs>
 
                 <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
+
+                {/* Doctor Review Dialog */}
+                <DoctorReviewDialog
+                    open={reviewDialogOpen}
+                    onOpenChange={setReviewDialogOpen}
+                    doctor={reviewDoctor}
+                    existingReview={existingReview}
+                    onReviewSubmitted={() => {
+                        if (reviewDoctor?.id) {
+                            setReviewedDoctorIds(prev => new Set(prev).add(reviewDoctor.id));
+                        }
+                    }}
+                />
                     <AlertDialogContent>
                         <AlertDialogHeader>
                             <AlertDialogTitle>تأكيد الإلغاء</AlertDialogTitle>

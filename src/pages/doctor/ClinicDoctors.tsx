@@ -18,6 +18,7 @@ import HeroSection from '@/components/HeroSection';
 import { BottomNav } from '@/components/BottomNav';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { TEMPLATE_REGISTRY } from '@/components/medical-templates/registry';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -39,6 +40,7 @@ interface ClinicDoctor {
     shiftTiming?: string;
     certifications?: string;
     experienceYears?: number;
+    patientDuration?: number;
 }
 
 const emptyForm = {
@@ -57,6 +59,7 @@ const emptyForm = {
     shiftTiming: 'morning',
     certifications: '',
     experienceYears: '',
+    patientDuration: '30',
 };
 
 const ROLE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; icon: any }> = {
@@ -133,6 +136,7 @@ export default function ClinicDoctors() {
             shiftTiming: doc.shiftTiming || 'morning',
             certifications: doc.certifications || '',
             experienceYears: doc.experienceYears ? String(doc.experienceYears) : '',
+            patientDuration: doc.patientDuration ? String(doc.patientDuration) : '30',
         });
         setShowModal(true);
         setShowPassword(false);
@@ -154,6 +158,7 @@ export default function ClinicDoctors() {
                 workingHours: workingHoursStr,
                 hourlyRate: form.hourlyRate ? parseFloat(form.hourlyRate) : undefined,
                 experienceYears: form.experienceYears ? parseInt(form.experienceYears, 10) : undefined,
+                patientDuration: form.patientDuration ? parseInt(form.patientDuration, 10) : undefined,
             };
             delete payload.workingHoursFrom;
             delete payload.workingHoursTo;
@@ -296,8 +301,22 @@ export default function ClinicDoctors() {
                                             {/* Top Row */}
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-xl shadow-inner border ${roleInfo.bg} ${roleInfo.border}`}>
-                                                        <roleInfo.icon className={`h-6 w-6 ${roleInfo.color}`} />
+                                                    <div className={`h-12 w-12 rounded-2xl flex items-center justify-center text-xl shadow-inner border overflow-hidden shrink-0 ${roleInfo.bg} ${roleInfo.border}`}>
+                                                        {doc.avatar ? (
+                                                            <img 
+                                                                src={doc.avatar.startsWith('http') || doc.avatar.startsWith('data:') ? doc.avatar : `${API_URL.replace('/api', '')}${doc.avatar.startsWith('/') ? '' : '/'}${doc.avatar}`} 
+                                                                alt={doc.name} 
+                                                                className="w-full h-full object-cover" 
+                                                                onError={(e) => {
+                                                                    const target = e.target as HTMLImageElement;
+                                                                    target.style.display = 'none';
+                                                                    target.nextElementSibling?.classList.remove('hidden');
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <div className={`w-full h-full flex items-center justify-center ${doc.avatar ? 'hidden' : 'flex'}`}>
+                                                            <roleInfo.icon className={`h-6 w-6 ${roleInfo.color}`} />
+                                                        </div>
                                                     </div>
                                                     <div>
                                                         <h3 className="font-black text-slate-800 text-sm leading-tight">{doc.name}</h3>
@@ -468,14 +487,26 @@ export default function ClinicDoctors() {
                                         </div>
 
                                         {form.role === 'doctor' && (
-                                            <div>
+                                            <div className="space-y-2">
                                                 <label className="text-xs font-bold text-slate-600 mb-1 block">التخصص الطبي</label>
-                                                <Input
-                                                    placeholder="مثال: طب أسنان، طب عام، أطفال..."
-                                                    value={form.specialty}
-                                                    onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}
-                                                    className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11"
-                                                />
+                                                <Select 
+                                                    value={form.specialty || ''} 
+                                                    onValueChange={(val) => setForm(f => ({ ...f, specialty: val }))}
+                                                >
+                                                    <SelectTrigger className="rounded-2xl border-slate-200 focus:ring-0 h-11">
+                                                        <SelectValue placeholder="اختر التخصص" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="طب عام">🩺 طب عام (نموذج افتراضي)</SelectItem>
+                                                        {Object.values(TEMPLATE_REGISTRY).map(t => (
+                                                            <SelectItem key={t.id} value={t.label}>
+                                                                {t.icon} {t.label} (نموذج مخصص)
+                                                            </SelectItem>
+                                                        ))}
+                                                        <SelectItem value="باطنية">🫀 باطنية (نموذج افتراضي)</SelectItem>
+                                                        <SelectItem value="جراحة عامة">⚕️ جراحة عامة (نموذج افتراضي)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
                                             </div>
                                         )}
 
@@ -548,6 +579,21 @@ export default function ClinicDoctors() {
                                                             placeholder="0.00"
                                                             value={form.hourlyRate}
                                                             onChange={e => setForm(f => ({ ...f, hourlyRate: e.target.value }))}
+                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-xs font-bold text-slate-600 mb-1 block">
+                                                            <Clock className="h-3 w-3 inline ml-1" />
+                                                            وقت المريض (دقيقة)
+                                                        </label>
+                                                        <Input
+                                                            type="number"
+                                                            min="5"
+                                                            step="5"
+                                                            placeholder="مثال: 30"
+                                                            value={form.patientDuration}
+                                                            onChange={e => setForm(f => ({ ...f, patientDuration: e.target.value }))}
                                                             className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
                                                         />
                                                     </div>

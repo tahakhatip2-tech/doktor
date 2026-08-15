@@ -8,7 +8,7 @@ import { PatientAppointmentController } from './patient-appointment.controller';
 import { PatientAppointmentService } from './patient-appointment.service';
 import { PatientNotificationController } from './patient-notification.controller';
 import { PatientNotificationService } from './patient-notification.service';
-import { PatientReviewsController } from './patient-reviews.controller';
+import { PatientReviewsController, PatientDoctorReviewsController } from './patient-reviews.controller';
 import { PatientReviewsService } from './patient-reviews.service';
 import { PublicClinicController } from './public-clinic.controller';
 import { SupabaseService } from '../storage/supabase.service';
@@ -38,6 +38,7 @@ import { AiService } from '../whatsapp/ai.service';
         PatientAppointmentController,
         PatientNotificationController,
         PatientReviewsController,
+        PatientDoctorReviewsController,
         PublicClinicController,
     ],
     providers: [

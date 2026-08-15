@@ -94,6 +94,18 @@ export class PatientController {
         return { date, clinicId, slots };
     }
 
+    // ─── المواعيد المتاحة لطبيب معين في العيادة ───────────────
+    @Get('clinics/:clinicId/doctors/:doctorId/available-slots')
+    @UseGuards(PatientAuthGuard)
+    async getAvailableSlotsForDoctor(
+        @Param('clinicId', ParseIntPipe) clinicId: number,
+        @Param('doctorId', ParseIntPipe) doctorId: number,
+        @Query('date') date: string,
+    ) {
+        const result = await this.appointmentsService.getAvailableSlotsForDoctor(clinicId, doctorId, date);
+        return { date, clinicId, doctorId, ...result };
+    }
+
     @Get('pharmacies')
     @UseGuards(PatientAuthGuard)
     async getPharmacies() {
@@ -114,5 +126,19 @@ export class PatientController {
         @Body('pharmacyId', ParseIntPipe) pharmacyId: number
     ) {
         return this.patientService.sendPrescriptionToPharmacy(req.user.id, prescriptionId, pharmacyId);
+    }
+
+    // ─── مراكز التجميل ────────────────────────────────────────────────────────
+
+    @Get('beauty-centers')
+    @UseGuards(PatientAuthGuard)
+    async getBeautyCenters() {
+        return this.patientService.getBeautyCenters();
+    }
+
+    @Get('beauty-centers/:id')
+    @UseGuards(PatientAuthGuard)
+    async getBeautyCenterById(@Param('id', ParseIntPipe) id: number) {
+        return this.patientService.getBeautyCenterById(id);
     }
 }

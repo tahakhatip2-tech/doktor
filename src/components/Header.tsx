@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useClinicContext } from '@/context/ClinicContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -102,7 +102,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
         return `${BASE_URL}${avatar}`;
     };
 
-    const [navItems] = useState([
+    const baseNavItems = [
         { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
         { id: 'whatsapp-bot', label: 'المحادثات', icon: MessageCircle },
         { id: 'contacts', label: 'المرضى', icon: Users },
@@ -111,7 +111,15 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
         { id: 'patient-inquiry', label: 'بوابة المرضى', icon: FileText },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
         { id: 'templates', label: 'النماذج', icon: FileText },
-    ]);
+    ];
+
+    const navItems = useMemo(() => {
+        const items = [...baseNavItems];
+        if (settings?.clinic_category === 'beauty_center') {
+            items.splice(1, 0, { id: 'beauty-services', label: 'إدارة الخدمات', icon: Sparkles as any });
+        }
+        return items;
+    }, [settings?.clinic_category]);
 
     const filteredNavItems = navItems.filter(item => {
         if (!activeDoctor) return true;

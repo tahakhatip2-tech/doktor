@@ -207,7 +207,20 @@ export default function AppointmentDetail() {
 
     const status = STATUS_CONFIG[appointment.status] || STATUS_CONFIG['pending'];
     const StatusIcon = status.icon;
-    const clinicName = appointment.user?.clinic_name || appointment.user?.name || 'العيادة';
+    
+    // اسم المريض: من patientUser أو contact أو customerName
+    const patientName = appointment.patientUser?.fullName 
+        || appointment.contact?.name 
+        || appointment.customerName 
+        || 'المريض';
+    const patientAvatar = appointment.patientUser?.avatar
+        ? (appointment.patientUser.avatar.startsWith('http') 
+            ? appointment.patientUser.avatar 
+            : `${BASE_URL}${appointment.patientUser.avatar.startsWith('/') ? '' : '/'}${appointment.patientUser.avatar}`)
+        : null;
+
+    // اسم العيادة: clinic_name هو الحقل الصحيح (ليس name)
+    const clinicName = appointment.user?.clinic_name || 'عيادة';
     const doctorName = appointment.user?.name || 'الطبيب';
     const specialty = appointment.user?.clinic_specialty || '';
     const address = appointment.user?.clinic_address || '';
@@ -215,10 +228,6 @@ export default function AppointmentDetail() {
     const apptDate = new Date(appointment.appointmentDate);
     const canCancel = appointment.status === 'pending' || appointment.status === 'confirmed';
     const clinicId = appointment.user?.id;
-
-    const avatarUrl = appointment.user?.avatar
-        ? (appointment.user.avatar.startsWith('http') ? appointment.user.avatar : `${BASE_URL}${appointment.user.avatar.startsWith('/') ? '' : '/'}${appointment.user.avatar}`)
-        : null;
 
     return (
         <div className="min-h-screen bg-slate-50/50 pb-20 font-sans" dir="rtl">
@@ -252,10 +261,10 @@ export default function AppointmentDetail() {
                         <div className="relative flex-shrink-0">
                             <div className="absolute -inset-1 bg-gradient-to-tr from-blue-100 to-orange-50 rounded-xl blur-md opacity-70" />
                             <div className="relative h-16 w-16 sm:h-18 sm:w-18 rounded-xl bg-white border border-slate-100 shadow-sm flex items-center justify-center overflow-hidden">
-                                {avatarUrl ? (
-                                    <img src={avatarUrl} alt={doctorName} className="h-full w-full object-cover" />
+                                {patientAvatar ? (
+                                    <img src={patientAvatar} alt={patientName} className="h-full w-full object-cover" />
                                 ) : (
-                                    <span className="font-black text-2xl text-slate-300">{doctorName.charAt(0)}</span>
+                                    <span className="font-black text-2xl text-slate-300">{patientName.charAt(0)}</span>
                                 )}
                             </div>
                         </div>
@@ -267,15 +276,10 @@ export default function AppointmentDetail() {
                                         <Hash className="h-3 w-3" /> {appointment.id}
                                     </p>
                                     <h1 className="text-lg sm:text-xl font-black text-slate-900 leading-tight truncate">
-                                        {doctorName}
+                                        {patientName}
                                     </h1>
                                 </div>
                             </div>
-                            {specialty && (
-                                <span className="inline-block mt-1.5 px-2.5 py-0.5 text-[10px] font-bold rounded-md bg-slate-100 text-slate-600">
-                                    {specialty}
-                                </span>
-                            )}
                         </div>
                     </div>
 
@@ -284,7 +288,7 @@ export default function AppointmentDetail() {
                             <div className="bg-blue-50/50 p-2.5 rounded-xl border border-blue-100/50 flex flex-col items-center justify-center text-center">
                                 <Calendar className="h-4 w-4 text-blue-600 mb-1" />
                                 <span className="text-[10px] font-bold text-blue-400">التاريخ</span>
-                                <span className="text-sm font-black text-blue-900">{format(apptDate, 'dd MMMM yyyy', { locale: ar })}</span>
+                                <span className="text-sm font-black text-blue-900">{format(apptDate, 'EEEE, dd MMMM yyyy', { locale: ar })}</span>
                             </div>
                             <div className="bg-orange-50/50 p-2.5 rounded-xl border border-orange-100/50 flex flex-col items-center justify-center text-center">
                                 <Clock className="h-4 w-4 text-orange-500 mb-1" />
@@ -316,17 +320,15 @@ export default function AppointmentDetail() {
                     </h2>
                     
                     <div className="space-y-3">
-                        {clinicName !== doctorName && (
-                            <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-500">
-                                    <Building2 className="h-4 w-4" />
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-[10px] text-slate-400 font-bold">اسم العيادة</p>
-                                    <p className="text-sm font-bold text-slate-800 truncate">{clinicName}</p>
-                                </div>
+                        <div className="flex items-center gap-3">
+                            <div className="h-8 w-8 rounded-lg bg-slate-50 flex items-center justify-center border border-slate-100 text-slate-500">
+                                <Building2 className="h-4 w-4" />
                             </div>
-                        )}
+                            <div className="flex-1 min-w-0">
+                                <p className="text-[10px] text-slate-400 font-bold">اسم العيادة</p>
+                                <p className="text-sm font-bold text-slate-800 truncate">{clinicName}</p>
+                            </div>
+                        </div>
                         
                         {address && (
                             <div className="flex items-center gap-3">
@@ -342,24 +344,38 @@ export default function AppointmentDetail() {
 
                         {appointment.assignedDoctor && !appointment.medicalRecords?.[0]?.treatingDoctor && (
                             <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 text-blue-500">
-                                    <Stethoscope className="h-4 w-4" />
+                                <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center border border-blue-100 text-blue-500 overflow-hidden flex-shrink-0">
+                                    {appointment.assignedDoctor.avatar ? (
+                                        <img src={appointment.assignedDoctor.avatar.startsWith('http') ? appointment.assignedDoctor.avatar : `${BASE_URL}${appointment.assignedDoctor.avatar.startsWith('/') ? '' : '/'}${appointment.assignedDoctor.avatar}`} alt={appointment.assignedDoctor.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <Stethoscope className="h-4 w-4" />
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] text-slate-400 font-bold">الطبيب المعين</p>
-                                    <p className="text-sm font-bold text-slate-800 line-clamp-1">د. {appointment.assignedDoctor.name.replace('د. ', '')}</p>
+                                    <p className="text-sm font-bold text-slate-800 line-clamp-1">د. {appointment.assignedDoctor.name?.replace('د. ', '') || 'طبيب'}</p>
+                                    {appointment.assignedDoctor.specialty && (
+                                        <p className="text-[11px] text-slate-500 font-medium">{appointment.assignedDoctor.specialty}</p>
+                                    )}
                                 </div>
                             </div>
                         )}
 
                         {appointment.medicalRecords?.[0]?.treatingDoctor && (
                             <div className="flex items-center gap-3">
-                                <div className="h-8 w-8 rounded-lg bg-teal-50 flex items-center justify-center border border-teal-100 text-teal-500">
-                                    <Stethoscope className="h-4 w-4" />
+                                <div className="h-8 w-8 rounded-lg bg-teal-50 flex items-center justify-center border border-teal-100 text-teal-500 overflow-hidden flex-shrink-0">
+                                    {appointment.medicalRecords[0].treatingDoctor.avatar ? (
+                                        <img src={appointment.medicalRecords[0].treatingDoctor.avatar.startsWith('http') ? appointment.medicalRecords[0].treatingDoctor.avatar : `${BASE_URL}${appointment.medicalRecords[0].treatingDoctor.avatar.startsWith('/') ? '' : '/'}${appointment.medicalRecords[0].treatingDoctor.avatar}`} alt={appointment.medicalRecords[0].treatingDoctor.name} className="h-full w-full object-cover" />
+                                    ) : (
+                                        <Stethoscope className="h-4 w-4" />
+                                    )}
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <p className="text-[10px] text-slate-400 font-bold">الطبيب المعالج</p>
-                                    <p className="text-sm font-bold text-slate-800 line-clamp-1">د. {appointment.medicalRecords[0].treatingDoctor.name.replace('د. ', '')}</p>
+                                    <p className="text-sm font-bold text-slate-800 line-clamp-1">د. {appointment.medicalRecords[0].treatingDoctor.name?.replace('د. ', '') || 'طبيب'}</p>
+                                    {appointment.medicalRecords[0].treatingDoctor.specialty && (
+                                        <p className="text-[11px] text-slate-500 font-medium">{appointment.medicalRecords[0].treatingDoctor.specialty}</p>
+                                    )}
                                 </div>
                             </div>
                         )}

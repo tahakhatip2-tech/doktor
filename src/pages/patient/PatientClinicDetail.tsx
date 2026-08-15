@@ -16,18 +16,39 @@ import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
-import { Building2, MapPin, Phone, Clock, Calendar, MessageCircle, ArrowRight, ChevronRight, ChevronLeft, Loader2, CheckCircle2, AlertCircle, Plus, Search, User, Star, Pill } from 'lucide-react';
+import { Building2, MapPin, Phone, Clock, Calendar, MessageCircle, ArrowRight, ChevronRight, ChevronLeft, Loader2, CheckCircle2, AlertCircle, Plus, Search, User, Star, Pill, Award } from 'lucide-react';
 import axios from 'axios';
 import { cn } from '@/lib/utils';
 import { format, startOfDay, isSameDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { BASE_URL } from '@/lib/api';
 import PatientHero from '@/components/patient/PatientHero';
+import DoctorBookingSheet from '@/components/patient/DoctorBookingSheet';
 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-// â”€â”€â”€ الأيام باللغة العربية â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function formatArabicTime(timeStr: string) {
+    if (!timeStr) return '';
+    if (!timeStr.includes('-')) return timeStr;
+    const parts = timeStr.split('-');
+    const formatPart = (t: string) => {
+        const [hStr, mStr] = t.trim().split(':');
+        if (!hStr || !mStr) return t;
+        let h = parseInt(hStr, 10);
+        const ampm = h >= 12 ? 'مساءً' : 'صباحاً';
+        if (h === 0) h = 12;
+        else if (h > 12) h -= 12;
+        return `${h.toString().padStart(2, '0')}:${mStr} ${ampm}`;
+    };
+    try {
+        return `${formatPart(parts[0])} - ${formatPart(parts[1])}`;
+    } catch (e) {
+        return timeStr;
+    }
+}
+
+// ─── الأيام باللغة العربية ──────────────────────────────────────────
 const DAY_NAMES_AR = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
 
 export default function PatientClinicDetail() {
@@ -38,16 +59,16 @@ export default function PatientClinicDetail() {
     const [clinic, setClinic] = useState<any>(null);
     const [loadingClinic, setLoadingClinic] = useState(true);
 
-    // â”€â”€ التقويم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── التقويم ──────────────────────────────────────────────────────────
     const [currentMonth, setCurrentMonth] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-    // â”€â”€ الـ Slots â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── الـ Slots ────────────────────────────────────────────────────────
     const [slots, setSlots] = useState<string[]>([]);
     const [loadingSlots, setLoadingSlots] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
 
-    // â”€â”€ Booking Dialog â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Booking Dialog ──────────────────────────────────────────────────
     const [bookingOpen, setBookingOpen] = useState(false);
     const [notes, setNotes] = useState('');
     const [customerName, setCustomerName] = useState('');
@@ -55,7 +76,11 @@ export default function PatientClinicDetail() {
     const [bookingLoading, setBookingLoading] = useState(false);
     const [isVideo, setIsVideo] = useState(false);
 
-    // ── التقييمات ───────────────────────────────────────────────
+    // ── Doctor Booking Sheet ──
+    const [bookingSheetOpen, setBookingSheetOpen] = useState(false);
+    const [selectedDoctorToBook, setSelectedDoctorToBook] = useState<any>(null);
+
+    // ── التقييمات ───────────────────────────────────────────────────────
     const [reviewsData, setReviewsData] = useState<any>(null);
     const [myReview, setMyReview] = useState<any>(null);
     const [reviewOpen, setReviewOpen] = useState(false);
@@ -70,7 +95,7 @@ export default function PatientClinicDetail() {
     const [prescriptionDialogOpen, setPrescriptionDialogOpen] = useState(false);
     const [selectedPrescriptionId, setSelectedPrescriptionId] = useState<number | null>(null);
 
-    // ── جلب بيانات العيادة ──â”€
+    // ── جلب بيانات العيادة ──
     useEffect(() => {
         const fetchClinic = async () => {
             try {
@@ -112,7 +137,7 @@ export default function PatientClinicDetail() {
         }
     };
 
-    // â”€â”€ جلب الـ Slots عند اختيار يوم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── جلب الـ Slots عند اختيار يوم ────────────────────────────────────
     const fetchSlots = useCallback(async (date: Date) => {
         if (!id) return;
         setLoadingSlots(true);
@@ -138,7 +163,7 @@ export default function PatientClinicDetail() {
         fetchSlots(date);
     };
 
-    // â”€â”€ إرسال الحجز â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── إرسال الحجز ─────────────────────────────────────────────────────
     const handleConfirmBooking = async () => {
         if (!selectedDate || !selectedSlot || !clinic) return;
 
@@ -172,8 +197,8 @@ export default function PatientClinicDetail() {
             );
 
             toast({
-                title: 'âœ… تم إرسال طلب الحجز!',
-                description: `موعدك يوم ${format(selectedDate, 'EEEE dd MMMM', { locale: ar })} الساعة ${selectedSlot} â€” في انتظار تأكيد الطبيب`,
+                title: '✅ تم إرسال طلب الحجز!',
+                description: `موعدك يوم ${format(selectedDate, 'EEEE dd MMMM', { locale: ar })} الساعة ${selectedSlot} — في انتظار تأكيد الطبيب`,
             });
 
             setBookingOpen(false);
@@ -267,7 +292,7 @@ export default function PatientClinicDetail() {
 
 
 
-    // â”€â”€ بناء أيام التقويم â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── بناء أيام التقويم ────────────────────────────────────────
     const calendarDays = () => {
         const start = startOfMonth(currentMonth);
         const end = endOfMonth(currentMonth);
@@ -279,7 +304,7 @@ export default function PatientClinicDetail() {
 
     const today = startOfDay(new Date());
 
-    // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ──────────────────────────────────────────────────────────
     if (loadingClinic) {
         return (
             <div className="space-y-6 animate-fade-in">
@@ -336,7 +361,7 @@ export default function PatientClinicDetail() {
                                 {clinic.working_hours && (
                                     <span className="flex items-center gap-1">
                                         <Clock className="h-3 w-3 text-orange-400 shrink-0" />
-                                        {clinic.working_hours}
+                                        {formatArabicTime(clinic.working_hours)}
                                     </span>
                                 )}
                             </div>
@@ -377,7 +402,7 @@ export default function PatientClinicDetail() {
                             طاقم العيادة
                         </h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {clinic.clinicDoctors.map((doctor: any) => (
+                            {clinic.clinicDoctors.filter((d: any) => d.role === 'doctor' || (!d.role && !!d.specialty)).map((doctor: any) => (
                                 <Card key={doctor.id} className="shadow-sm hover:shadow-md transition-shadow border-slate-100">
                                     <CardContent className="p-4 flex gap-4">
                                         <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-100 shrink-0 bg-blue-50">
@@ -387,7 +412,6 @@ export default function PatientClinicDetail() {
                                                     alt={doctor.name} 
                                                     className="w-full h-full object-cover" 
                                                     onError={(e) => {
-                                                        // Fallback if image fails to load
                                                         const target = e.target as HTMLImageElement;
                                                         target.style.display = 'none';
                                                         target.nextElementSibling?.classList.remove('hidden');
@@ -401,8 +425,24 @@ export default function PatientClinicDetail() {
                                         <div className="flex flex-col flex-1 min-w-0 justify-center">
                                             <p className="font-bold text-slate-800 text-sm truncate">{doctor.name}</p>
                                             {doctor.specialty && (
-                                                <p className="text-xs text-blue-600 font-medium truncate mb-1">{doctor.specialty}</p>
+                                                <p className="text-xs text-blue-600 font-medium truncate">{doctor.specialty}</p>
                                             )}
+                                            {/* Rating stars */}
+                                            <div className="flex items-center gap-1 mt-0.5 mb-1">
+                                                {[1,2,3,4,5].map((s) => (
+                                                    <Star
+                                                        key={s}
+                                                        className={`w-3 h-3 ${s <= Math.round(doctor.avgRating || 0) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`}
+                                                    />
+                                                ))}
+                                                {doctor.totalReviews > 0 ? (
+                                                    <span className="text-[10px] text-slate-500 font-medium mr-0.5">
+                                                        {doctor.avgRating} ({doctor.totalReviews})
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-[10px] text-slate-400 mr-0.5">لا يوجد تقييمات بعد</span>
+                                                )}
+                                            </div>
                                             {(doctor.workingHours || doctor.workingDays) && (
                                                 <div className="flex flex-col gap-0.5 mt-1">
                                                     {doctor.workingDays && (
@@ -414,11 +454,38 @@ export default function PatientClinicDetail() {
                                                     {doctor.workingHours && (
                                                         <div className="flex items-center gap-1.5 text-xs text-slate-500">
                                                             <Clock className="w-3 h-3 text-orange-400" />
-                                                            <span className="truncate">{doctor.workingHours}</span>
+                                                            <span className="truncate">{formatArabicTime(doctor.workingHours)}</span>
+                                                        </div>
+                                                    )}
+                                                    {(doctor.certifications || doctor.experienceYears) && (
+                                                        <div className="mt-2 space-y-1.5">
+                                                            {doctor.certifications && (
+                                                                <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-50 p-2 rounded-lg border border-blue-100/50">
+                                                                    <Award className="w-4 h-4 text-blue-500 shrink-0" />
+                                                                    <span className="line-clamp-2 leading-relaxed font-medium" title={doctor.certifications}>{doctor.certifications}</span>
+                                                                </div>
+                                                            )}
+                                                            {doctor.experienceYears && (
+                                                                <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-100/50">
+                                                                    <Star className="w-4 h-4 text-amber-500 shrink-0 fill-amber-500/20" />
+                                                                    <span className="font-bold">خبرة {doctor.experienceYears} سنوات</span>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </div>
                                             )}
+                                            
+                                            <Button 
+                                                size="sm" 
+                                                className="mt-4 w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold shadow-md hover:shadow-lg transition-all border-0 rounded-xl"
+                                                onClick={() => {
+                                                    setSelectedDoctorToBook(doctor);
+                                                    setBookingSheetOpen(true);
+                                                }}
+                                            >
+                                                احجز مع الطبيب
+                                            </Button>
                                         </div>
                                     </CardContent>
                                 </Card>
@@ -426,6 +493,17 @@ export default function PatientClinicDetail() {
                         </div>
                     </div>
                 )}
+                
+                <DoctorBookingSheet 
+                    open={bookingSheetOpen}
+                    onOpenChange={setBookingSheetOpen}
+                    doctor={selectedDoctorToBook}
+                    clinic={clinic}
+                    onBookingComplete={() => {
+                        setBookingSheetOpen(false);
+                        setTimeout(() => navigate('/patient/appointments'), 1000);
+                    }}
+                />
 
             {/* ── قسم الحجز أو صرف الوصفات ── */}
             {clinic.role === 'PHARMACY' ? (

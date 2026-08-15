@@ -26,6 +26,7 @@ interface ClinicSettings {
     location_url: string;
     lat: string;
     lng: string;
+    clinic_category: string;
 }
 
 export default function ClinicSettings() {
@@ -45,6 +46,7 @@ export default function ClinicSettings() {
         location_url: '',
         lat: '',
         lng: '',
+        clinic_category: 'clinic',
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -192,6 +194,26 @@ export default function ClinicSettings() {
                                     className="bg-white/50 dark:bg-black/20 border-blue-200 dark:border-blue-800 focus:border-blue-500 focus:ring-blue-500/20 rounded-xl h-11 transition-all text-right"
                                 />
                             </div>
+
+                        {/* Clinic Category */}
+                        <div className="space-y-2">
+                            <Label htmlFor="clinic_category" className="text-blue-900 dark:text-blue-100 font-semibold text-right w-full block">تصنيف المنشأة الصحية</Label>
+                            <select
+                                id="clinic_category"
+                                value={settings.clinic_category}
+                                onChange={(e) => updateSetting('clinic_category', e.target.value)}
+                                className="w-full bg-white/50 dark:bg-black/20 border border-blue-200 dark:border-blue-800 focus:border-blue-500 rounded-xl h-11 px-3 text-right text-sm font-medium text-slate-700 dark:text-slate-200 transition-all"
+                            >
+                                <option value="clinic">🏥 عيادة طبية</option>
+                                <option value="medical_center">🏢 مركز طبي</option>
+                                <option value="comprehensive_center">🏨 مركز طبي شامل</option>
+                                <option value="hospital">🏦 مستشفى</option>
+                                <option value="beauty_center">✨ مركز تجميل وعناية</option>
+                            </select>
+                            <p className="text-xs text-slate-400 text-right">
+                                يحدد التصنيف طريقة ظهور منشأتك للمرضى وميزات لوحة التحكم المتاحة لك.
+                            </p>
+                        </div>
                         </div>
 
                         <div className="pt-6 border-t border-blue-100 dark:border-blue-800/50">

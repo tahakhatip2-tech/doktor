@@ -139,6 +139,15 @@ export class PatientAppointmentService {
             },
         });
 
+        for (const appt of appointments) {
+            if (appt.user) {
+                const setting = await this.prisma.setting.findFirst({ where: { userId: appt.user.id, key: 'clinic_name' } });
+                if (setting && setting.value) {
+                    appt.user.clinic_name = setting.value;
+                }
+            }
+        }
+
         return appointments;
     }
 
@@ -181,6 +190,15 @@ export class PatientAppointmentService {
             },
         });
 
+        for (const appt of appointments) {
+            if (appt.user) {
+                const setting = await this.prisma.setting.findFirst({ where: { userId: appt.user.id, key: 'clinic_name' } });
+                if (setting && setting.value) {
+                    appt.user.clinic_name = setting.value;
+                }
+            }
+        }
+
         return appointments;
     }
 
@@ -199,6 +217,22 @@ export class PatientAppointmentService {
                         clinic_address: true,
                         clinic_phone: true,
                         clinic_specialty: true,
+                        avatar: true,
+                    },
+                },
+                patientUser: {
+                    select: {
+                        id: true,
+                        fullName: true,
+                        phone: true,
+                        avatar: true,
+                    },
+                },
+                contact: {
+                    select: {
+                        id: true,
+                        name: true,
+                        phone: true,
                     },
                 },
                 assignedDoctor: {
@@ -209,7 +243,13 @@ export class PatientAppointmentService {
                         avatar: true,
                     },
                 },
-                medicalRecords: true,
+                medicalRecords: {
+                    include: {
+                        treatingDoctor: {
+                            select: { id: true, name: true, specialty: true, avatar: true },
+                        },
+                    },
+                },
                 prescriptions: {
                     include: {
                         pharmacy: { select: { id: true, name: true, clinic_name: true } },
@@ -221,6 +261,16 @@ export class PatientAppointmentService {
 
         if (!appointment) {
             throw new NotFoundException('الموعد غير موجود');
+        }
+
+        // Fetch clinic name from settings
+        if (appointment.user) {
+            const clinicNameSetting = await this.prisma.setting.findFirst({
+                where: { userId: appointment.user.id, key: 'clinic_name' }
+            });
+            if (clinicNameSetting && clinicNameSetting.value) {
+                appointment.user.clinic_name = clinicNameSetting.value;
+            }
         }
 
         return appointment;

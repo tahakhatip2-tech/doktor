@@ -2,40 +2,22 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  try {
-    console.log('Creating table DoctorReview...');
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE "DoctorReview" (
-        "id" SERIAL NOT NULL,
-        "clinicDoctorId" INTEGER NOT NULL,
-        "patientId" INTEGER NOT NULL,
-        "rating" INTEGER NOT NULL,
-        "comment" TEXT,
-        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT "DoctorReview_pkey" PRIMARY KEY ("id")
-      );
-    `);
-    
-    console.log('Creating foreign key for clinicDoctorId...');
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "DoctorReview" 
-      ADD CONSTRAINT "DoctorReview_clinicDoctorId_fkey" 
-      FOREIGN KEY ("clinicDoctorId") REFERENCES "ClinicDoctor"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-    `);
+  const appointment = await prisma.appointment.findUnique({
+    where: { id: 101 },
+    include: {
+      user: {
+        select: { id: true, name: true, clinic_name: true }
+      }
+    }
+  });
+  console.log("Appointment 101:", JSON.stringify(appointment, null, 2));
 
-    console.log('Creating foreign key for patientId...');
-    await prisma.$executeRawUnsafe(`
-      ALTER TABLE "DoctorReview" 
-      ADD CONSTRAINT "DoctorReview_patientId_fkey" 
-      FOREIGN KEY ("patientId") REFERENCES "Patient"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-    `);
-
-    console.log('DoctorReview created successfully!');
-  } catch (e) {
-    console.error('Error:', e.message);
-  } finally {
-    await prisma.$disconnect();
+  if (appointment && appointment.user) {
+    const setting = await prisma.setting.findFirst({
+        where: { userId: appointment.user.id, key: 'clinic_name' }
+    });
+    console.log("Setting for user", appointment.user.id, ":", setting);
   }
 }
 
-main();
+main().catch(e => console.error(e)).finally(() => prisma.$disconnect());

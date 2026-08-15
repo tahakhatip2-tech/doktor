@@ -32,6 +32,8 @@ import { appointmentsApi, whatsappApi, BASE_URL } from '@/lib/api';
 import { toastWithSound } from '@/lib/toast-with-sound';
 import axios from 'axios';
 import { useActiveDoctor } from '@/context/ActiveDoctorContext';
+import TemplateRenderer from '@/components/medical-templates/TemplateRenderer';
+import { detectTemplate } from '@/components/medical-templates/registry';
 
 const API_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -81,7 +83,13 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
     const [clinicDoctors, setClinicDoctors] = useState<ClinicDoctor[]>([]);
     const [file, setFile] = useState<File | null>(null);
     const [medications, setMedications] = useState<Medication[]>([{ name: '', type: 'حبوب', frequency: '', duration: '' }]);
+    const [templateData, setTemplateData] = useState<Record<string, any>>({});
     const { activeDoctor } = useActiveDoctor();
+
+    const activeDoctorIdStr = formData.treating_doctor_id?.toString();
+    const activeDoctorObj = clinicDoctors.find(d => d.id.toString() === activeDoctorIdStr) || activeDoctor;
+    const activeDoctorSpecialty = activeDoctorObj?.specialty || '';
+    const hasCustomTemplate = !!detectTemplate(activeDoctorSpecialty);
 
     useEffect(() => {
         const loadBranding = async () => {
@@ -134,6 +142,7 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                 setShowSickLeave(false);
                 setShowReferral(false);
                 setMedications([{ name: '', type: 'حبوب', frequency: '', duration: '' }]);
+                setTemplateData({});
             }
         }
     }, [isOpen, appointment, activeDoctor]);
@@ -158,6 +167,7 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                 referralReason: showReferral ? formData.referralReason : undefined,
                 medications: medications.filter(m => m.name.trim() !== ''),
                 ...(formData.treating_doctor_id ? { treatingDoctorId: Number(formData.treating_doctor_id) } : {}),
+                ...(Object.keys(templateData).length > 0 ? { templateData } : {}),
             };
 
             let payload = data;
@@ -272,124 +282,137 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                                     </div>
                                 </div>
 
-                                {/* Prescription Details */}
-                                <div className="space-y-4 pt-4">
-                                    <div className="space-y-2">
-                                        <Label className="font-bold pr-1">التشخيص الطبي</Label>
-                                        <Textarea
-                                            placeholder="اكتب التشخيص هنا..."
-                                            className="min-h-[100px] rounded-2xl bg-muted/20 border-border/50 focus:border-primary/50 transition-all text-sm leading-relaxed"
-                                            value={formData.diagnosis}
-                                            onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
-                                        />
-                                    </div>
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <Label className="font-bold pr-1 flex items-center gap-2 text-amber-600">
-                                                <Pill className="h-4 w-4" />
-                                                العلاج والأدوية الموصوفة
-                                            </Label>
-                                            <Button 
-                                                type="button" 
-                                                variant="outline" 
-                                                size="sm"
-                                                className="h-8 rounded-lg text-amber-600 border-amber-200 hover:bg-amber-50"
-                                                onClick={() => setMedications([...medications, { name: '', type: 'حبوب', frequency: '', duration: '' }])}
-                                            >
-                                                <Plus className="h-4 w-4 ml-1" /> إضافة دواء
-                                            </Button>
-                                        </div>
-                                        
-                                        <div className="space-y-3">
-                                            {medications.map((med, index) => (
-                                                <div key={index} className="flex flex-col sm:flex-row gap-2 items-start p-3 bg-muted/20 border border-border/50 rounded-xl relative group">
-                                                    <div className="flex-1 space-y-1 w-full">
-                                                        <Label className="text-[10px] text-muted-foreground font-bold">اسم الدواء</Label>
-                                                        <Input 
-                                                            placeholder="مثال: Panadol" 
-                                                            className="h-9 bg-white/50 text-sm"
-                                                            value={med.name}
-                                                            onChange={(e) => {
-                                                                const newMeds = [...medications];
-                                                                newMeds[index].name = e.target.value;
-                                                                setMedications(newMeds);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <div className="w-full sm:w-[120px] space-y-1">
-                                                        <Label className="text-[10px] text-muted-foreground font-bold">النوع</Label>
-                                                        <select
-                                                            className="w-full h-9 rounded-md border border-input bg-white/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                                                            value={med.type}
-                                                            onChange={(e) => {
-                                                                const newMeds = [...medications];
-                                                                newMeds[index].type = e.target.value;
-                                                                setMedications(newMeds);
-                                                            }}
-                                                        >
-                                                            <option value="حبوب">حبوب</option>
-                                                            <option value="شرب">شرب</option>
-                                                            <option value="كبسول">كبسول</option>
-                                                            <option value="مرهم/كريم">مرهم/كريم</option>
-                                                            <option value="حقنة">حقنة</option>
-                                                            <option value="قطرة">قطرة</option>
-                                                            <option value="بخاخ">بخاخ</option>
-                                                            <option value="أخرى">أخرى</option>
-                                                        </select>
-                                                    </div>
-                                                    <div className="flex-1 space-y-1 w-full">
-                                                        <Label className="text-[10px] text-muted-foreground font-bold">الجرعة والتكرار</Label>
-                                                        <Input 
-                                                            placeholder="مثال: حبة كل 12 ساعة" 
-                                                            className="h-9 bg-white/50 text-sm"
-                                                            value={med.frequency}
-                                                            onChange={(e) => {
-                                                                const newMeds = [...medications];
-                                                                newMeds[index].frequency = e.target.value;
-                                                                setMedications(newMeds);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <div className="w-full sm:w-[100px] space-y-1">
-                                                        <Label className="text-[10px] text-muted-foreground font-bold">المدة</Label>
-                                                        <Input 
-                                                            placeholder="مثال: 5 أيام" 
-                                                            className="h-9 bg-white/50 text-sm"
-                                                            value={med.duration}
-                                                            onChange={(e) => {
-                                                                const newMeds = [...medications];
-                                                                newMeds[index].duration = e.target.value;
-                                                                setMedications(newMeds);
-                                                            }}
-                                                        />
-                                                    </div>
-                                                    <Button
-                                                        type="button"
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-9 w-9 mt-5 sm:mt-5 text-red-500 hover:text-red-700 hover:bg-red-50 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
-                                                        onClick={() => {
-                                                            const newMeds = medications.filter((_, i) => i !== index);
-                                                            setMedications(newMeds.length ? newMeds : [{ name: '', type: 'حبوب', frequency: '', duration: '' }]);
-                                                        }}
-                                                    >
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
-                                                </div>
-                                            ))}
-                                        </div>
-
-                                        <div className="space-y-2 mt-4 pt-4 border-t border-border/50">
-                                            <Label className="font-bold pr-1 text-muted-foreground text-xs">تعليمات وملاحظات عامة (اختياري)</Label>
+                                {/* Prescription Details - Default Fallback */}
+                                {!hasCustomTemplate && (
+                                    <div className="space-y-4 pt-4">
+                                        <div className="space-y-2">
+                                            <Label className="font-bold pr-1">التشخيص الطبي</Label>
                                             <Textarea
-                                                placeholder="اكتب أي تعليمات عامة للمريض هنا..."
-                                                className="min-h-[60px] rounded-2xl bg-muted/20 border-border/50 focus:border-amber-500/50 transition-all text-sm leading-relaxed"
-                                                value={formData.treatment}
-                                                onChange={(e) => setFormData({ ...formData, treatment: e.target.value })}
+                                                placeholder="اكتب التشخيص هنا..."
+                                                className="min-h-[100px] rounded-2xl bg-muted/20 border-border/50 focus:border-primary/50 transition-all text-sm leading-relaxed"
+                                                value={formData.diagnosis}
+                                                onChange={(e) => setFormData({ ...formData, diagnosis: e.target.value })}
                                             />
                                         </div>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between">
+                                                <Label className="font-bold pr-1 flex items-center gap-2 text-amber-600">
+                                                    <Pill className="h-4 w-4" />
+                                                    العلاج والأدوية الموصوفة
+                                                </Label>
+                                                <Button 
+                                                    type="button" 
+                                                    variant="outline" 
+                                                    size="sm"
+                                                    className="h-8 rounded-lg text-amber-600 border-amber-200 hover:bg-amber-50"
+                                                    onClick={() => setMedications([...medications, { name: '', type: 'حبوب', frequency: '', duration: '' }])}
+                                                >
+                                                    <Plus className="h-4 w-4 ml-1" /> إضافة دواء
+                                                </Button>
+                                            </div>
+                                            
+                                            <div className="space-y-3">
+                                                {medications.map((med, index) => (
+                                                    <div key={index} className="flex flex-col sm:flex-row gap-2 items-start p-3 bg-muted/20 border border-border/50 rounded-xl relative group">
+                                                        <div className="flex-1 space-y-1 w-full">
+                                                            <Label className="text-[10px] text-muted-foreground font-bold">اسم الدواء</Label>
+                                                            <Input 
+                                                                placeholder="مثال: Panadol" 
+                                                                className="h-9 bg-white/50 text-sm"
+                                                                value={med.name}
+                                                                onChange={(e) => {
+                                                                    const newMeds = [...medications];
+                                                                    newMeds[index].name = e.target.value;
+                                                                    setMedications(newMeds);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className="w-full sm:w-[120px] space-y-1">
+                                                            <Label className="text-[10px] text-muted-foreground font-bold">النوع</Label>
+                                                            <select
+                                                                className="w-full h-9 rounded-md border border-input bg-white/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                                                value={med.type}
+                                                                onChange={(e) => {
+                                                                    const newMeds = [...medications];
+                                                                    newMeds[index].type = e.target.value;
+                                                                    setMedications(newMeds);
+                                                                }}
+                                                            >
+                                                                <option value="حبوب">حبوب</option>
+                                                                <option value="شرب">شرب</option>
+                                                                <option value="كبسول">كبسول</option>
+                                                                <option value="مرهم/كريم">مرهم/كريم</option>
+                                                                <option value="حقنة">حقنة</option>
+                                                                <option value="قطرة">قطرة</option>
+                                                                <option value="بخاخ">بخاخ</option>
+                                                                <option value="أخرى">أخرى</option>
+                                                            </select>
+                                                        </div>
+                                                        <div className="flex-1 space-y-1 w-full">
+                                                            <Label className="text-[10px] text-muted-foreground font-bold">الجرعة والتكرار</Label>
+                                                            <Input 
+                                                                placeholder="مثال: حبة كل 12 ساعة" 
+                                                                className="h-9 bg-white/50 text-sm"
+                                                                value={med.frequency}
+                                                                onChange={(e) => {
+                                                                    const newMeds = [...medications];
+                                                                    newMeds[index].frequency = e.target.value;
+                                                                    setMedications(newMeds);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <div className="w-full sm:w-[100px] space-y-1">
+                                                            <Label className="text-[10px] text-muted-foreground font-bold">المدة</Label>
+                                                            <Input 
+                                                                placeholder="مثال: 5 أيام" 
+                                                                className="h-9 bg-white/50 text-sm"
+                                                                value={med.duration}
+                                                                onChange={(e) => {
+                                                                    const newMeds = [...medications];
+                                                                    newMeds[index].duration = e.target.value;
+                                                                    setMedications(newMeds);
+                                                                }}
+                                                            />
+                                                        </div>
+                                                        <Button
+                                                            type="button"
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="h-9 w-9 mt-5 sm:mt-5 text-red-500 hover:text-red-700 hover:bg-red-50 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity"
+                                                            onClick={() => {
+                                                                const newMeds = medications.filter((_, i) => i !== index);
+                                                                setMedications(newMeds.length ? newMeds : [{ name: '', type: 'حبوب', frequency: '', duration: '' }]);
+                                                            }}
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div className="space-y-2 mt-4 pt-4 border-t border-border/50">
+                                                <Label className="font-bold pr-1 text-muted-foreground text-xs">تعليمات وملاحظات عامة (اختياري)</Label>
+                                                <Textarea
+                                                    placeholder="اكتب أي تعليمات عامة للمريض هنا..."
+                                                    className="min-h-[60px] rounded-2xl bg-muted/20 border-border/50 focus:border-amber-500/50 transition-all text-sm leading-relaxed"
+                                                    value={formData.treatment}
+                                                    onChange={(e) => setFormData({ ...formData, treatment: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
+                                )}
+
+                                {/* Dynamic Medical Template (Specialty-specific) */}
+                                {hasCustomTemplate && (
+                                    <div className="pt-4 border-t border-border/50">
+                                        <TemplateRenderer
+                                            specialty={activeDoctorSpecialty}
+                                            value={templateData}
+                                            onChange={setTemplateData}
+                                        />
+                                    </div>
+                                )}
 
                                 {/* Optional Additions (Sick Leave & Referral) */}
                                 <div className="space-y-4 pt-4 border-t border-border/50">

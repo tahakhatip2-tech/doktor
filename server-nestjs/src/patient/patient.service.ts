@@ -205,6 +205,12 @@ export class PatientService {
             where: {
                 role: { in: ['USER', 'ADMIN'] },
                 status: 'active',
+                // استثناء مراكز التجميل — يتم تصنيفها عبر الإعداد clinic_category
+                NOT: {
+                    settings: {
+                        some: { key: 'clinic_category', value: 'beauty_center' },
+                    },
+                },
             },
             select: {
                 id: true,
@@ -293,11 +299,18 @@ export class PatientService {
                     where: { isActive: true },
                     select: {
                         id: true,
+                        role: true,
                         name: true,
                         specialty: true,
                         avatar: true,
                         workingHours: true,
                         workingDays: true,
+                        patientDuration: true,
+                        certifications: true,
+                        experienceYears: true,
+                        doctorReviews: {
+                            select: { rating: true },
+                        },
                     }
                 }
             },
@@ -326,6 +339,15 @@ export class PatientService {
             clinic_address: settingsMap['address'] || clinic.clinic_address,
             clinic_phone: settingsMap['phone'] || clinic.clinic_phone,
             lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
+            clinicDoctors: clinic.clinicDoctors.map((doc: any) => {
+                const reviews = doc.doctorReviews || [];
+                const totalReviews = reviews.length;
+                const avgRating = totalReviews > 0
+                    ? Math.round((reviews.reduce((s: number, r: any) => s + r.rating, 0) / totalReviews) * 10) / 10
+                    : 0;
+                const { doctorReviews: _, ...rest } = doc;
+                return { ...rest, avgRating, totalReviews };
+            }),
         };
     }
 
@@ -373,6 +395,143 @@ export class PatientService {
                 lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
             };
         }).filter(u => u.clinic_name);
+    }
+
+    // ─── مراكز التجميل ──────────────────────────────────────────────────────
+
+    async getBeautyCenters() {
+        // نجلب مراكز التجميل بناءً على إعداد clinic_category = beauty_center
+        // هذا يعمل لكل المستخدمين بصرف النظر عن الـ role (USER, ADMIN, BEAUTY)
+        const users = await this.prisma.user.findMany({
+            where: {
+                status: 'active',
+                OR: [
+                    // تصنيف عبر الإعداد (الطريقة الجديدة الصحيحة)
+                    {
+                        settings: {
+                            some: { key: 'clinic_category', value: 'beauty_center' },
+                        },
+                    },
+                    // أو عبر الـ role القديم للتوافق مع البيانات الموجودة
+                    { role: 'BEAUTY' as any },
+                ],
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                clinic_name: true,
+                clinic_address: true,
+                clinic_phone: true,
+                working_hours: true,
+                settings: {
+                    where: {
+                        key: { in: ['clinic_name', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng'] },
+                    },
+                    select: { key: true, value: true },
+                },
+                clinicReviews: {
+                    select: { rating: true },
+                },
+                beautyServices: {
+                    where: { isActive: true },
+                    select: { id: true, name: true, icon: true, price: true, duration: true },
+                    take: 6,
+                },
+            },
+            orderBy: { name: 'asc' },
+        });
+
+        return users.map((u) => {
+            const settingsMap: Record<string, string> = {};
+            u.settings.forEach((s) => { settingsMap[s.key] = s.value; });
+
+            const totalReviews = u.clinicReviews?.length || 0;
+            const avgRating = totalReviews > 0
+                ? +(u.clinicReviews!.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
+                : 0;
+
+            return {
+                ...u,
+                settings: undefined,
+                clinicReviews: undefined,
+                avgRating,
+                totalReviews,
+                clinic_name: settingsMap['clinic_name'] || u.clinic_name,
+                clinic_logo: settingsMap['clinic_logo'] || null,
+                clinic_description: settingsMap['clinic_description'] || null,
+                location_url: settingsMap['location_url'] || null,
+                clinic_address: settingsMap['address'] || u.clinic_address,
+                clinic_phone: settingsMap['phone'] || u.clinic_phone,
+                lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
+                lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
+            };
+        }).filter(u => u.clinic_name);
+    }
+
+    async getBeautyCenterById(centerId: number) {
+        const center = await this.prisma.user.findUnique({
+            where: { id: centerId },
+            select: {
+                id: true,
+                role: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                clinic_name: true,
+                clinic_address: true,
+                clinic_phone: true,
+                working_hours: true,
+                settings: {
+                    where: {
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
+                    },
+                    select: { key: true, value: true },
+                },
+                clinicReviews: {
+                    select: { rating: true },
+                },
+                beautyServices: {
+                    where: { isActive: true },
+                    select: { id: true, name: true, description: true, icon: true, price: true, duration: true },
+                },
+            },
+        });
+
+        if (!center) throw new NotFoundException('مركز التجميل غير موجود');
+
+        const settingsMap: Record<string, string> = {};
+        center.settings.forEach((s) => { settingsMap[s.key] = s.value; });
+
+        const totalReviews = center.clinicReviews?.length || 0;
+        const avgRating = totalReviews > 0
+            ? +(center.clinicReviews!.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
+            : 0;
+
+        const working_hours = (settingsMap['working_hours_start'] && settingsMap['working_hours_end'])
+            ? `${settingsMap['working_hours_start']} - ${settingsMap['working_hours_end']}`
+            : center.working_hours;
+
+        return {
+            ...center,
+            settings: undefined,
+            clinicReviews: undefined,
+            avgRating,
+            totalReviews,
+            working_hours,
+            clinic_name: settingsMap['clinic_name'] || center.clinic_name,
+            clinic_specialty: settingsMap['clinic_specialty'] || 'مركز تجميل وعناية بالبشرة',
+            clinic_logo: settingsMap['clinic_logo'] || null,
+            clinic_description: settingsMap['clinic_description'] || null,
+            location_url: settingsMap['location_url'] || null,
+            clinic_address: settingsMap['address'] || center.clinic_address,
+            clinic_phone: settingsMap['phone'] || center.clinic_phone,
+            lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
+            lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
+        };
     }
 
     async getPrescriptions(patientId: number) {

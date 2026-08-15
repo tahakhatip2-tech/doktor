@@ -13,6 +13,7 @@ import {
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
 import { QRCodeSVG } from 'qrcode.react';
+import TemplateViewer from '@/components/medical-templates/TemplateViewer';
 import PatientHero from '@/components/patient/PatientHero';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
@@ -337,7 +338,18 @@ export default function PatientMedicalRecords() {
                                                     </p>
                                                 </div>
                                             )}
-                                            {!record.diagnosis && !record.treatment && !record.sickLeaveDays && !record.referralTo && (
+
+                                            {/* Specialized Medical Template Data */}
+                                            {record.templateData && Object.keys(record.templateData).length > 0 && (
+                                                <div className="mt-4 pt-4 border-t border-border/50">
+                                                    <TemplateViewer 
+                                                        templateData={record.templateData} 
+                                                        specialty={record.appointment?.user?.clinic_specialty || record.treatingDoctor?.specialty || ''} 
+                                                    />
+                                                </div>
+                                            )}
+
+                                            {!record.diagnosis && !record.treatment && !record.sickLeaveDays && !record.referralTo && !record.templateData && (
                                                 <p className="text-sm text-muted-foreground text-center py-2">لا توجد تفاصيل إضافية</p>
                                             )}
 

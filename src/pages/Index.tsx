@@ -25,6 +25,7 @@ import { ClinicProvider } from "@/context/ClinicContext";
 import ClinicSettings from "@/components/ClinicSettings";
 import { ClinicStats } from "@/components/ClinicStats";
 import OffersManager from "@/components/OffersManager";
+import BeautyCenterDashboard from "@/components/BeautyCenterDashboard";
 import FinancialAnalytics from "./doctor/FinancialAnalytics";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PatientCardSkeleton } from "@/components/skeletons/PatientCardSkeleton";
@@ -220,7 +221,7 @@ const Index = () => {
             <ClinicProvider>
                 {/* Sidebar Area (Desktop) */}
                 <aside className="hidden md:block w-80 flex-shrink-0 border-l border-border/50 bg-card/50 backdrop-blur-xl z-50 sticky top-0 h-screen">
-                    <Sidebar activeTab={activeTab === 'patient-details' ? 'contacts' : activeTab} setActiveTab={setActiveTab} />
+                    <Sidebar activeTab={activeTab === 'patient-details' ? 'contacts' : activeTab} setActiveTab={setActiveTab} clinicCategory={aiSettings?.clinic_category} />
                 </aside>
 
                 {/* Main Content Area */}
@@ -282,6 +283,10 @@ const Index = () => {
                                     }
                                     backgroundImage={activeTab === 'dashboard' ? "/hakeem-logo.png" : undefined}
                                 />
+                            )}
+
+                            {activeTab === 'beauty-services' && (
+                                <BeautyCenterDashboard />
                             )}
 
                             {activeTab === 'dashboard' && (
@@ -633,7 +638,7 @@ const Index = () => {
                                     </div>
 
                                     {contactsLoading ? (
-                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                             {[...Array(8)].map((_, i) => (
                                                 <PatientCardSkeleton key={i} />
                                             ))}
@@ -655,7 +660,7 @@ const Index = () => {
                                         </div>
                                     ) : (
                                         <>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                                 {filteredContacts
                                                     .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                                                     .map((contact: any) => (

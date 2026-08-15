@@ -53,6 +53,7 @@ model User {
   internalConversations InternalConversation[] @relation("ClinicConversations")
   doctorPrescriptions   Prescription[]         @relation("DoctorPrescriptions")
   pharmacyPrescriptions Prescription[]         @relation("PharmacyPrescriptions")
+  beautyServices        BeautyService[]
 }
 
 model Plan {
@@ -358,6 +359,19 @@ model Service {
   user        User?    @relation(fields: [userId], references: [id])
 }
 
+model BeautyService {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  name        String
+  description String?
+  duration    Int?     // مدة الجلسة بالدقائق
+  price       String?
+  icon        String?  // اسم الأيقونة أو الإيموجي
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id])
+}
+
 model MedicalRecord {
   id               Int           @id @default(autoincrement())
   appointmentId    Int
@@ -378,6 +392,7 @@ model MedicalRecord {
   patientUserId    Int?
   aiAdvice         String?
   treatingDoctorId Int?
+  templateData     Json?
   appointment      Appointment   @relation(fields: [appointmentId], references: [id])
   contact          Contact?      @relation(fields: [patientId], references: [id])
   patientUser      Patient?      @relation(fields: [patientUserId], references: [id])
@@ -517,6 +532,7 @@ model ClinicDoctor {
   shiftTiming     String?
   certifications  String?
   experienceYears Int?
+  patientDuration Int?            @default(30)
   isActive        Boolean         @default(true)
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -559,6 +575,7 @@ enum UserRole {
   USER
   AGENT
   PHARMACY
+  BEAUTY
 }
 
 enum SubscriptionStatus {

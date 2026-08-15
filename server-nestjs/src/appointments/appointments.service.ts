@@ -543,6 +543,7 @@ export class AppointmentsService {
       referralTo,
       referralReason,
       medications,
+      templateData,
     } = data;
 
     // ─── جلب بيانات الموعد الكاملة (الموثوقة 100%) ───────────────────────
@@ -595,6 +596,7 @@ export class AppointmentsService {
         referralTo,
         referralReason,
         medications,
+        ...(templateData ? { templateData } : {}),
         ...(treatingDoctorId ? { treatingDoctorId: Number(treatingDoctorId) } : {}),
       };
 
@@ -1015,6 +1017,122 @@ export class AppointmentsService {
     }
 
     return slots;
+  }
+
+  // ─── جلب المواعيد المتاحة لطبيب محدد بناءً على جدول دوامه ───────────
+  async getAvailableSlotsForDoctor(
+    clinicId: number,
+    doctorId: number,
+    dateStr: string,
+  ): Promise<{ slots: string[]; workingDays: string | null; workingHours: string | null }> {
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return { slots: [], workingDays: null, workingHours: null };
+
+    // جلب بيانات الطبيب
+    const doctor = await this.prisma.clinicDoctor.findFirst({
+      where: { id: doctorId, clinicId, isActive: true },
+    });
+
+    if (!doctor) return { slots: [], workingDays: null, workingHours: null };
+
+    // --- تحليل أيام الدوام ---
+    const rawDays = doctor.workingDays || '';
+    const dayNamesAr: Record<string, number> = {
+      'أحد': 0, 'احد': 0, 'sunday': 0,
+      'اثنين': 1, 'الاثنين': 1, 'monday': 1,
+      'ثلاثاء': 2, 'الثلاثاء': 2, 'tuesday': 2,
+      'أربعاء': 3, 'اربعاء': 3, 'الأربعاء': 3, 'wednesday': 3,
+      'خميس': 4, 'الخميس': 4, 'thursday': 4,
+      'جمعة': 5, 'الجمعة': 5, 'friday': 5,
+      'سبت': 6, 'السبت': 6, 'saturday': 6,
+    };
+
+    let allowedDays: number[] = [];
+    if (rawDays) {
+      // Split by comma, dash, space, or Arabic comma
+      const parts = rawDays.split(/[,،\-\s]+/).map(p => p.trim().toLowerCase()).filter(Boolean);
+      allowedDays = parts.map(p => dayNamesAr[p]).filter(d => d !== undefined);
+    }
+
+    // تحقق من يوم الأسبوع إذا كانت الأيام محددة
+    const dayOfWeek = date.getDay(); // 0=Sunday
+    if (allowedDays.length > 0 && !allowedDays.includes(dayOfWeek)) {
+      return { slots: [], workingDays: doctor.workingDays, workingHours: doctor.workingHours };
+    }
+
+    // --- تحليل ساعات الدوام ---
+    const rawHours = doctor.workingHours || doctor.shiftTiming || '';
+    let startHour = 9;
+    let endHour = 17;
+
+    if (rawHours) {
+      // Match patterns like "09:00 - 17:00" or "9:00-17:00" or "9 AM - 5 PM"
+      const timeMatch = rawHours.match(/(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?\s*[-–to]+\s*(\d{1,2})(?::(\d{2}))?\s*(AM|PM)?/i);
+      if (timeMatch) {
+        let sh = parseInt(timeMatch[1]);
+        const sAmPm = timeMatch[3]?.toUpperCase();
+        let eh = parseInt(timeMatch[4]);
+        const eAmPm = timeMatch[6]?.toUpperCase();
+
+        if (sAmPm === 'PM' && sh !== 12) sh += 12;
+        if (sAmPm === 'AM' && sh === 12) sh = 0;
+        if (eAmPm === 'PM' && eh !== 12) eh += 12;
+        if (eAmPm === 'AM' && eh === 12) eh = 0;
+
+        startHour = sh;
+        endHour = eh;
+      }
+    }
+
+    const duration = doctor.patientDuration || 30; // دقائق بين كل مريض
+    const now = new Date();
+    const slots: string[] = [];
+
+    // جلب المواعيد المحجوزة لهذا الطبيب في هذا اليوم
+    const dayStart = new Date(date);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+
+    const doctorAppointments = await this.prisma.appointment.findMany({
+      where: {
+        clinicDoctorId: doctorId,
+        status: { notIn: ['cancelled', 'no-show'] },
+        appointmentDate: { gte: dayStart, lt: dayEnd },
+      },
+    });
+
+    // توليد الـ slots
+    for (let h = startHour; h < endHour; h++) {
+      for (let m = 0; m < 60; m += duration) {
+        const slotDate = new Date(date);
+        slotDate.setHours(h, m, 0, 0);
+
+        // تخطي الأوقات الماضية
+        if (slotDate < now) continue;
+
+        const slotEnd = new Date(slotDate.getTime() + duration * 60000);
+
+        // تحقق من التعارض
+        const hasConflict = doctorAppointments.some(apt => {
+          const aptStart = new Date(apt.appointmentDate);
+          const aptEnd = new Date(aptStart.getTime() + (apt.duration || duration) * 60000);
+          return slotDate < aptEnd && slotEnd > aptStart;
+        });
+
+        if (!hasConflict) {
+          slots.push(
+            slotDate.toLocaleTimeString('en-US', {
+              hour: '2-digit',
+              minute: '2-digit',
+              hour12: true,
+            }),
+          );
+        }
+      }
+    }
+
+    return { slots, workingDays: doctor.workingDays, workingHours: doctor.workingHours };
   }
 
   async confirmAppointment(appointmentId: number, userId: number) {

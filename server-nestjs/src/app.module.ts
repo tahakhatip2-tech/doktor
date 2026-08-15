@@ -21,6 +21,7 @@ import { FinanceModule } from './finance/finance.module';
 import { ClinicDoctorsModule } from './clinic-doctors/clinic-doctors.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { AdminModule } from './admin/admin.module';
+import { BeautyServicesModule } from './beauty-services/beauty-services.module';
 
 @Module({
   imports: [
@@ -46,6 +47,7 @@ import { AdminModule } from './admin/admin.module';
     ClinicDoctorsModule,
     PharmacyModule,
     AdminModule,
+    BeautyServicesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
