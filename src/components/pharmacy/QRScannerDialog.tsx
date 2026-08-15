@@ -67,7 +67,10 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
         try {
             const token = localStorage.getItem('pharmacy_token');
             const res = await axios.get(`${API_URL}/pharmacy/prescriptions/${prescriptionId}`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true'
+                }
             });
             setScannedPrescription(res.data);
             
@@ -96,7 +99,10 @@ export default function QRScannerDialog({ isOpen, onClose, onDispenseSuccess }: 
         try {
             const token = localStorage.getItem('pharmacy_token');
             await axios.patch(`${API_URL}/pharmacy/prescriptions/${scannedPrescription.id}/dispense`, {}, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true'
+                }
             });
             toast({
                 title: 'تم صرف الوصفة بنجاح',
