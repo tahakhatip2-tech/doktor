@@ -28,13 +28,18 @@ export const apiFetch = async (endpoint: string, options: any = {}) => {
 
         if (response.status === 401) {
             console.warn('[API] Unauthorized - Clearing session');
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            const hash = window.location.hash;
+            
+            // لا نحذف التوكن إذا كان المستخدم في بوابة الصيدلية أو المريض
+            // لأن هذه البوابات تستخدم توكنات مختلفة عن الطبيب
+            if (!hash.startsWith('#/pharmacy') && !hash.startsWith('#/patient')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+            }
 
             // Only redirect to unified-auth if not already there, and importantly: 
-            // DO NOT redirect if the user is currently browsing the patient portal.
-            const hash = window.location.hash;
-            if (!hash.startsWith('#/unified-auth') && !hash.startsWith('#/patient')) {
+            // DO NOT redirect if the user is currently browsing the patient or pharmacy portal.
+            if (!hash.startsWith('#/unified-auth') && !hash.startsWith('#/patient') && !hash.startsWith('#/pharmacy')) {
                 window.location.hash = '#/unified-auth';
             }
             throw new Error('Unauthorized');

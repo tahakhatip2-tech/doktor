@@ -58,31 +58,39 @@ export class PharmacyService {
   }
 
   async login(data: any) {
-    const pharmacy = await this.prisma.user.findUnique({
-      where: { email: data.email },
-    });
+    try {
+      const pharmacy = await this.prisma.user.findUnique({
+        where: { email: data.email },
+      });
 
-    if (!pharmacy || pharmacy.role !== 'PHARMACY') {
-      throw new UnauthorizedException('بيانات الدخول غير صحيحة');
+      if (!pharmacy || pharmacy.role !== 'PHARMACY') {
+        throw new UnauthorizedException('بيانات الدخول غير صحيحة');
+      }
+
+      const isMatch = await bcrypt.compare(data.password, pharmacy.password);
+      if (!isMatch) {
+        throw new UnauthorizedException('بيانات الدخول غير صحيحة');
+      }
+
+      const payload = { sub: pharmacy.id, email: pharmacy.email, role: pharmacy.role };
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+        user: {
+          id: pharmacy.id,
+          email: pharmacy.email,
+          name: pharmacy.name,
+          clinic_name: pharmacy.clinic_name,
+          avatar: pharmacy.avatar,
+          role: pharmacy.role,
+        },
+      };
+    } catch (err: any) {
+      if (err instanceof UnauthorizedException) throw err;
+      this.logger.error(`login failed: ${err?.message || err}`);
+      throw new InternalServerErrorException('حدث خطأ أثناء تسجيل الدخول، الرجاء المحاولة مرة أخرى');
     }
-
-    const isMatch = await bcrypt.compare(data.password, pharmacy.password);
-    if (!isMatch) {
-      throw new UnauthorizedException('بيانات الدخول غير صحيحة');
-    }
-
-    const payload = { sub: pharmacy.id, email: pharmacy.email, role: pharmacy.role };
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-      user: {
-        id: pharmacy.id,
-        email: pharmacy.email,
-        name: pharmacy.name,
-        clinic_name: pharmacy.clinic_name,
-        role: pharmacy.role,
-      },
-    };
   }
+
 
   async getProfile(pharmacyId: number) {
     try {

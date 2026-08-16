@@ -1,4 +1,4 @@
-﻿import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { whatsappApi, BASE_URL } from '@/lib/api';
 
 interface ClinicSettings {
@@ -57,6 +57,12 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
     };
 
     useEffect(() => {
+        // لا نجلب إعدادات العيادة إذا كان المستخدم في بوابة الصيدلية أو المريض
+        const hash = window.location.hash;
+        if (hash.startsWith('#/pharmacy') || hash.startsWith('#/patient')) {
+            setLoading(false);
+            return;
+        }
         refreshSettings();
     }, []);
 
