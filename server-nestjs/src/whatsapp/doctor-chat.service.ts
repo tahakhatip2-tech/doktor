@@ -164,12 +164,18 @@ ${servicesList || 'لم تُضَف خدمات بعد'}
 - إذا طلب شيئاً غير واضح، اسأل سؤالاً واحداً فقط لتوضيحه.`;
 
         try {
-            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+            const isNewKeyFormat = apiKey.startsWith('AQ.');
+            const modelName = 'gemini-2.0-flash';
+            const geminiUrl = isNewKeyFormat
+                ? `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`
+                : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
             const userPrompt = `السجل السابق:\n${historyStr}\n\nأمر الطبيب الحالي:\n${message}`;
+            const reqHeaders: Record<string, string> = { 'Content-Type': 'application/json' };
+            if (isNewKeyFormat) reqHeaders['X-goog-api-key'] = apiKey;
 
             const response = await fetch(geminiUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: reqHeaders,
                 body: JSON.stringify({
                     system_instruction: { parts: [{ text: systemInstruction }] },
                     contents: [{ role: 'user', parts: [{ text: userPrompt }] }],

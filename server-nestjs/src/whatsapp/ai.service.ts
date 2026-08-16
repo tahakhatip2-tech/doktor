@@ -162,9 +162,10 @@ ${getSetting('ai_system_instruction')}
             // 7. Call Gemini API
             // دعم كلا تنسيقي المفاتيح: AIza (قديم ?key=) و AQ. (جديد X-goog-api-key header)
             const isNewKeyFormat = apiKey.startsWith('AQ.');
+            const modelName = 'gemini-2.0-flash';
             const geminiUrl = isNewKeyFormat
-                ? `https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent`
-                : `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                ? `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`
+                : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
 
             const requestBody = {
                 system_instruction: { parts: [{ text: systemInstruction }] },
