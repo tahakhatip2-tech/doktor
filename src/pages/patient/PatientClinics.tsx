@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
     Building2, MapPin, Phone, Clock, Search, Calendar, Pill,
     MessageCircle, Star, Share2, Eye, Navigation,
-    LocateFixed, X, ChevronDown, Stethoscope, Sparkles,
+    LocateFixed, X, ChevronDown, Stethoscope, Sparkles, Heart,
 } from 'lucide-react';
 import axios from 'axios';
 import { BASE_URL } from '@/lib/api';
@@ -273,6 +273,18 @@ export default function PatientClinics() {
                     >
                         <Sparkles className="w-4 h-4" />
                         التجميل
+                    </button>
+                    <button
+                        onClick={() => { 
+                            toast({
+                                title: "الرعاية المنزلية",
+                                description: "قريباً سنطور هذه الخدمة لاحقاً",
+                            });
+                        }}
+                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50`}
+                    >
+                        <Heart className="w-4 h-4" />
+                        الرعاية المنزلية
                     </button>
                 </div>
                 {/* ── Search + Nearest button ── */}
