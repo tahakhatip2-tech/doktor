@@ -95,7 +95,7 @@ export default function AppointmentDetail() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             
-            const fileUrl = `${BASE_URL}${res.data.url}`;
+            const fileUrl = `${API_URL.replace(/\/api\/?$/, '')}/api${res.data.url.startsWith('/') ? res.data.url : '/' + res.data.url}`;
             
             // Download the file as a Blob with the bypass header
             const fileResponse = await axios.get(fileUrl, {

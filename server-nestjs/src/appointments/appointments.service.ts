@@ -656,6 +656,8 @@ export class AppointmentsService {
       whereClause.userId = userId;
     }
 
+    console.log(`[PDF] Generating ${docType} for appointment ${appointmentId}, userId=${userId}, asPatient=${asPatient}`);
+
     const appointment = await this.prisma.appointment.findFirst({
       where: whereClause,
       include: {
@@ -669,12 +671,18 @@ export class AppointmentsService {
       },
     });
 
-    if (!appointment) throw new NotFoundException('Appointment not found');
+    if (!appointment) {
+      console.log(`[PDF] Appointment not found! whereClause:`, whereClause);
+      throw new NotFoundException('Appointment not found');
+    }
     const record = appointment.medicalRecords[0];
-    if (!record)
+    if (!record) {
+      console.log(`[PDF] No medical record for appointment ${appointmentId}`);
       throw new BadRequestException(
         'No medical record found for this appointment',
       );
+    }
+    console.log(`[PDF] Record found: ${record.id}, recordType: ${record.recordType}`);
 
     // Fetch clinic settings for branding
     const clinicUserId = appointment.userId || 0;
