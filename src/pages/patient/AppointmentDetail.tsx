@@ -95,17 +95,28 @@ export default function AppointmentDetail() {
                 { headers: { Authorization: `Bearer ${token}` } }
             );
             
-            // Create a temporary link to download the file
-            const url = `${BASE_URL}${res.data.url}`;
+            const fileUrl = `${BASE_URL}${res.data.url}`;
+            
+            // Download the file as a Blob with the bypass header
+            const fileResponse = await axios.get(fileUrl, {
+                responseType: 'blob',
+                headers: { 
+                    'ngrok-skip-browser-warning': 'true',
+                    Authorization: `Bearer ${token}` 
+                }
+            });
+
+            // Create object URL from blob and trigger download
+            const blobUrl = window.URL.createObjectURL(new Blob([fileResponse.data], { type: 'application/pdf' }));
             const link = document.createElement('a');
-            link.href = url;
-            link.target = '_blank';
+            link.href = blobUrl;
             link.download = `${docType}_${id}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
             
-            toast({ title: '✅ تم بنجاح', description: 'تم إنشاء وفتح الملف بنجاح.' });
+            toast({ title: '✅ تم بنجاح', description: 'تم إنشاء وتنزيل الملف بنجاح.' });
         } catch (err: any) {
             toast({ variant: 'destructive', title: 'خطأ', description: err.response?.data?.message || 'فشل في إنشاء الملف' });
         } finally {

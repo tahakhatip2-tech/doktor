@@ -107,7 +107,33 @@ export default function PatientMedicalRecords() {
             setAdviceState(prev => ({ ...prev, [record.id]: { loading: false, advice: 'تعذر جلب النصائح' } }));
         }
     };
+    const handleDownloadPdf = async (e: React.MouseEvent, recordUrl: string) => {
+        e.preventDefault();
+        try {
+            const token = localStorage.getItem('patient_token');
+            const fileUrl = `${API_URL.replace('/api', '')}${recordUrl}`;
+            
+            // Download as blob to bypass ngrok warning
+            const fileResponse = await axios.get(fileUrl, {
+                responseType: 'blob',
+                headers: { 
+                    'ngrok-skip-browser-warning': 'true',
+                    Authorization: `Bearer ${token}` 
+                }
+            });
 
+            const blobUrl = window.URL.createObjectURL(new Blob([fileResponse.data], { type: 'application/pdf' }));
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `document_${Date.now()}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (err) {
+            console.error('Failed to download PDF', err);
+        }
+    };
     const filtered = records.filter((r) => {
         const q = search.toLowerCase();
         return (
@@ -412,7 +438,7 @@ export default function PatientMedicalRecords() {
                                             )}
 
                                             {record.pdfUrl && (
-                                                <a href={`${API_URL.replace('/api', '')}${record.pdfUrl}`} target="_blank" rel="noopener noreferrer">
+                                                <a href="#" onClick={(e) => handleDownloadPdf(e, record.pdfUrl as string)}>
                                                     <Button size="sm" className="w-full gap-2" variant="outline">
                                                         <Download className="h-4 w-4" />
                                                         تنزيل الوثيقة PDF
