@@ -165,7 +165,7 @@ ${servicesList || 'لم تُضَف خدمات بعد'}
 
         try {
             const isNewKeyFormat = apiKey.startsWith('AQ.');
-            const modelName = 'gemini-1.5-flash';
+            const modelName = 'gemini-2.5-flash';
             const geminiUrl = isNewKeyFormat
                 ? `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent`
                 : `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
