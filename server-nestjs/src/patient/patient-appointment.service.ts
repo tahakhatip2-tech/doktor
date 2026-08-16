@@ -361,6 +361,7 @@ export class PatientAppointmentService {
                                 name: true,
                                 clinic_name: true,
                                 clinic_specialty: true,
+                                avatar: true,
                             },
                         },
                         prescriptions: true,
@@ -371,6 +372,17 @@ export class PatientAppointmentService {
                 createdAt: 'desc',
             },
         });
+
+        for (const record of records) {
+            if (record.appointment?.user) {
+                const setting = await this.prisma.setting.findFirst({
+                    where: { userId: record.appointment.user.id, key: 'clinic_name' }
+                });
+                if (setting && setting.value) {
+                    record.appointment.user.clinic_name = setting.value;
+                }
+            }
+        }
 
         return records;
     }

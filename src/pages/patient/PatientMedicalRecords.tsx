@@ -49,7 +49,7 @@ interface MedicalRecord {
         appointmentDate: string;
         customerName: string;
         status: string;
-        doctor?: { name: string; clinic_name: string; clinic_specialty: string };
+        user?: { name: string; clinic_name: string; clinic_specialty: string; avatar?: string };
         prescriptions?: Array<{
             id: number;
             status: string;
@@ -111,8 +111,8 @@ export default function PatientMedicalRecords() {
     const filtered = records.filter((r) => {
         const q = search.toLowerCase();
         return (
-            r.appointment?.doctor?.clinic_name?.toLowerCase().includes(q) ||
-            r.appointment?.doctor?.clinic_specialty?.toLowerCase().includes(q) ||
+            r.appointment?.user?.clinic_name?.toLowerCase().includes(q) ||
+            r.appointment?.user?.clinic_specialty?.toLowerCase().includes(q) ||
             r.diagnosis?.toLowerCase().includes(q) ||
             recordTypeMap[r.recordType]?.label.includes(q)
         );
@@ -220,8 +220,19 @@ export default function PatientMedicalRecords() {
                                             <div className="flex items-center gap-4">
                                                 <div className="relative">
                                                     <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-xl blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
-                                                    <div className="relative h-12 w-12 rounded-xl bg-white p-0.5 z-10 flex items-center justify-center">
-                                                        <div className={`h-full w-full rounded-[10px] flex items-center justify-center overflow-hidden border border-white ${typeInfo.color}`}>
+                                                    <div className="relative h-12 w-12 rounded-xl bg-white p-0.5 z-10 flex items-center justify-center overflow-hidden">
+                                                        {record.appointment?.user?.avatar ? (
+                                                            <img 
+                                                                src={record.appointment.user.avatar.startsWith('http') ? record.appointment.user.avatar : `${API_URL.replace('/api', '')}${record.appointment.user.avatar.startsWith('/') ? '' : '/'}${record.appointment.user.avatar}`} 
+                                                                alt={record.appointment?.user?.clinic_name || 'العيادة'} 
+                                                                className="w-full h-full object-cover rounded-[10px]"
+                                                                onError={(e) => {
+                                                                    (e.target as HTMLImageElement).style.display = 'none';
+                                                                    (e.target as HTMLImageElement).nextElementSibling?.classList.remove('hidden');
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <div className={`h-full w-full rounded-[10px] flex items-center justify-center border border-white ${typeInfo.color} ${record.appointment?.user?.avatar ? 'hidden' : ''}`}>
                                                             <Icon className="h-5 w-5" />
                                                         </div>
                                                     </div>
@@ -233,13 +244,16 @@ export default function PatientMedicalRecords() {
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-sm ${statusInfo.color}`}>{statusInfo.label}</span>
                                                     </div>
                                                     <h4 className="font-extrabold text-base text-blue-950 truncate">
-                                                        {record.appointment?.doctor?.clinic_name || 'عيادة طبية'}
+                                                        {record.appointment?.user?.clinic_name || 'عيادة طبية'}
                                                     </h4>
+                                                    <p className="text-xs font-medium text-slate-500 truncate mt-0.5">
+                                                        د. {record.appointment?.user?.name || 'طبيب غير محدد'}
+                                                    </p>
                                                     
                                                     <div className="flex flex-wrap items-center gap-3 mt-1.5">
                                                         <p className="text-xs text-orange-600 font-bold flex items-center gap-1.5 truncate bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100">
                                                             <Stethoscope className="h-3 w-3" />
-                                                            <span>{record.appointment?.doctor?.clinic_specialty || 'سجل طبي'}</span>
+                                                            <span>{record.appointment?.user?.clinic_specialty || 'سجل طبي'}</span>
                                                         </p>
                                                         <p className="text-xs text-slate-500 font-medium flex items-center gap-1">
                                                             <Calendar className="h-3 w-3 text-blue-400" />
