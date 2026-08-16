@@ -56,6 +56,15 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
+  app.enableCors({
+    origin: true, // السماح بجميع النطاقات في بيئة التطوير
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization, ngrok-skip-browser-warning, bypass-tunnel-reminder, Bypass-Tunnel-Reminder, X-Requested-With, sentry-trace, baggage, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform',
+    credentials: true,
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+  });
+
   // Serve local uploads under /uploads/ and /api/uploads/ (fallback storage when Supabase is unavailable)
   app.useStaticAssets(join(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
@@ -73,15 +82,6 @@ async function bootstrap() {
       enableImplicitConversion: true,
     },
   }));
-
-  app.enableCors({
-    origin: true, // السماح بجميع النطاقات في بيئة التطوير
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    allowedHeaders: 'Content-Type, Accept, Authorization, ngrok-skip-browser-warning, bypass-tunnel-reminder, Bypass-Tunnel-Reminder, X-Requested-With, sentry-trace, baggage, sec-ch-ua, sec-ch-ua-mobile, sec-ch-ua-platform',
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  });
 
   app.setGlobalPrefix('api');
 
