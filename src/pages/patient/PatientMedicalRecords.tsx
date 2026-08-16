@@ -49,7 +49,7 @@ interface MedicalRecord {
         appointmentDate: string;
         customerName: string;
         status: string;
-        user?: { name: string; clinic_name: string; clinic_specialty: string; avatar?: string };
+        user?: { name: string; clinic_name: string; clinic_specialty: string; avatar?: string; clinic_logo?: string };
         prescriptions?: Array<{
             id: number;
             status: string;
@@ -221,9 +221,9 @@ export default function PatientMedicalRecords() {
                                                 <div className="relative">
                                                     <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-xl blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
                                                     <div className="relative h-12 w-12 rounded-xl bg-white p-0.5 z-10 flex items-center justify-center overflow-hidden">
-                                                        {record.appointment?.user?.avatar ? (
+                                                        {(record.appointment?.user?.clinic_logo || record.appointment?.user?.avatar) ? (
                                                             <img 
-                                                                src={record.appointment.user.avatar.startsWith('http') ? record.appointment.user.avatar : `${API_URL.replace('/api', '')}${record.appointment.user.avatar.startsWith('/') ? '' : '/'}${record.appointment.user.avatar}`} 
+                                                                src={(record.appointment.user.clinic_logo || record.appointment.user.avatar)?.startsWith('http') ? (record.appointment.user.clinic_logo || record.appointment.user.avatar) : `${API_URL.replace('/api', '')}${(record.appointment.user.clinic_logo || record.appointment.user.avatar)?.startsWith('/') ? '' : '/'}${record.appointment.user.clinic_logo || record.appointment.user.avatar}`} 
                                                                 alt={record.appointment?.user?.clinic_name || 'العيادة'} 
                                                                 className="w-full h-full object-cover rounded-[10px]"
                                                                 onError={(e) => {
@@ -232,7 +232,7 @@ export default function PatientMedicalRecords() {
                                                                 }}
                                                             />
                                                         ) : null}
-                                                        <div className={`h-full w-full rounded-[10px] flex items-center justify-center border border-white ${typeInfo.color} ${record.appointment?.user?.avatar ? 'hidden' : ''}`}>
+                                                        <div className={`h-full w-full rounded-[10px] flex items-center justify-center border border-white ${typeInfo.color} ${(record.appointment?.user?.clinic_logo || record.appointment?.user?.avatar) ? 'hidden' : ''}`}>
                                                             <Icon className="h-5 w-5" />
                                                         </div>
                                                     </div>

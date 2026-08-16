@@ -361,6 +361,7 @@ export class PatientAppointmentService {
                                 name: true,
                                 clinic_name: true,
                                 clinic_specialty: true,
+                                clinic_logo: true,
                                 avatar: true,
                             },
                         },
