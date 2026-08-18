@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
     Building2, MapPin, Phone, Clock, Search, Calendar, Pill,
     MessageCircle, Star, Share2, Eye, Navigation,
-    LocateFixed, X, ChevronDown, Stethoscope, Sparkles, Heart,
+    LocateFixed, X, ChevronDown, Stethoscope, Sparkles, Heart, FlaskConical
 } from 'lucide-react';
 import axios from 'axios';
 import { BASE_URL } from '@/lib/api';
@@ -239,53 +239,51 @@ export default function PatientClinics() {
             />
 
             <div className="px-4 sm:px-0 space-y-4 pt-6">
-                {/* ── Tabs ── */}
-                <div className="flex bg-slate-100/80 backdrop-blur-sm p-1 rounded-2xl border border-slate-200">
-                    <button
-                        onClick={() => { setActiveTab('clinics'); setActiveSpec('الكل'); setSearchTerm(''); }}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                            activeTab === 'clinics'
-                                ? 'bg-white text-blue-600 shadow-sm border border-slate-200/60'
-                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-                        }`}
-                    >
-                        <Stethoscope className="w-4 h-4" />
-                        العيادات
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('pharmacies'); setActiveSpec('الكل'); setSearchTerm(''); }}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                            activeTab === 'pharmacies'
-                                ? 'bg-white text-green-600 shadow-sm border border-slate-200/60'
-                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-                        }`}
-                    >
-                        <Building2 className="w-4 h-4" />
-                        الصيدليات
-                    </button>
-                    <button
-                        onClick={() => { setActiveTab('beauty'); setActiveSpec('الكل'); setSearchTerm(''); }}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
-                            activeTab === 'beauty'
-                                ? 'bg-white text-pink-600 shadow-sm border border-slate-200/60'
-                                : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
-                        }`}
-                    >
-                        <Sparkles className="w-4 h-4" />
-                        التجميل
-                    </button>
-                    <button
-                        onClick={() => { 
-                            toast({
-                                title: "الرعاية المنزلية",
-                                description: "قريباً سنطور هذه الخدمة لاحقاً",
-                            });
-                        }}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 text-slate-500 hover:text-slate-700 hover:bg-slate-200/50`}
-                    >
-                        <Heart className="w-4 h-4" />
-                        الرعاية المنزلية
-                    </button>
+                {/* ── Tabs (Capsule Design) ── */}
+                <div className="grid grid-cols-6 gap-2.5 max-w-2xl mx-auto mb-6">
+                    {[
+                        { id: 'clinics', label: 'العيادات', icon: Stethoscope, color: 'from-blue-500 to-blue-700', ring: 'ring-blue-400', active: activeTab === 'clinics' },
+                        { id: 'pharmacies', label: 'الصيدليات', icon: Building2, color: 'from-green-500 to-green-700', ring: 'ring-green-400', active: activeTab === 'pharmacies' },
+                        { id: 'beauty', label: 'التجميل', icon: Sparkles, color: 'from-pink-500 to-pink-700', ring: 'ring-pink-400', active: activeTab === 'beauty' },
+                        { id: 'home', label: 'رعاية منزلية', icon: Heart, color: 'from-purple-500 to-purple-700', ring: 'ring-purple-400', comingSoon: true },
+                        { id: 'labs', label: 'مختبرات طبية', icon: FlaskConical, color: 'from-orange-500 to-orange-700', ring: 'ring-orange-400', comingSoon: true },
+                    ].map((tab, idx) => (
+                        <button
+                            key={tab.id}
+                            onClick={() => {
+                                if (tab.comingSoon) {
+                                    toast({ title: tab.label, description: "قيد التطوير سنطورها لاحقا" });
+                                } else {
+                                    setActiveTab(tab.id as 'clinics' | 'pharmacies' | 'beauty');
+                                    setActiveSpec('الكل');
+                                    setSearchTerm('');
+                                }
+                            }}
+                            className={`relative group flex items-center justify-between w-full h-11 sm:h-12 rounded-full border border-white/60 shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-95 ${idx < 3 ? 'col-span-2' : 'col-span-3'} ${tab.active ? `ring-2 ring-offset-2 ring-offset-slate-50 ${tab.ring} shadow-[0_0_20px_rgba(0,0,0,0.15)]` : ''}`}
+                        >
+                            {/* Colored half (Right side in RTL) */}
+                            <div className={`absolute right-0 top-0 bottom-0 w-[42%] bg-gradient-to-br ${tab.color} shadow-[inset_0_-3px_8px_rgba(0,0,0,0.3)] opacity-95 group-hover:opacity-100 transition-opacity`}></div>
+                            
+                            {/* Inner glossy highlight for colored half */}
+                            <div className="absolute right-0 top-0 w-[42%] h-[45%] bg-white/20 rounded-bl-full pointer-events-none"></div>
+
+                            {/* Transparent Glass half (Left side in RTL) */}
+                            <div className="absolute left-0 top-0 bottom-0 w-[58%] bg-white/30 backdrop-blur-xl shadow-[inset_0_0_15px_rgba(255,255,255,0.8)] border-r border-white/50"></div>
+                            
+                            {/* Content */}
+                            <div className="relative z-10 flex items-center w-full px-1">
+                                <div className="w-[42%] flex justify-center text-white drop-shadow-md">
+                                    <tab.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                </div>
+                                <div className="w-[58%] flex justify-center text-slate-800 font-extrabold text-[10px] sm:text-xs whitespace-nowrap px-1 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">
+                                    {tab.label}
+                                </div>
+                            </div>
+                            
+                            {/* Full Glossy reflection over everything */}
+                            <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/5 to-transparent w-full h-[45%] pointer-events-none rounded-t-full"></div>
+                        </button>
+                    ))}
                 </div>
                 {/* ── Search + Nearest button ── */}
                 <div className="flex gap-2">
