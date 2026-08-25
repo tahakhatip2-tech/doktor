@@ -75,7 +75,7 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
         { id: 'internal-chat', label: 'الرسائل', icon: MessagesSquare },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
-        { id: 'inventory', label: 'إدارة المنتجات', icon: Package },
+        ...(isPharmacy ? [{ id: 'inventory', label: 'إدارة المنتجات', icon: Package }] : []),
         { id: 'finance', label: 'المحاسبة', icon: Wallet },
         { id: 'offers', label: 'آخر الأخبار', icon: Tag },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
