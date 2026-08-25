@@ -90,10 +90,9 @@ export default function PatientLayout() {
     };
 
     const navItems = [
-        { path: '/patient/dashboard', label: 'الرئيسية', icon: Home },
         { path: '/patient/appointments', label: 'مواعيدي', icon: Calendar },
         { path: '/patient/clinics', label: 'العيادات', icon: Building2 },
-        { path: '/patient/messages', label: 'المراسلة', icon: MessageCircle },
+        { path: '/patient/dashboard', label: 'الرئيسية', icon: Home },
         { path: '/patient/medical-records', label: 'السجلات', icon: FileText },
         { path: '/patient/offers', label: 'آخر الأخبار', icon: Tag },
     ];
@@ -445,13 +444,13 @@ export default function PatientLayout() {
             {/* 💎 Mobile Navigation Bar - Compressed & Optimized for Small Screens */}
             <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50">
                 <nav className="h-[72px] bg-white/95 dark:bg-black/90 backdrop-blur-3xl border-t-2 border-orange-500 shadow-[0_-15px_60px_rgba(0,0,0,0.1)] flex justify-between items-center px-1 pb-1">
-                    {navItems.map((item, index) => {
+                    {navItems.map((item) => {
                         const Icon = item.icon;
                         const isTrulyActive = item.path === '/patient/dashboard' 
                             ? location.pathname === '/patient/dashboard' 
                             : location.pathname.includes(item.path);
                         
-                        const isMain = index === 2; // "Home" icon center focus
+                        const isMain = item.path === '/patient/dashboard'; // Home icon center focus
 
                         return (
                             <Link
