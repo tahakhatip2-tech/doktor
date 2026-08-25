@@ -76,41 +76,58 @@ export default function PatientDashboard() {
             />
 
             <div className="px-4 sm:px-0 flex flex-col gap-6 -mt-4 relative z-20">
-                {/* Quick Actions */}
+                {/* Quick Actions - Capsule Style */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Button 
+                    {/* صرف وصفة - capsule orange */}
+                    <button
                         onClick={() => setIsDispenseDialogOpen(true)}
-                        className="h-auto py-4 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 shadow-lg shadow-blue-600/20 flex flex-col items-center gap-2 group border-0"
+                        className="relative rounded-full border-0 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group bg-gradient-to-l from-orange-500 from-50% to-orange-400 to-50% text-white w-full h-14"
                     >
-                        <div className="p-3 rounded-full bg-white/10 group-hover:scale-110 transition-transform duration-300">
-                            <Pill className="h-6 w-6 text-white" />
-                        </div>
-                        <span className="font-black text-sm text-white">صرف وصفة طبية</span>
-                    </Button>
-                    <Link to="/patient/clinics" className="w-full">
-                        <Button 
-                            variant="outline"
-                            className="w-full h-auto py-4 rounded-2xl border-orange-200 hover:border-orange-500 hover:bg-orange-50 text-orange-700 flex flex-col items-center gap-2 group transition-all"
-                        >
-                            <div className="p-3 rounded-full bg-orange-100 group-hover:scale-110 transition-transform duration-300">
-                                <Plus className="h-6 w-6 text-orange-600" />
+                        {/* Capsule Middle Shine Divider */}
+                        <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
+                        
+                        <div className="py-2 px-6 relative z-10 flex items-center justify-between h-full">
+                            <div className="flex-1 text-right ml-2 flex items-center h-full">
+                                <p className="text-sm font-black text-white whitespace-nowrap">صرف وصفة</p>
                             </div>
-                            <span className="font-black text-sm">حجز موعد جديد</span>
-                        </Button>
+                            <div className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                <Pill className="h-5 w-5 text-white" />
+                            </div>
+                        </div>
+                    </button>
+
+                    {/* حجز موعد - capsule blue */}
+                    <Link to="/patient/clinics" className="w-full">
+                        <button className="relative rounded-full border-0 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group bg-gradient-to-l from-blue-600 from-50% to-blue-500 to-50% text-white w-full h-14">
+                            {/* Capsule Middle Shine Divider */}
+                            <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
+                            <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
+                            
+                            <div className="py-2 px-6 relative z-10 flex items-center justify-between h-full">
+                                <div className="flex-1 text-right ml-2 flex items-center h-full">
+                                    <p className="text-sm font-black text-white whitespace-nowrap">حجز موعد</p>
+                                </div>
+                                <div className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                    <Plus className="h-5 w-5 text-white" />
+                                </div>
+                            </div>
+                        </button>
                     </Link>
                 </div>
 
                 {/* Upcoming Appointments */}
-                <Card className="relative rounded-2xl border border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-500 overflow-hidden group/card">
-                    <div className="p-3 sm:p-4 border-b border-orange-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-orange-50/30 to-transparent">
-                        <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-xl bg-orange-50 text-orange-500 shadow-sm border border-orange-100">
-                                <Calendar className="h-5 w-5" />
+                <Card className="relative rounded-3xl border-0 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden bg-white group/card">
+                    <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-orange-400 to-orange-600 opacity-60 group-hover/card:opacity-100 transition-opacity" />
+                    <div className="p-4 sm:p-5 border-b border-orange-50 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                            <div className="p-2 rounded-xl bg-gradient-to-br from-orange-400 to-orange-500 text-white shadow-sm">
+                                <Calendar className="h-4 w-4" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">المواعيد القادمة</h3>
+                            <h3 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">المواعيد القادمة</h3>
                         </div>
                         <Link to="/patient/appointments" className="shrink-0">
-                            <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
+                            <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-orange-600 hover:bg-orange-50 hover:text-orange-700 rounded-full px-3 sm:px-4">
                                 عرض الكل
                             </Button>
                         </Link>
@@ -141,14 +158,15 @@ export default function PatientDashboard() {
                                 {upcomingAppointments.map((appointment) => (
                                     <div
                                         key={appointment.id}
-                                        className="relative rounded-xl border border-blue-100/50 bg-white p-3 sm:p-4 hover:border-blue-300 hover:shadow-[0_8px_30px_rgba(37,99,235,0.08)] transition-all duration-300 group/item flex flex-col gap-3"
+                                        className="relative rounded-2xl border border-orange-100/60 bg-white p-3 sm:p-4 hover:border-orange-300 hover:shadow-md transition-all duration-300 group/item flex flex-col gap-3"
                                     >
+                                        <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-orange-300 to-orange-400 rounded-r-2xl opacity-0 group-hover/item:opacity-100 transition-opacity" />
                                         <div className="flex items-start justify-between gap-1">
                                             <div className="flex-1 min-w-0">
-                                                <h4 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover/item:text-blue-600 transition-colors truncate">
+                                                <h4 className="text-sm sm:text-base font-extrabold text-slate-900 group-hover/item:text-orange-600 transition-colors truncate">
                                                     {appointment.user?.clinic_name || appointment.user?.name}
                                                 </h4>
-                                                <div className="inline-flex items-center mt-1 px-2 py-0.5 rounded-md bg-orange-50 text-orange-600 text-[9px] font-bold border border-orange-100">
+                                                <div className="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full bg-orange-50 text-orange-600 text-[9px] font-bold border border-orange-200">
                                                     {appointment.user?.clinic_specialty || 'عيادة طبية'}
                                                 </div>
                                             </div>
@@ -187,16 +205,17 @@ export default function PatientDashboard() {
                 </Card>
 
                 {/* Recent Notifications */}
-                <Card className="relative rounded-2xl border border-orange-500 bg-white shadow-sm hover:shadow-md transition-all duration-500 overflow-hidden group/card lg:mt-0">
-                    <div className="p-3 sm:p-4 border-b border-orange-50/50 flex items-center justify-between gap-2 bg-gradient-to-b from-orange-50/30 to-transparent">
-                        <div className="flex items-center gap-2">
-                            <div className="p-2 rounded-xl bg-orange-50 text-orange-500 shadow-sm border border-orange-100">
-                                <Bell className="h-5 w-5" />
+                <Card className="relative rounded-3xl border-0 shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden bg-white group/card">
+                    <div className="absolute top-0 right-0 w-1.5 h-full bg-gradient-to-b from-purple-400 to-purple-600 opacity-60 group-hover/card:opacity-100 transition-opacity" />
+                    <div className="p-4 sm:p-5 border-b border-purple-50 flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5">
+                            <div className="p-2 rounded-xl bg-gradient-to-br from-purple-400 to-purple-600 text-white shadow-sm">
+                                <Bell className="h-4 w-4" />
                             </div>
-                            <h3 className="text-base sm:text-lg font-black text-blue-950 tracking-tight">آخر الإشعارات</h3>
+                            <h3 className="text-base sm:text-lg font-black text-slate-800 tracking-tight">آخر الإشعارات</h3>
                         </div>
                         <Link to="/patient/notifications" className="shrink-0">
-                            <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-orange-600 hover:bg-orange-50 hover:text-orange-700 rounded-xl px-2 sm:px-4 hidden sm:flex">
+                            <Button variant="ghost" size="sm" className="font-bold text-xs sm:text-sm text-purple-600 hover:bg-purple-50 hover:text-purple-700 rounded-full px-3 sm:px-4">
                                 عرض الكل
                             </Button>
                         </Link>

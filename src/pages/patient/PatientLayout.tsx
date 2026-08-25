@@ -25,6 +25,11 @@ import {
     MessageCircle,
     Languages,
     Tag,
+    Sparkles,
+    Facebook,
+    Instagram,
+    Linkedin,
+    Twitter,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import axios from 'axios';
@@ -85,11 +90,12 @@ export default function PatientLayout() {
     };
 
     const navItems = [
+        { path: '/patient/dashboard', label: 'الرئيسية', icon: Home },
         { path: '/patient/appointments', label: 'مواعيدي', icon: Calendar },
         { path: '/patient/clinics', label: 'العيادات', icon: Building2 },
-        { path: '/patient/dashboard', label: 'الرئيسية', icon: Home }, // المركزية
-        { path: '/patient/offers', label: 'آخر الأخبار', icon: Tag },
+        { path: '/patient/messages', label: 'المراسلة', icon: MessageCircle },
         { path: '/patient/medical-records', label: 'السجلات', icon: FileText },
+        { path: '/patient/offers', label: 'آخر الأخبار', icon: Tag },
     ];
 
     if (loading) {
@@ -103,10 +109,10 @@ export default function PatientLayout() {
     if (!patient) return null;
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC]">
+        <div className="min-h-screen bg-[#F8FAFC]" dir="rtl">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-white/70 backdrop-blur-3xl shadow-sm transition-all duration-300">
-                <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6 mx-auto max-w-7xl">
+            <header className="sticky top-0 z-50 w-full border-b border-white/5 bg-white/70 backdrop-blur-3xl shadow-sm transition-all duration-300 lg:pr-80">
+                <div className="w-full flex h-16 items-center justify-between px-4 sm:px-6 mx-auto">
                     
                     {/* 📱 Mobile Layout (lg:hidden) */}
                     <div className="flex lg:hidden items-center justify-between w-full gap-2 min-w-0" dir="rtl">
@@ -272,31 +278,6 @@ export default function PatientLayout() {
                             </div>
                         </Link>
 
-                        {/* Desktop Navigation */}
-                        <nav className="flex items-center gap-1 bg-muted/30 p-1 rounded-2xl border border-border/50">
-                            {navItems.map((item) => {
-                                const Icon = item.icon;
-                                const isActive = location.pathname === item.path;
-                                return (
-                                    <Link key={item.path} to={item.path}>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className={cn(
-                                                'relative rounded-xl h-9 px-4 font-bold text-xs transition-all duration-300',
-                                                isActive
-                                                    ? 'bg-white text-blue-700 shadow-sm border border-border/50'
-                                                    : 'text-muted-foreground hover:text-blue-600'
-                                            )}
-                                        >
-                                            <Icon className={cn("h-4 w-4 ml-2", isActive ? "text-orange-500" : "text-muted-foreground")} />
-                                            {item.label}
-                                        </Button>
-                                    </Link>
-                                );
-                            })}
-                        </nav>
-
                         {/* Desktop Right: Actions */}
                         <div className="flex items-center gap-2" dir="rtl">
                             {/* Desktop: Messages Button with Badge */}
@@ -362,12 +343,97 @@ export default function PatientLayout() {
                 </div>
             </header>
 
+            {/* Desktop Sidebar (Orange Theme) */}
+            <aside className="hidden lg:flex fixed top-0 right-0 bottom-0 w-80 bg-[#E85C0D] text-white flex-col z-[60] border-l border-orange-600/20 shadow-2xl overflow-y-auto">
+                <div className="py-4 px-6 flex flex-col items-center justify-center border-b border-orange-500/50 bg-orange-700/20">
+                    <div className="h-12 w-12 bg-white rounded-2xl p-1 shadow-lg mb-2">
+                        <img src="/hakeem-logo.png" alt="Doctor Jo" className="h-full w-full object-contain" onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }} />
+                    </div>
+                    <h1 className="text-lg font-black tracking-tighter text-white leading-none mb-1">DOCTOR JO</h1>
+                    <p className="text-[8px] font-bold uppercase tracking-wider text-orange-200">Patient Portal</p>
+                </div>
+
+                <div className="flex-1 py-4 px-4 flex flex-col gap-1">
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = location.pathname === item.path;
+                        return (
+                            <Link
+                                key={item.path}
+                                to={item.path}
+                                className={cn(
+                                    "flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-300 font-bold group",
+                                    isActive
+                                        ? "bg-white text-[#E85C0D] shadow-md"
+                                        : "text-orange-50 hover:bg-orange-600 hover:text-white"
+                                )}
+                            >
+                                <Icon className={cn("h-5 w-5 transition-transform group-hover:scale-110", isActive ? "text-[#E85C0D]" : "text-orange-200")} />
+                                <span className="text-sm">{item.label}</span>
+                            </Link>
+                        );
+                    })}
+                </div>
+                
+                {/* Branding at bottom of sidebar - matching doctor sidebar */}
+                <div className="p-5 bg-orange-700/30 mt-auto border-t border-orange-500/40">
+                    <div className="flex flex-col items-center gap-3">
+                        {/* Logo */}
+                        <a href="https://www.facebook.com/alkhatib.marketing/" target="_blank" rel="noopener noreferrer" className="relative group">
+                            <div className="absolute -inset-1.5 rounded-xl bg-gradient-to-r from-orange-400 to-amber-300 blur opacity-30 group-hover:opacity-60 transition-opacity" />
+                            <img
+                                src="/hakeem-logo.png"
+                                alt="Doctor Jo Logo"
+                                className="relative h-10 w-10 rounded-xl shadow-lg object-contain transition-transform duration-300 group-hover:scale-110"
+                                onError={(e) => { (e.target as HTMLImageElement).src = '/logo.png'; }}
+                            />
+                        </a>
+
+                        {/* Brand Name */}
+                        <h2 className="text-xs font-black tracking-tight bg-clip-text text-transparent text-center leading-tight bg-gradient-to-r from-orange-200 via-amber-100 to-orange-200">
+                            AL-KHATIB-MARKETING&SOFTWARE
+                        </h2>
+
+                        {/* Tagline */}
+                        <div className="flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider text-orange-200/70">
+                            <Sparkles className="h-2 w-2 text-amber-300" />
+                            Premium Digital Solutions
+                        </div>
+
+                        {/* Social Icons */}
+                        <div className="flex items-center justify-center gap-2">
+                            {[
+                                { icon: Facebook, href: "https://www.facebook.com/alkhatib.marketing/" },
+                                { icon: Instagram, href: "https://www.instagram.com/alkhatib.marketing/" },
+                                { icon: Twitter, href: "https://twitter.com/alkhatib_mkt" },
+                                { icon: Linkedin, href: "https://www.linkedin.com/company/alkhatib-marketing/" }
+                            ].map((social, index) => (
+                                <a
+                                    key={index}
+                                    href={social.href}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-1 rounded-full border border-orange-300/30 text-orange-200 transition-all duration-300 hover:scale-110 hover:text-white hover:shadow-lg hover:bg-orange-500 hover:border-orange-400 group"
+                                >
+                                    <social.icon className="h-3 w-3 transition-transform duration-500 group-hover:rotate-[360deg]" />
+                                </a>
+                            ))}
+                        </div>
+
+                        {/* Version */}
+                        <div className="text-[8px] text-center text-orange-300/40">
+                            Doctor Jo v1.0
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
             {/* Main Content */}
-            <main className="min-h-[calc(100vh-4rem)]">
+            <main className="min-h-[calc(100vh-4rem)] lg:pr-80 w-full transition-all duration-300">
                 {location.pathname.startsWith('/patient/chat') ? (
                     <Outlet />
                 ) : (
-                    <div className="container px-4 sm:px-8 py-4 sm:py-6 mx-auto max-w-7xl pb-24">
+                    <div className="container px-4 sm:px-8 py-4 sm:py-6 mx-auto max-w-7xl pb-24 lg:pb-8">
                         <Outlet />
                     </div>
                 )}

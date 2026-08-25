@@ -18,11 +18,11 @@ import PatientHero from '@/components/patient/PatientHero';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-const recordTypeMap: Record<string, { label: string; icon: any; color: string }> = {
-    prescription: { label: 'وصفة طبية', icon: ClipboardList, color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' },
-    lab_report: { label: 'تقرير مختبر', icon: FlaskConical, color: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' },
-    sick_leave: { label: 'إجازة مرضية', icon: Bed, color: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300' },
-    referral: { label: 'تحويل طبي', icon: ArrowRightLeft, color: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' },
+const recordTypeMap: Record<string, { label: string; icon: any; color: string; bgClass: string }> = {
+    prescription: { label: 'وصفة طبية', icon: ClipboardList, color: 'bg-blue-100 text-blue-700', bgClass: 'bg-gradient-to-l from-blue-600 from-50% to-blue-500 to-50%' },
+    lab_report: { label: 'تقرير مختبر', icon: FlaskConical, color: 'bg-purple-100 text-purple-700', bgClass: 'bg-gradient-to-l from-purple-600 from-50% to-purple-500 to-50%' },
+    sick_leave: { label: 'إجازة مرضية', icon: Bed, color: 'bg-yellow-100 text-yellow-700', bgClass: 'bg-gradient-to-l from-orange-500 from-50% to-orange-400 to-50%' },
+    referral: { label: 'تحويل طبي', icon: ArrowRightLeft, color: 'bg-green-100 text-green-700', bgClass: 'bg-gradient-to-l from-emerald-500 from-50% to-emerald-400 to-50%' },
 };
 
 const statusMap: Record<string, { label: string; color: string }> = {
@@ -186,26 +186,36 @@ export default function PatientMedicalRecords() {
                     />
                 </div>
 
-                {/* Summary Cards */}
+                {/* Summary Cards - Capsule Style */}
                 <motion.div 
                     initial="hidden" animate="visible" 
                     variants={{ hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }}
-                    className="grid grid-cols-2 sm:grid-cols-4 gap-3"
+                    className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 max-w-5xl mx-auto mb-2"
                 >
                     {Object.entries(recordTypeMap).map(([key, val]) => {
                         const Icon = val.icon;
                         const count = records.filter(r => r.recordType === key).length;
                         return (
                             <motion.div key={key} variants={{ hidden: { y: 20, opacity: 0, scale: 0.8 }, visible: { y: 0, opacity: 1, scale: 1, transition: { type: "spring", stiffness: 250, damping: 20 } } }}>
-                                <Card className="p-3 bg-white shadow-sm hover:shadow-md border border-blue-100 hover:border-orange-500 rounded-2xl transition-all duration-300 group cursor-pointer flex flex-col items-center justify-center gap-2">
-                                    <div className="h-10 w-10 bg-blue-50 border border-blue-100 rounded-xl flex items-center justify-center group-hover:bg-orange-500 group-hover:border-orange-500 transition-all duration-300 group-hover:-rotate-6 shadow-sm">
-                                        <Icon className="h-5 w-5 text-blue-600 group-hover:text-white transition-colors" />
+                                <div
+                                    className={`relative rounded-full border-0 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group ${val.bgClass} text-white`}
+                                >
+                                    {/* Capsule Middle Shine Divider */}
+                                    <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
+                                    <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
+                                    
+                                    <div className="py-2.5 sm:py-4 px-4 sm:px-6 relative z-10 flex items-center justify-between">
+                                        <div className="flex-1 text-right ml-2">
+                                            <p className="text-[10px] sm:text-xs font-bold text-white/90 mb-0.5 line-clamp-1">{val.label}</p>
+                                            <p className="text-sm sm:text-xl font-black text-white whitespace-nowrap">
+                                                {count}
+                                            </p>
+                                        </div>
+                                        <div className="p-2 sm:p-2.5 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                            <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
+                                        </div>
                                     </div>
-                                    <div className="text-center">
-                                        <p className="text-xl md:text-2xl font-black text-blue-950 font-display leading-none">{count}</p>
-                                        <p className="text-[10px] md:text-[11px] font-bold text-slate-500 mt-1 truncate">{val.label}</p>
-                                    </div>
-                                </Card>
+                                </div>
                             </motion.div>
                         );
                     })}
