@@ -75,11 +75,11 @@ export default function PharmacyDashboard() {
     }
 
     return (
-        <div className="space-y-6" dir="rtl">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <h1 className="text-2xl font-bold text-slate-800">لوحة التحكم</h1>
+        <div className="space-y-3" dir="rtl">
+            <div className="flex justify-end mb-2">
                 <Button 
-                    className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-200 gap-2 h-11 px-6 rounded-xl"
+                    variant="outline"
+                    className="border-2 border-emerald-500 text-emerald-600 bg-transparent hover:bg-emerald-50 shadow-sm gap-2 h-11 px-6 rounded-xl font-bold transition-all duration-200 w-full sm:w-auto"
                     onClick={() => setIsScannerOpen(true)}
                 >
                     <Search className="h-5 w-5" />
@@ -87,84 +87,37 @@ export default function PharmacyDashboard() {
                 </Button>
             </div>
 
-            {/* إحصائيات */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* إجمالي الوصفات */}
-                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-95 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
-                    <CardContent className="relative p-6">
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-3">
-                                <p className="text-emerald-50 font-medium text-sm">إجمالي الوصفات</p>
-                                <div className="flex items-baseline gap-2">
-                                    <h3 className="text-4xl font-black text-white">{stats?.totalPrescriptions || 0}</h3>
-                                </div>
+            {/* إحصائيات بستايل كبسولة الدواء الموحدة */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {[
+                    { label: 'إجمالي الوصفات', value: stats?.totalPrescriptions || 0, icon: Pill, bgClass: 'bg-gradient-to-l from-emerald-500 from-50% to-emerald-400 to-50%' },
+                    { label: 'قيد الانتظار', value: stats?.pendingPrescriptions || 0, icon: Clock, bgClass: 'bg-gradient-to-l from-orange-500 from-50% to-orange-400 to-50%' },
+                    { label: 'تم الصرف', value: stats?.dispensedPrescriptions || 0, icon: CheckCircle2, bgClass: 'bg-gradient-to-l from-blue-500 from-50% to-blue-400 to-50%' },
+                    { label: 'وصفات اليوم', value: stats?.todayPrescriptions || 0, icon: Calendar, bgClass: 'bg-gradient-to-l from-purple-600 from-50% to-purple-500 to-50%' }
+                ].map((stat, idx) => (
+                    <div
+                        key={idx}
+                        className={`relative rounded-full border-0 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group ${stat.bgClass} text-white`}
+                    >
+                        {/* Capsule Middle Shine Divider */}
+                        <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
+                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
+                        
+                        <div className="py-2.5 sm:py-4 px-4 sm:px-6 relative z-10 flex items-center justify-between">
+                            <div className="flex-1 text-right ml-2">
+                                <p className="text-[10px] sm:text-xs font-bold text-white/90 mb-0.5 line-clamp-1">{stat.label}</p>
+                                <p className="text-sm sm:text-xl font-black text-white whitespace-nowrap">
+                                    {stat.value}
+                                </p>
                             </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                                <Pill className="h-6 w-6 text-white" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* قيد الانتظار */}
-                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-500 opacity-95 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
-                    <CardContent className="relative p-6">
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-3">
-                                <p className="text-amber-50 font-medium text-sm">قيد الانتظار</p>
-                                <div className="flex items-baseline gap-2">
-                                    <h3 className="text-4xl font-black text-white">{stats?.pendingPrescriptions || 0}</h3>
-                                </div>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                                <Clock className="h-6 w-6 text-white" />
+                            <div className="p-2 sm:p-2.5 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                <stat.icon className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
                             </div>
                         </div>
-                    </CardContent>
-                </Card>
-
-                {/* مصروفة */}
-                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-indigo-600 opacity-95 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
-                    <CardContent className="relative p-6">
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-3">
-                                <p className="text-blue-50 font-medium text-sm">تم الصرف</p>
-                                <div className="flex items-baseline gap-2">
-                                    <h3 className="text-4xl font-black text-white">{stats?.dispensedPrescriptions || 0}</h3>
-                                </div>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                                <CheckCircle2 className="h-6 w-6 text-white" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* وصفات اليوم */}
-                <Card className="relative overflow-hidden border-0 shadow-lg group hover:shadow-xl transition-all duration-300">
-                    <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 opacity-95 group-hover:opacity-100 transition-opacity"></div>
-                    <div className="absolute -right-6 -top-6 w-24 h-24 bg-white/20 rounded-full blur-2xl group-hover:bg-white/30 transition-colors"></div>
-                    <CardContent className="relative p-6">
-                        <div className="flex justify-between items-start">
-                            <div className="space-y-3">
-                                <p className="text-fuchsia-50 font-medium text-sm">وصفات اليوم</p>
-                                <div className="flex items-baseline gap-2">
-                                    <h3 className="text-4xl font-black text-white">{stats?.todayPrescriptions || 0}</h3>
-                                </div>
-                            </div>
-                            <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shadow-inner backdrop-blur-sm group-hover:scale-110 transition-transform duration-300">
-                                <Calendar className="h-6 w-6 text-white" />
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+                    </div>
+                ))}
             </div>
+
 
             {/* الوصفات الواردة */}
             <Card className="shadow-sm">

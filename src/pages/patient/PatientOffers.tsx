@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
     Tag, Heart, Share2, MessageCircle,
-    Building2, Calendar, Infinity, Clock, Phone, Stethoscope, X, Send
+    Building2, Calendar, Infinity, Clock, Phone, Stethoscope, X, Send, Star, Megaphone
 } from 'lucide-react';
 import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
@@ -17,6 +17,7 @@ import PatientHero from '@/components/patient/PatientHero';
 import { BASE_URL } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 
 const logoSrc = (url?: string) => {
     if (!url) return null;
@@ -37,6 +38,10 @@ interface Offer {
     createdAt: string;
     likesCount: number;
     isLikedByMe: boolean;
+    isSponsored?: boolean;
+    sponsorName?: string;
+    sponsorLogo?: string;
+    sponsorPhone?: string;
     user: {
         id: number;
         clinic_name: string;
@@ -159,26 +164,41 @@ export default function PatientOffers() {
                     <div className="space-y-8">
                         {offers.map(offer => (
                             <Card key={offer.id}
-                                className="overflow-hidden border border-orange-500 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] bg-white rounded-sm transition-all duration-500 relative">
+                                className={cn(
+                                    "overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] bg-white rounded-sm transition-all duration-500 relative",
+                                    offer.isSponsored
+                                        ? "border-2 border-amber-400 bg-gradient-to-br from-amber-50/40 to-orange-50/20"
+                                        : "border border-orange-500"
+                                )}>
+                                {/* Sponsored badge ribbon */}
+                                {offer.isSponsored && (
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-xs font-black">
+                                        <Megaphone className="h-3.5 w-3.5" />
+                                        إعلان ممول
+                                        {offer.sponsorName && <span className="opacity-80">· {offer.sponsorName}</span>}
+                                    </div>
+                                )}
                                 <CardContent className="p-0">
                                     {/* ── Post Header ───────────────── */}
                                     <div className="flex items-start justify-between p-5 pb-4">
                                         <div className="flex items-center gap-4">
-                                            {/* AVATAR STACK: Doctor + Clinic Logo badge */}
+                                        {/* AVATAR STACK: Doctor/Sponsor Logo */}
                                         <div className="relative flex-shrink-0">
                                             {/* Glow ring */}
-                                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[5px] opacity-60" />
-                                            {/* Doctor avatar */}
+                                            <div className={cn("absolute inset-0 rounded-full blur-[5px] opacity-60", offer.isSponsored ? "bg-gradient-to-tr from-amber-400 to-orange-500" : "bg-gradient-to-tr from-orange-500 to-blue-600")} />
+                                            {/* Avatar */}
                                             <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
                                                 <div className="h-full w-full rounded-full bg-gradient-to-br from-blue-100 to-orange-50 flex items-center justify-center overflow-hidden border border-white shadow-sm">
-                                                    {offer.user.avatar
-                                                        ? <img src={logoSrc(offer.user.avatar) || ''} className="h-full w-full object-cover" alt="doctor" />
-                                                        : <Building2 className="h-6 w-6 text-blue-800" />
+                                                    {offer.isSponsored && offer.sponsorLogo
+                                                        ? <img src={logoSrc(offer.sponsorLogo) || ''} className="h-full w-full object-contain p-1" alt="sponsor" />
+                                                        : offer.user.avatar
+                                                            ? <img src={logoSrc(offer.user.avatar) || ''} className="h-full w-full object-cover" alt="doctor" />
+                                                            : <Building2 className="h-6 w-6 text-blue-800" />
                                                     }
                                                 </div>
                                             </div>
-                                            {/* Clinic logo mini-badge */}
-                                            {offer.user.clinic_logo && (
+                                            {/* Clinic logo mini-badge (only for non-sponsored) */}
+                                            {!offer.isSponsored && offer.user.clinic_logo && (
                                                 <div className="absolute -bottom-1 -left-1 z-20 h-6 w-6 rounded-full border-2 border-white shadow-md overflow-hidden bg-white">
                                                     <img src={logoSrc(offer.user.clinic_logo) || ''} alt="clinic" className="h-full w-full object-cover" />
                                                 </div>
@@ -306,19 +326,36 @@ export default function PatientOffers() {
                                                 {offer.isLikedByMe ? 'أعجبني' : 'إعجاب'}
                                             </button>
 
-                                            {/* Message (Chat) */}
-                                            <Link
-                                                to={`/patient/chat/${offer.user.id}`}
-                                                className={cn(
-                                                    "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
-                                                    offer.image
-                                                        ? "bg-blue-600/90 text-white shadow-sm hover:bg-blue-700"
-                                                        : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-                                                )}
-                                            >
-                                                <MessageCircle className="h-3.5 w-3.5" />
-                                                مراسلة
-                                            </Link>
+                                            {/* Message (Chat) or WhatsApp for sponsored */}
+                                            {offer.isSponsored && offer.sponsorPhone ? (
+                                                <a
+                                                    href={`https://wa.me/${offer.sponsorPhone.replace(/[^0-9]/g, '')}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className={cn(
+                                                        "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
+                                                        offer.image
+                                                            ? "bg-green-600/90 text-white shadow-sm hover:bg-green-700"
+                                                            : "bg-green-600 text-white hover:bg-green-700 shadow-sm"
+                                                    )}
+                                                >
+                                                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.535 5.838L0 24l6.338-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.643-.492-5.17-1.349l-.371-.219-3.865.919.974-3.769-.24-.384A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                                                    واتساب
+                                                </a>
+                                            ) : (
+                                                <Link
+                                                    to={`/patient/chat/${offer.user.id}`}
+                                                    className={cn(
+                                                        "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
+                                                        offer.image
+                                                            ? "bg-blue-600/90 text-white shadow-sm hover:bg-blue-700"
+                                                            : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                                                    )}
+                                                >
+                                                    <MessageCircle className="h-3.5 w-3.5" />
+                                                    مراسلة
+                                                </Link>
+                                            )}
 
                                             {/* Comments Toggle */}
                                             <button

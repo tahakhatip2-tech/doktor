@@ -22,7 +22,7 @@ export default function PatientHero({
     children,
     className,
     badgeText,
-    imageSrc = '/patient-hero.png',
+    imageSrc = '/patient-hero.jpg',
     showBackButton = false,
 }: PatientHeroProps) {
     const navigate = useNavigate();
@@ -45,17 +45,17 @@ export default function PatientHero({
                     <div className="absolute inset-0 bg-gradient-to-br from-blue-950 via-blue-900 to-blue-800" />
                 )}
 
-                {/* Modern High-End Gradient Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-950/90 via-blue-900/60 to-transparent"></div>
+                {/* Orange-toned Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-orange-950/85 via-orange-900/55 to-transparent"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-90"></div>
                 
                 {/* Visual Texture */}
                 <div className="absolute inset-0 opacity-[0.05] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] hidden md:block" />
             </div>
 
-            {/* Glowing Accents - Stunning & Professional */}
-            <div className="absolute -top-12 -left-12 w-64 md:w-96 h-64 md:h-96 bg-blue-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse"></div>
-            <div className="absolute -bottom-12 -right-12 w-64 md:w-96 h-64 md:h-96 bg-orange-400 rounded-full mix-blend-screen filter blur-[100px] opacity-15 animate-pulse" style={{ animationDelay: '2s' }}></div>
+            {/* Glowing Accents - Orange Theme */}
+            <div className="absolute -top-12 -left-12 w-64 md:w-96 h-64 md:h-96 bg-orange-500 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse"></div>
+            <div className="absolute -bottom-12 -right-12 w-64 md:w-96 h-64 md:h-96 bg-amber-400 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-pulse" style={{ animationDelay: '2s' }}></div>
 
             {/* Content Container */}
             <div className="relative z-10 w-full px-5 py-3 md:px-10 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3 md:gap-8 h-[22vh] min-h-[160px] md:min-h-[180px]">

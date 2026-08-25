@@ -17,7 +17,8 @@ import {
     Activity,
     UserCheck,
     UserX,
-    Clock
+    Clock,
+    Megaphone,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -26,6 +27,7 @@ import AdminUsers from "./AdminUsers";
 import AdminPayments from "./AdminPayments";
 import AdminPlans from "./AdminPlans";
 import AdminSettings from "./AdminSettings";
+import AdminAds from "./AdminAds";
 
 const AdminPanel = () => {
     const { user, loading: authLoading } = useAuth();
@@ -201,6 +203,13 @@ const AdminPanel = () => {
                                     <Settings className="h-4 w-4" />
                                     الإعدادات
                                 </TabsTrigger>
+                                <TabsTrigger 
+                                    value="ads"
+                                    className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg"
+                                >
+                                    <Megaphone className="h-4 w-4" />
+                                    الإعلانات
+                                </TabsTrigger>
                             </TabsList>
                         </div>
 
@@ -223,6 +232,10 @@ const AdminPanel = () => {
 
                             <TabsContent value="settings" className="m-0 p-6">
                                 <AdminSettings />
+                            </TabsContent>
+
+                            <TabsContent value="ads" className="m-0 p-6">
+                                <AdminAds />
                             </TabsContent>
                         </div>
                     </Tabs>

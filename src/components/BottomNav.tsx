@@ -6,9 +6,13 @@ import {
     Settings,
     MessagesSquare,
     Tag,
+    FileText,
+    Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 import AddAppointmentDialog from "@/components/AddAppointmentDialog";
+import AddProductDialog from "@/components/pharmacy/AddProductDialog";
 
 interface BottomNavProps {
     activeTab: string;
@@ -17,9 +21,18 @@ interface BottomNavProps {
 }
 
 export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavProps) {
+    const { user } = useAuth();
+    const isPharmacy = user?.role === 'PHARMACY';
     const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
+    const [isAddProductOpen, setIsAddProductOpen] = useState(false);
 
-    const navItems = [
+    const navItems = isPharmacy ? [
+        { id: 'dashboard', label: 'الرئيسية', icon: Home },
+        { id: 'prescriptions', label: 'الوصفات', icon: FileText },
+        { id: 'add-inventory', label: 'إضافة دواء', icon: Plus, isSpecial: true },
+        { id: 'offers', label: 'الأخبار', icon: Tag },
+        { id: 'inventory', label: 'الأدوية', icon: Package },
+    ] : [
         { id: 'dashboard', label: 'الرئيسية', icon: Home },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'add-patient', label: 'إضافة', icon: Plus, isSpecial: true },
@@ -27,11 +40,22 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
         { id: 'clinic-settings', label: 'الإعدادات', icon: Settings },
     ];
 
+    // Dynamic color theme based on role
+    const borderColor   = isPharmacy ? 'border-emerald-500'  : 'border-orange-500';
+    const mainBtnClass  = isPharmacy
+        ? 'bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 shadow-[0_8px_25px_rgba(16,185,129,0.4)]'
+        : 'bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)]';
+    const pingColor     = isPharmacy ? 'bg-emerald-400' : 'bg-orange-400';
+    const activeBg      = isPharmacy ? 'bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500/50' : 'bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50';
+    const activeIcon    = isPharmacy ? 'text-emerald-600' : 'text-orange-600';
+    const activeDot     = isPharmacy ? 'bg-emerald-600' : 'bg-orange-600';
+    const mainLabelCls  = isPharmacy ? 'text-emerald-600 bg-emerald-50' : 'text-orange-600 bg-orange-50';
+
     return (
         <>
             {/* 💎 Unified Mobile Navigation Bar - Doctor Portal */}
             <div className="md:hidden fixed bottom-0 left-0 right-0 z-50">
-                <nav className="h-[72px] bg-white/95 dark:bg-black/90 backdrop-blur-3xl border-t-2 border-orange-500 shadow-[0_-15px_60px_rgba(0,0,0,0.1)] flex justify-between items-center px-1 pb-1">
+                <nav className={cn("h-[72px] bg-white/95 dark:bg-black/90 backdrop-blur-3xl border-t-2 shadow-[0_-15px_60px_rgba(0,0,0,0.1)] flex justify-between items-center px-1 pb-1", borderColor)}>
                     {navItems.map((item, index) => {
                         const Icon = item.icon;
                         const isActive = activeTab === item.id;
@@ -42,7 +66,11 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
                                 key={item.id}
                                 onClick={() => {
                                     if (item.isSpecial) {
-                                        setIsAddPatientOpen(true);
+                                        if (isPharmacy) {
+                                            setIsAddProductOpen(true);
+                                        } else {
+                                            setIsAddPatientOpen(true);
+                                        }
                                     } else {
                                         setActiveTab(item.id);
                                     }
@@ -57,19 +85,19 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
                                 <div className={cn(
                                     "relative transition-all duration-500 flex items-center justify-center",
                                     isMain 
-                                        ? "h-14 w-14 rounded-full bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)] border-4 border-white dark:border-zinc-900 active:scale-95"
+                                        ? `h-14 w-14 rounded-full ${mainBtnClass} border-4 border-white dark:border-zinc-900 active:scale-95`
                                         : "p-2 rounded-xl transition-all duration-300",
-                                    !isMain && isActive && "bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50 shadow-sm"
+                                    !isMain && isActive && activeBg
                                 )}>
                                     {isMain && (
-                                        <div className="absolute inset-0 rounded-full bg-orange-400 animate-ping opacity-20" />
+                                        <div className={cn("absolute inset-0 rounded-full animate-ping opacity-20", pingColor)} />
                                     )}
                                     <Icon
                                         className={cn(
                                             "transition-all duration-300 stroke-[2.5]",
                                             isMain 
                                                 ? "h-7 w-7 text-white" 
-                                                : isActive ? "h-5 w-5 text-orange-600" : "h-4.5 w-4.5 text-blue-700/70"
+                                                : isActive ? cn("h-5 w-5", activeIcon) : "h-4.5 w-4.5 text-blue-700/70"
                                         )}
                                     />
                                 </div>
@@ -78,19 +106,19 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
                                 {!isMain ? (
                                     <span className={cn(
                                         "text-[8px] sm:text-[9px] font-black mt-0.5 transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis max-w-full px-0.5",
-                                        isActive ? "text-orange-600" : "text-blue-900/60"
+                                        isActive ? activeIcon : "text-blue-900/60"
                                     )}>
                                         {item.label}
                                     </span>
                                 ) : (
-                                    <span className="text-[9px] font-extrabold mt-0.5 text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full shadow-sm">
+                                    <span className={cn("text-[9px] font-extrabold mt-0.5 px-2 py-0.5 rounded-full shadow-sm", mainLabelCls)}>
                                         {item.label}
                                     </span>
                                 )}
 
                                 {/* Selection Dot */}
                                 {!isMain && isActive && (
-                                    <div className="absolute -bottom-0.5 h-1 w-1 bg-orange-600 rounded-full" />
+                                    <div className={cn("absolute -bottom-0.5 h-1 w-1 rounded-full", activeDot)} />
                                 )}
                             </button>
                         );
@@ -102,6 +130,15 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
                 open={isAddPatientOpen}
                 onOpenChange={setIsAddPatientOpen}
                 onSuccess={() => setActiveTab('appointments')}
+            />
+            
+            <AddProductDialog
+                open={isAddProductOpen}
+                onOpenChange={setIsAddProductOpen}
+                onSuccess={() => {
+                    // Optional: navigate to inventory if they want to see it
+                    // setActiveTab('inventory');
+                }}
             />
         </>
     );

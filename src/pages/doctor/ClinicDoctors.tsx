@@ -68,6 +68,12 @@ const ROLE_CONFIG: Record<string, { label: string; color: string; bg: string; bo
     secretary: { label: 'استقبال / سكرتارية',   color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200',  icon: FileText },
 };
 
+const PHARMACY_ROLE_CONFIG: Record<string, { label: string; color: string; bg: string; border: string; icon: any }> = {
+    pharmacist: { label: 'صيدلي مسؤول',     color: 'text-blue-700',   bg: 'bg-blue-50',   border: 'border-blue-200',   icon: BadgeCheck },
+    assistant:  { label: 'مساعد صيدلي',    color: 'text-emerald-700',bg: 'bg-emerald-50',border: 'border-emerald-200', icon: Briefcase },
+    cashier:    { label: 'كاشير / محاسب', color: 'text-purple-700', bg: 'bg-purple-50', border: 'border-purple-200',  icon: DollarSign },
+};
+
 export default function ClinicDoctors() {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -79,6 +85,9 @@ export default function ClinicDoctors() {
     const [saving, setSaving] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [activeTab, setActiveTab] = useState('clinic-settings');
+
+    const isPharmacy = user?.role === 'PHARMACY';
+    const currentRoleConfig = isPharmacy ? PHARMACY_ROLE_CONFIG : ROLE_CONFIG;
 
     const headers = () => ({
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -100,7 +109,10 @@ export default function ClinicDoctors() {
 
     const openAdd = () => {
         setEditId(null);
-        setForm(emptyForm);
+        setForm({
+            ...emptyForm,
+            role: isPharmacy ? 'pharmacist' : 'doctor'
+        });
         setShowModal(true);
         setShowPassword(false);
     };
@@ -122,7 +134,7 @@ export default function ClinicDoctors() {
 
         setForm({
             name: doc.name,
-            role: doc.role || 'doctor',
+            role: doc.role || (isPharmacy ? 'pharmacist' : 'doctor'),
             specialty: doc.specialty || '',
             phone: doc.phone || '',
             email: doc.email || '',
@@ -201,7 +213,7 @@ export default function ClinicDoctors() {
         }
     };
 
-    const getRoleInfo = (role: string) => ROLE_CONFIG[role] || ROLE_CONFIG['doctor'];
+    const getRoleInfo = (role: string) => currentRoleConfig[role] || currentRoleConfig[Object.keys(currentRoleConfig)[0]];
 
     const activeCount  = doctors.filter(d => d.isActive).length;
     const loginCount   = doctors.filter(d => d.hasLogin).length;
@@ -217,9 +229,9 @@ export default function ClinicDoctors() {
 
             {/* ── Hero Banner ── */}
             <HeroSection
-                doctorName={user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : 'دكتور'}
-                pageTitle="إدارة طاقم العيادة"
-                description="أضف أطبائك، ممرضينك، وطاقم الاستقبال وامنحهم صلاحيات الدخول"
+                doctorName={user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : 'المسؤول'}
+                pageTitle={isPharmacy ? "إدارة موظفي الصيدلية" : "إدارة طاقم العيادة"}
+                description={isPharmacy ? "أضف الصيادلة والمساعدين والكاشير وامنحهم صلاحيات الدخول" : "أضف أطبائك، ممرضينك، وطاقم الاستقبال وامنحهم صلاحيات الدخول"}
                 icon={Users}
             >
                 <div className="flex items-center gap-2 w-full justify-center md:justify-end">
@@ -232,7 +244,7 @@ export default function ClinicDoctors() {
                     </button>
                     <Button
                         onClick={openAdd}
-                        className="gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 font-black shadow-[0_0_15px_rgba(249,115,22,0.4)] border border-orange-400/50 px-6 py-2.5 h-auto text-sm transition-all hover:scale-105"
+                        className={`gap-2 rounded-xl bg-gradient-to-r text-white font-black border px-6 py-2.5 h-auto text-sm transition-all hover:scale-105 ${isPharmacy ? "from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-[0_0_15px_rgba(16,185,129,0.4)] border-emerald-400/50" : "from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-[0_0_15px_rgba(249,115,22,0.4)] border-orange-400/50"}`}
                     >
                         <Plus className="h-5 w-5" />
                         إضافة موظف جديد
@@ -278,7 +290,7 @@ export default function ClinicDoctors() {
                         <p className="text-slate-400 text-sm mb-6">أضف أطباءك وموظفيك ليتمكنوا من الدخول للنظام</p>
                         <Button
                             onClick={openAdd}
-                            className="rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-bold gap-2"
+                            className={`rounded-2xl text-white font-bold gap-2 ${isPharmacy ? "bg-emerald-500 hover:bg-emerald-600" : "bg-orange-500 hover:bg-orange-600"}`}
                         >
                             <Plus className="h-4 w-4" />
                             إضافة أول موظف
@@ -297,7 +309,7 @@ export default function ClinicDoctors() {
                                         exit={{ opacity: 0, scale: 0.95 }}
                                         transition={{ delay: idx * 0.05 }}
                                     >
-                                        <Card className={`p-5 rounded-3xl border-2 transition-all hover:shadow-lg ${doc.isActive ? 'border-slate-200 hover:border-orange-200 bg-white' : 'border-slate-100 bg-slate-50/80 opacity-60'}`}>
+                                        <Card className={`p-5 rounded-3xl border-2 transition-all hover:shadow-lg ${doc.isActive ? '${isPharmacy ? "border-slate-200 hover:border-emerald-200 bg-white" : "border-slate-200 hover:border-orange-200 bg-white"}' : 'border-slate-100 bg-slate-50/80 opacity-60'}`}>
                                             {/* Top Row */}
                                             <div className="flex items-start justify-between mb-4">
                                                 <div className="flex items-center gap-3">
@@ -387,7 +399,7 @@ export default function ClinicDoctors() {
                                                 <Button
                                                     size="sm"
                                                     onClick={() => openEdit(doc)}
-                                                    className="flex-1 text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-xl h-9 shadow-sm"
+                                                    className={`flex-1 text-xs font-bold text-white rounded-xl h-9 shadow-sm ${isPharmacy ? "bg-emerald-500 hover:bg-emerald-600" : "bg-orange-500 hover:bg-orange-600"}`}
                                                 >
                                                     <Pencil className="h-3.5 w-3.5 ml-1" />
                                                     تعديل
@@ -430,7 +442,7 @@ export default function ClinicDoctors() {
                             dir="rtl"
                         >
                             {/* Modal Header */}
-                            <div className="bg-gradient-to-l from-orange-500 to-orange-600 p-5 flex items-center justify-between">
+                            <div className={`bg-gradient-to-l p-5 flex items-center justify-between ${isPharmacy ? "from-emerald-500 to-emerald-600" : "from-orange-500 to-orange-600"}`}>
                                 <div className="flex items-center gap-3">
                                     <div className="p-2.5 rounded-2xl bg-white/20">
                                         <UserPlus className="h-5 w-5 text-white" />
@@ -439,7 +451,7 @@ export default function ClinicDoctors() {
                                         <h2 className="text-white font-black text-base">
                                             {editId ? 'تعديل بيانات الموظف' : 'إضافة موظف جديد'}
                                         </h2>
-                                        <p className="text-orange-100 text-xs mt-0.5">
+                                        <p className={`text-xs mt-0.5 ${isPharmacy ? "text-emerald-100" : "text-orange-100"}`}>
                                             {editId ? 'عدّل المعلومات ثم اضغط حفظ' : 'أدخل معلومات الموظف وصلاحياته'}
                                         </p>
                                     </div>
@@ -468,7 +480,7 @@ export default function ClinicDoctors() {
                                                 placeholder="مثال: د. أحمد محمد"
                                                 value={form.name}
                                                 onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                                                className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11"
+                                                className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11`}
                                             />
                                         </div>
 
@@ -479,14 +491,19 @@ export default function ClinicDoctors() {
                                                     <SelectValue placeholder="اختر الوظيفة" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="doctor">🩺 طبيب معالج</SelectItem>
-                                                    <SelectItem value="nurse">💉 ممرض/ة</SelectItem>
-                                                    <SelectItem value="secretary">🗂️ موظف استقبال / سكرتارية</SelectItem>
+                                                    {Object.entries(currentRoleConfig).map(([key, config]) => (
+                                                        <SelectItem key={key} value={key}>
+                                                            <div className="flex items-center gap-2">
+                                                                <config.icon className={`h-4 w-4 ${config.color}`} />
+                                                                {config.label}
+                                                            </div>
+                                                        </SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
-                                        {form.role === 'doctor' && (
+                                        {!isPharmacy && form.role === 'doctor' && (
                                             <div className="space-y-2">
                                                 <label className="text-xs font-bold text-slate-600 mb-1 block">التخصص الطبي</label>
                                                 <Select 
@@ -521,7 +538,7 @@ export default function ClinicDoctors() {
                                                     value={form.phone}
                                                     dir="ltr"
                                                     onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                                                    className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                    className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                 />
                                             </div>
                                             <div>
@@ -534,12 +551,12 @@ export default function ClinicDoctors() {
                                                     value={form.email}
                                                     dir="ltr"
                                                     onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                                                    className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                    className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                 />
                                             </div>
                                         </div>
 
-                                        {form.role === 'doctor' && (
+                                        {(!isPharmacy || true) && (
                                             <>
                                                 <div className="grid grid-cols-2 gap-3 mt-3">
                                                     <div>
@@ -551,7 +568,7 @@ export default function ClinicDoctors() {
                                                             type="time"
                                                             value={form.workingHoursFrom}
                                                             onChange={e => setForm(f => ({ ...f, workingHoursFrom: e.target.value }))}
-                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                            className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                         />
                                                     </div>
                                                     <div>
@@ -563,7 +580,7 @@ export default function ClinicDoctors() {
                                                             type="time"
                                                             value={form.workingHoursTo}
                                                             onChange={e => setForm(f => ({ ...f, workingHoursTo: e.target.value }))}
-                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                            className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                         />
                                                     </div>
                                                 </div>
@@ -571,7 +588,7 @@ export default function ClinicDoctors() {
                                                     <div>
                                                         <label className="text-xs font-bold text-slate-600 mb-1 block">
                                                             <DollarSign className="h-3 w-3 inline ml-1" />
-                                                            أجر الكشف (دينار)
+                                                            {isPharmacy ? 'الراتب / الأجر' : 'أجر الكشف (دينار)'}
                                                         </label>
                                                         <Input
                                                             type="number"
@@ -579,24 +596,26 @@ export default function ClinicDoctors() {
                                                             placeholder="0.00"
                                                             value={form.hourlyRate}
                                                             onChange={e => setForm(f => ({ ...f, hourlyRate: e.target.value }))}
-                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                            className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                         />
                                                     </div>
-                                                    <div>
-                                                        <label className="text-xs font-bold text-slate-600 mb-1 block">
-                                                            <Clock className="h-3 w-3 inline ml-1" />
-                                                            وقت المريض (دقيقة)
-                                                        </label>
-                                                        <Input
-                                                            type="number"
-                                                            min="5"
-                                                            step="5"
-                                                            placeholder="مثال: 30"
-                                                            value={form.patientDuration}
-                                                            onChange={e => setForm(f => ({ ...f, patientDuration: e.target.value }))}
-                                                            className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
-                                                        />
-                                                    </div>
+                                                    {!isPharmacy && form.role === 'doctor' && (
+                                                        <div>
+                                                            <label className="text-xs font-bold text-slate-600 mb-1 block">
+                                                                <Clock className="h-3 w-3 inline ml-1" />
+                                                                وقت المريض (دقيقة)
+                                                            </label>
+                                                            <Input
+                                                                type="number"
+                                                                min="5"
+                                                                step="5"
+                                                                placeholder="مثال: 30"
+                                                                value={form.patientDuration}
+                                                                onChange={e => setForm(f => ({ ...f, patientDuration: e.target.value }))}
+                                                                className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </>
                                         )}
@@ -624,7 +643,7 @@ export default function ClinicDoctors() {
                                                                     reader.readAsDataURL(file);
                                                                 }
                                                             }}
-                                                            className="rounded-xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100 cursor-pointer pt-2"
+                                                            className={`rounded-xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm file:mr-2 file:py-1 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold ${isPharmacy ? "file:bg-emerald-50 file:text-emerald-600 hover:file:bg-emerald-100" : "file:bg-orange-50 file:text-orange-600 hover:file:bg-orange-100"} cursor-pointer pt-2`}
                                                         />
                                                     </div>
                                                 </div>
@@ -638,7 +657,7 @@ export default function ClinicDoctors() {
                                                     placeholder="مثال: الأحد، الثلاثاء، الخميس"
                                                     value={form.workingDays}
                                                     onChange={e => setForm(f => ({ ...f, workingDays: e.target.value }))}
-                                                    className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                    className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                 />
                                             </div>
                                             <div>
@@ -666,7 +685,7 @@ export default function ClinicDoctors() {
                                                         placeholder="مثال: 10"
                                                         value={form.experienceYears}
                                                         onChange={e => setForm(f => ({ ...f, experienceYears: e.target.value }))}
-                                                        className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                        className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                     />
                                                 </div>
                                                 <div className="col-span-2 sm:col-span-1">
@@ -675,7 +694,7 @@ export default function ClinicDoctors() {
                                                         placeholder="مثال: بورد أمريكي، زمالة..."
                                                         value={form.certifications}
                                                         onChange={e => setForm(f => ({ ...f, certifications: e.target.value }))}
-                                                        className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 text-sm"
+                                                        className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 text-sm`}
                                                     />
                                                 </div>
                                             </div>
@@ -709,7 +728,7 @@ export default function ClinicDoctors() {
                                                 dir="ltr"
                                                 value={form.username}
                                                 onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-                                                className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 font-mono"
+                                                className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 font-mono`}
                                             />
                                         </div>
 
@@ -730,7 +749,7 @@ export default function ClinicDoctors() {
                                                     placeholder="••••••••"
                                                     value={form.password}
                                                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                                                    className="rounded-2xl border-slate-200 focus-visible:border-orange-400 focus-visible:ring-0 h-11 pl-10"
+                                                    className={`rounded-2xl border-slate-200 ${isPharmacy ? "focus-visible:border-emerald-400" : "focus-visible:border-orange-400"} focus-visible:ring-0 h-11 pl-10`}
                                                 />
                                                 <button
                                                     type="button"
@@ -757,7 +776,7 @@ export default function ClinicDoctors() {
                                 <Button
                                     onClick={handleSave}
                                     disabled={saving}
-                                    className="flex-1 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black h-11 gap-2 shadow-lg shadow-orange-200"
+                                    className={`flex-1 rounded-2xl text-white font-black h-11 gap-2 shadow-lg ${isPharmacy ? "bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200" : "bg-orange-500 hover:bg-orange-600 shadow-orange-200"}`}
                                 >
                                     {saving ? (
                                         <span className="flex items-center gap-2">

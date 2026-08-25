@@ -16,6 +16,9 @@ import { TemplatesManager } from "@/components/TemplatesManager";
 import AppointmentsCalendar from "@/components/AppointmentsCalendar";
 import { PatientCard } from "@/components/PatientCard";
 import { PatientDetails } from "./PatientDetails";
+import AppointmentDetail from "./patient/AppointmentDetail";
+import ClinicDoctors from "./doctor/ClinicDoctors";
+import PharmacyPrescriptions from "./pharmacy/PharmacyPrescriptions";
 import InternalChat from "./InternalChat";
 import WhatsAppBot from "./WhatsAppBot";
 import { MedicalStatsCard } from "@/components/MedicalStatsCard";
@@ -27,6 +30,8 @@ import { ClinicStats } from "@/components/ClinicStats";
 import OffersManager from "@/components/OffersManager";
 import BeautyCenterDashboard from "@/components/BeautyCenterDashboard";
 import FinancialAnalytics from "./doctor/FinancialAnalytics";
+import InventoryManager from "./pharmacy/InventoryManager";
+import PharmacyDashboard from "./pharmacy/PharmacyDashboard";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PatientCardSkeleton } from "@/components/skeletons/PatientCardSkeleton";
 import HeroSection from "@/components/HeroSection";
@@ -50,7 +55,8 @@ import {
     Sparkles,
     Download,
     Tag,
-    Wallet
+    Wallet,
+    Pill
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { BottomNav } from "@/components/BottomNav";
@@ -79,6 +85,8 @@ const Index = () => {
     const scrollContainerRef = useRef<HTMLDivElement>(null);
     const itemsPerPage = 8;
     const [dynamicHero, setDynamicHero] = useState<{ title: string, desc: string } | null>(null);
+
+    const isPharmacy = user?.role === 'PHARMACY';
 
     // Onboarding Tutorial State
     const [showOnboarding, setShowOnboarding] = useState(false);
@@ -248,12 +256,12 @@ const Index = () => {
                     <main className="flex-1 p-4 md:p-10">
                         <div className="max-w-7xl mx-auto">
                             {/* Dynamic Hero Section */}
-                            {activeTab !== 'patient-details' && activeTab !== 'whatsapp-bot' && activeTab !== 'internal-chat' && activeTab !== 'offers' && (
+                            {activeTab !== 'patient-details' && activeTab !== 'whatsapp-bot' && activeTab !== 'internal-chat' && activeTab !== 'offers' && activeTab !== 'inventory' && activeTab !== 'finance' && activeTab !== 'prescriptions' && (
                                 <HeroSection
                                     doctorName={activeDoctor ? `د. ${activeDoctor.name}` : (user?.name ? (user.name.includes('د.') || user.name.startsWith('د ') ? user.name : `د. ${user.name}`) : 'د. حكيم')}
                                     pageTitle={
                                         dynamicHero ? dynamicHero.title :
-                                        activeTab === 'dashboard' ? "موجز عمل اليوم" :
+                                        activeTab === 'dashboard' ? (isPharmacy ? "لوحة تحكم الصيدلية" : "موجز عمل اليوم") :
                                             activeTab === 'contacts' ? "إدارة المرضى والمراجعات" :
                                                 activeTab === 'appointments' ? "جدول المواعيد والزيارات" :
                                                     activeTab === 'templates' ? "قوالب الردود التلقائية" :
@@ -262,7 +270,7 @@ const Index = () => {
                                     }
                                     description={
                                         dynamicHero ? dynamicHero.desc :
-                                        activeTab === 'dashboard' ? "إليك موجز سريع لأداء عيادتك اليوم والمهام القادمة" :
+                                        activeTab === 'dashboard' ? (isPharmacy ? "نظرة عامة على الوصفات والمنتجات وإحصائيات الصيدلية" : "إليك موجز سريع لأداء عيادتك اليوم والمهام القادمة") :
                                             activeTab === 'contacts' ? "قاعدة بيانات شاملة لمرضاك مع سجلاتهم الطبية وحالاتهم" :
                                                 activeTab === 'appointments' ? "نظرة شاملة على جميع المواعيد المحجوزة والقدرة على جدولتها" :
                                                     activeTab === 'templates' ? "تحكم في الرسائل الجاهزة والردود الآلية لتوفير وقتك" :
@@ -272,7 +280,7 @@ const Index = () => {
                                                                     activeTab === 'bot-stats' ? "تحليل دقيق لتفاعلات المرضى مع المساعد الذكي الخاص بك" : "إدارة طبية متكاملة"
                                     }
                                     icon={
-                                        activeTab === 'dashboard' ? LayoutDashboard :
+                                        activeTab === 'dashboard' ? (isPharmacy ? Pill : LayoutDashboard) :
                                             activeTab === 'contacts' ? Users :
                                                 activeTab === 'appointments' ? Calendar :
                                                     activeTab === 'templates' ? FileText :
@@ -281,7 +289,8 @@ const Index = () => {
                                                                 activeTab === 'finance' ? Wallet :
                                                                     activeTab === 'bot-stats' ? LineChart : Sparkles
                                     }
-                                    backgroundImage={activeTab === 'dashboard' ? "/hakeem-logo.png" : undefined}
+                                    backgroundImage={activeTab === 'dashboard' ? (isPharmacy ? "/pharmacy-hero.jpg" : "/hakeem-logo.png") : undefined}
+                                    isPharmacy={isPharmacy}
                                 />
                             )}
 
@@ -289,7 +298,11 @@ const Index = () => {
                                 <BeautyCenterDashboard />
                             )}
 
-                            {activeTab === 'dashboard' && (
+                            {activeTab === 'dashboard' && isPharmacy && (
+                                <PharmacyDashboard />
+                            )}
+
+                            {activeTab === 'dashboard' && !isPharmacy && (
                                 <motion.div
                                     initial="hidden"
                                     animate="visible"
@@ -752,6 +765,10 @@ const Index = () => {
                             {activeTab === 'offers' && <OffersManager userType="doctor" />}
 
                             {activeTab === 'finance' && <FinancialAnalytics />}
+
+                            {activeTab === 'inventory' && <InventoryManager />}
+                            
+                            {activeTab === 'prescriptions' && <PharmacyPrescriptions />}
 
                             {activeTab === 'internal-chat' && (
                                 <div className="-mx-4 md:-mx-10 -mt-0">

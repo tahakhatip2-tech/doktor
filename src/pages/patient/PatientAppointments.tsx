@@ -15,7 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2, Star } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2, Star, LayoutGrid, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -108,6 +108,13 @@ export default function PatientAppointments() {
 
     const filteredAppointments = filterAppointments(selectedTab);
 
+    const filters = [
+        { key: 'all', label: 'الكل', icon: LayoutGrid, color: 'from-slate-500 to-slate-700', ring: 'ring-slate-400' },
+        { key: 'pending', label: 'في الانتظار', icon: Clock, color: 'from-orange-400 to-orange-500', ring: 'ring-orange-400' },
+        { key: 'confirmed', label: 'مؤكدة', icon: CheckCircle2, color: 'from-blue-500 to-blue-600', ring: 'ring-blue-400' },
+        { key: 'completed', label: 'مكتملة', icon: CheckCircle2, color: 'from-emerald-500 to-emerald-600', ring: 'ring-emerald-400' },
+    ];
+
     return (
         <div className="space-y-6 animate-fade-in">
             <PatientHero
@@ -120,12 +127,40 @@ export default function PatientAppointments() {
 
             <div className="px-4 sm:px-0 space-y-6">
                 <Tabs value={selectedTab} onValueChange={setSelectedTab}>
-                    <TabsList className="grid w-full grid-cols-4">
-                        <TabsTrigger value="all">الكل</TabsTrigger>
-                        <TabsTrigger value="pending">في الانتظار</TabsTrigger>
-                        <TabsTrigger value="confirmed">مؤكدة</TabsTrigger>
-                        <TabsTrigger value="completed">مكتملة</TabsTrigger>
-                    </TabsList>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 max-w-4xl mb-6">
+                        {filters.map((f, idx) => {
+                            const isActive = selectedTab === f.key;
+                            return (
+                                <button
+                                    key={f.key}
+                                    onClick={() => setSelectedTab(f.key)}
+                                    className={`relative group flex items-center justify-between w-full h-11 sm:h-12 rounded-full border-2 border-orange-400 shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-95 ${isActive ? `ring-2 ring-offset-2 ring-offset-slate-50 ${f.ring} shadow-[0_0_20px_rgba(0,0,0,0.15)]` : ''}`}
+                                >
+                                    {/* Colored half (Right side in RTL) */}
+                                    <div className={`absolute right-0 top-0 bottom-0 w-[42%] bg-gradient-to-br ${f.color} shadow-[inset_0_-3px_8px_rgba(0,0,0,0.3)] opacity-95 group-hover:opacity-100 transition-opacity`}></div>
+                                    
+                                    {/* Inner glossy highlight for colored half */}
+                                    <div className="absolute right-0 top-0 w-[42%] h-[45%] bg-white/20 rounded-bl-full pointer-events-none"></div>
+
+                                    {/* Transparent Glass half (Left side in RTL) */}
+                                    <div className="absolute left-0 top-0 bottom-0 w-[58%] bg-white/30 backdrop-blur-xl shadow-[inset_0_0_15px_rgba(255,255,255,0.8)] border-r border-white/50"></div>
+                                    
+                                    {/* Content */}
+                                    <div className="relative z-10 flex items-center w-full px-1">
+                                        <div className="w-[42%] flex justify-center text-white drop-shadow-md">
+                                            <f.icon className="w-4 h-4 sm:w-5 sm:h-5" />
+                                        </div>
+                                        <div className="w-[58%] flex justify-center text-slate-800 font-extrabold text-[10px] sm:text-xs whitespace-nowrap px-1 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">
+                                            {f.label}
+                                        </div>
+                                    </div>
+                                    
+                                    {/* Full Glossy reflection over everything */}
+                                    <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/5 to-transparent w-full h-[45%] pointer-events-none rounded-t-full"></div>
+                                </button>
+                            )
+                        })}
+                    </div>
 
                     <TabsContent value={selectedTab} className="mt-6">
                         {loading ? (

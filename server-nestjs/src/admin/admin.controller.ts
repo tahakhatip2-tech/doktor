@@ -11,8 +11,15 @@ import {
     UseGuards,
     ParseIntPipe,
     HttpCode,
-    HttpStatus
+    HttpStatus,
+    Req,
+    UseInterceptors,
+    UploadedFile,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import * as path from 'path';
+import * as fs from 'fs';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminService } from './admin.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -207,5 +214,71 @@ export class AdminController {
             page: page ? parseInt(page) : 1,
             limit: limit ? parseInt(limit) : 20
         });
+    }
+
+    // ── Sponsored Ads ──────────────────────────────────────────────
+
+    /** جلب كل الإعلانات الممولة */
+    @Get('ads')
+    @ApiOperation({ summary: 'جلب كل الإعلانات الممولة' })
+    getSponsoredAds() {
+        return this.adminService.getSponsoredAds();
+    }
+
+    /** إنشاء إعلان ممول */
+    @Post('ads')
+    @ApiOperation({ summary: 'إنشاء إعلان ممول' })
+    createSponsoredAd(@Req() req: any, @Body() body: {
+        title: string;
+        content: string;
+        sponsorName: string;
+        sponsorLogo?: string;
+        sponsorPhone?: string;
+        image?: string;
+        isPermanent?: boolean;
+        startDate?: string;
+        endDate?: string;
+    }) {
+        return this.adminService.createSponsoredAd({ ...body, adminUserId: req.user.id });
+    }
+
+    /** رفع صورة الشعار */
+    @Post('ads/upload')
+    @ApiOperation({ summary: 'رفع شعار شركة لإعلان' })
+    @UseInterceptors(FileInterceptor('file', {
+        storage: diskStorage({
+            destination: (req, file, cb) => {
+                const dir = './uploads/ads';
+                if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+                cb(null, dir);
+            },
+            filename: (req, file, cb) => {
+                const ext = path.extname(file.originalname);
+                cb(null, `ad-logo-${Date.now()}${ext}`);
+            },
+        }),
+        fileFilter: (req, file, cb) => {
+            if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) cb(null, true);
+            else cb(new Error('يجب أن يكون الملف صورة أو فيديو'), false);
+        },
+        limits: { fileSize: 50 * 1024 * 1024 },
+    }))
+    uploadAdLogo(@UploadedFile() file: Express.Multer.File) {
+        if (!file) return { error: 'لم يتم رفع أي ملف' };
+        return { url: `/uploads/ads/${file.filename}` };
+    }
+
+    /** حذف إعلان */
+    @Delete('ads/:id')
+    @ApiOperation({ summary: 'حذف إعلان' })
+    deleteSponsoredAd(@Param('id', ParseIntPipe) id: number) {
+        return this.adminService.deleteSponsoredAd(id);
+    }
+
+    /** تفعيل/إيقاف إعلان */
+    @Patch('ads/:id/toggle')
+    @ApiOperation({ summary: 'تفعيل أو إيقاف إعلان' })
+    toggleSponsoredAd(@Param('id', ParseIntPipe) id: number) {
+        return this.adminService.toggleSponsoredAd(id);
     }
 }

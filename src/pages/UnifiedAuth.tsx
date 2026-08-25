@@ -217,11 +217,13 @@ const UnifiedAuth = () => {
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
 
+                localStorage.setItem('token', response.data.access_token);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
                 localStorage.setItem('pharmacy_token', response.data.access_token);
                 localStorage.setItem('pharmacy_user', JSON.stringify(response.data.user));
 
                 toastWithSound.success("مرحباً بعودتك! تم تسجيل الدخول بنجاح");
-                navigate('/pharmacy/dashboard');
+                navigate('/');
                 return true;
             } else {
                 const validation = pharmacyRegisterSchema.safeParse({
@@ -243,11 +245,13 @@ const UnifiedAuth = () => {
                     headers: { 'ngrok-skip-browser-warning': 'true' }
                 });
 
+                localStorage.setItem('token', response.data.access_token);
+                localStorage.setItem('user', JSON.stringify(response.data.user));
                 localStorage.setItem('pharmacy_token', response.data.access_token);
                 localStorage.setItem('pharmacy_user', JSON.stringify(response.data.user));
 
                 toastWithSound.success("مرحباً بك! تم إنشاء الحساب بنجاح");
-                navigate('/pharmacy/dashboard');
+                navigate('/');
                 return true;
             }
         } catch (error: any) {

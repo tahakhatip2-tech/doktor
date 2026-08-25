@@ -19,6 +19,7 @@ import {
     LogOut,
     MessageCircle,
     Tag,
+    Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import Footer from '@/components/Footer';
@@ -39,7 +40,8 @@ export default function PharmacyLayout() {
     const navItems = [
         { path: '/pharmacy/prescriptions', label: 'الوصفات', icon: FileText },
         { path: '/pharmacy/messages', label: 'الرسائل', icon: MessageCircle },
-        { path: '/pharmacy/dashboard', label: 'الرئيسية', icon: Home }, // المركزية
+        { path: '/pharmacy/dashboard', label: 'الرئيسية', icon: Home },
+        { path: '/pharmacy/finance', label: 'المحاسبة', icon: Wallet },
         { path: '/pharmacy/feed', label: 'الأخبار', icon: Tag },
         { path: '/pharmacy/profile', label: 'حسابي', icon: User },
     ];

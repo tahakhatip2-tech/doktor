@@ -22,6 +22,8 @@ import { ClinicDoctorsModule } from './clinic-doctors/clinic-doctors.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { AdminModule } from './admin/admin.module';
 import { BeautyServicesModule } from './beauty-services/beauty-services.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -55,8 +57,9 @@ import { BeautyServicesModule } from './beauty-services/beauty-services.module';
     PharmacyModule,
     AdminModule,
     BeautyServicesModule,
+    InventoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

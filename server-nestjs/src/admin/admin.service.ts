@@ -419,4 +419,57 @@ export class AdminService {
             limit: filters?.limit || 20
         };
     }
+
+    // ═══════════════════════════════════════════════════════════
+    // Sponsored Ads Management
+    // ═══════════════════════════════════════════════════════════
+    async createSponsoredAd(data: {
+        title: string;
+        content: string;
+        sponsorName: string;
+        sponsorLogo?: string;
+        sponsorPhone?: string;
+        image?: string;
+        isPermanent?: boolean;
+        startDate?: string;
+        endDate?: string;
+        adminUserId: number;
+    }) {
+        return this.prisma.offer.create({
+            data: {
+                userId: data.adminUserId,
+                title: data.title,
+                content: data.content,
+                image: data.image,
+                isPermanent: data.isPermanent ?? true,
+                startDate: data.startDate ? new Date(data.startDate) : new Date(),
+                endDate: data.endDate ? new Date(data.endDate) : null,
+                isActive: true,
+                isSponsored: true,
+                sponsorName: data.sponsorName,
+                sponsorLogo: data.sponsorLogo,
+                sponsorPhone: data.sponsorPhone,
+            },
+        });
+    }
+
+    async getSponsoredAds() {
+        return this.prisma.offer.findMany({
+            where: { isSponsored: true },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
+
+    async deleteSponsoredAd(id: number) {
+        return this.prisma.offer.delete({ where: { id } });
+    }
+
+    async toggleSponsoredAd(id: number) {
+        const ad = await this.prisma.offer.findUnique({ where: { id } });
+        if (!ad) throw new Error('الإعلان غير موجود');
+        return this.prisma.offer.update({
+            where: { id },
+            data: { isActive: !ad.isActive },
+        });
+    }
 }

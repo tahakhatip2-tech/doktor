@@ -152,6 +152,10 @@ export class OffersService {
             const settingsMap = Object.fromEntries((settings || []).map((s: any) => [s.key, s.value]));
             return {
                 ...offer,
+                isSponsored: (offer as any).isSponsored ?? false,
+                sponsorName: (offer as any).sponsorName ?? null,
+                sponsorLogo: (offer as any).sponsorLogo ?? null,
+                sponsorPhone: (offer as any).sponsorPhone ?? null,
                 user: {
                     ...userData,
                     name: userData.name, // Always use profile name to match patient.service.ts

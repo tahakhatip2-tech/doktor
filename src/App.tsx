@@ -38,6 +38,7 @@ import PharmacyMessages from "./pages/pharmacy/PharmacyMessages";
 import PharmacyChat from "./pages/pharmacy/PharmacyChat";
 import PharmacyPrescriptions from "./pages/pharmacy/PharmacyPrescriptions";
 import PharmacyNotifications from "./pages/pharmacy/PharmacyNotifications";
+import PharmacyFinancials from "./pages/pharmacy/PharmacyFinancials";
 import { PharmacyProvider } from "./contexts/PharmacyContext";
 
 import InternalChat from "./pages/InternalChat";
@@ -62,7 +63,8 @@ const App = () => (
                     <StaffLoginModal />
                     <HashRouter>
                         <ScrollToTop />
-                                            <PWAInstallBanner />
+                        <PWAInstallBanner />
+                        <PharmacyProvider>
                     <Routes>
                         <Route path="/" element={<Index />} />
 
@@ -107,24 +109,13 @@ const App = () => (
                             <Route path="chat/:clinicId" element={<PatientChat />} />
                         </Route>
 
-                        {/* â”€â”€â”€ Pharmacy Portal Routes â”€â”€â”€ */}
-                        <Route path="/pharmacy" element={<PharmacyProvider><PharmacyLayout /></PharmacyProvider>}>
-                            <Route index element={<Navigate to="dashboard" replace />} />
-                            <Route path="dashboard" element={<PharmacyDashboard />} />
-                            <Route path="feed" element={<PharmacyFeed />} />
-                            <Route path="profile" element={<PharmacyProfile />} />
-                            <Route path="prescriptions" element={<PharmacyPrescriptions />} />
-                            <Route path="notifications" element={<PharmacyNotifications />} />
-                            <Route path="messages" element={<PharmacyMessages />} />
-                            <Route path="messages/:patientId" element={<PharmacyChat />} />
-                        </Route>
-
                         {/* Catch-all */}
                         <Route path="*" element={<NotFound />} />
                     </Routes>
+                        </PharmacyProvider>
                 </HashRouter>
                 </ActiveDoctorProvider>
-            </ClinicProvider>
+                </ClinicProvider>
         </TooltipProvider>
     </QueryClientProvider>
 );

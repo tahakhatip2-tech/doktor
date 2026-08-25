@@ -54,6 +54,8 @@ model User {
   doctorPrescriptions   Prescription[]         @relation("DoctorPrescriptions")
   pharmacyPrescriptions Prescription[]         @relation("PharmacyPrescriptions")
   beautyServices        BeautyService[]
+  pharmacyInventory     PharmacyInventory[]    @relation("PharmacyInventory")
+  pharmacySales         PharmacySale[]         @relation("PharmacySales")
 }
 
 model Plan {
@@ -473,20 +475,24 @@ model InternalMessage {
 }
 
 model Offer {
-  id          Int            @id @default(autoincrement())
-  userId      Int
-  title       String
-  content     String
-  image       String?
-  isPermanent Boolean        @default(false)
-  startDate   DateTime       @default(now())
-  endDate     DateTime?
-  isActive    Boolean        @default(true)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
-  user        User           @relation(fields: [userId], references: [id])
-  likes       OfferLike[]
-  comments    OfferComment[]
+  id           Int            @id @default(autoincrement())
+  userId       Int
+  title        String
+  content      String
+  image        String?
+  isPermanent  Boolean        @default(false)
+  startDate    DateTime       @default(now())
+  endDate      DateTime?
+  isActive     Boolean        @default(true)
+  isSponsored  Boolean        @default(false)
+  sponsorName  String?
+  sponsorLogo  String?
+  sponsorPhone String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  user         User           @relation(fields: [userId], references: [id])
+  likes        OfferLike[]
+  comments     OfferComment[]
 }
 
 model OfferComment {
@@ -616,4 +622,45 @@ enum PrescriptionStatus {
   SENT_TO_PHARMACY
   DISPENSED
   REJECTED
+}
+
+model PharmacyInventory {
+  id            Int      @id @default(autoincrement())
+  pharmacyId    Int
+  name          String
+  barcode       String?
+  purchasePrice Decimal  @db.Decimal(10, 2) @default(0.00)
+  sellingPrice  Decimal  @db.Decimal(10, 2)
+  stock         Int      @default(0)
+  category      String?
+  supplier      String?
+  expiryDate    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  pharmacy      User     @relation("PharmacyInventory", fields: [pharmacyId], references: [id])
+  saleItems     PharmacySaleItem[]
+}
+
+model PharmacySale {
+  id             Int      @id @default(autoincrement())
+  pharmacyId     Int
+  totalAmount    Decimal  @db.Decimal(10, 2)
+  status         String   @default("completed")
+  customerName   String?
+  prescriptionId Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  pharmacy       User     @relation("PharmacySales", fields: [pharmacyId], references: [id])
+  items          PharmacySaleItem[]
+}
+
+model PharmacySaleItem {
+  id           Int               @id @default(autoincrement())
+  saleId       Int
+  inventoryId  Int?
+  quantity     Int
+  unitPrice    Decimal           @db.Decimal(10, 2)
+  subtotal     Decimal           @db.Decimal(10, 2)
+  sale         PharmacySale      @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  inventory    PharmacyInventory? @relation(fields: [inventoryId], references: [id], onDelete: SetNull)
 }

@@ -27,6 +27,13 @@ export default function PharmacyLayout() {
         }}
       />
       <Tabs.Screen
+        name="financial/index"
+        options={{
+          title: 'المحاسبة',
+          tabBarIcon: ({ color, size }) => <Ionicons name="wallet" size={size} color={color} />,
+        }}
+      />
+      <Tabs.Screen
         name="inventory/index"
         options={{
           title: 'المخزون',
@@ -37,7 +44,6 @@ export default function PharmacyLayout() {
         name="settings/index"
         options={{
           href: null,
-          tabBarStyle: { display: 'none' }
         }}
       />
     </Tabs>

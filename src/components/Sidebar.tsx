@@ -21,6 +21,8 @@ import {
     Tag,
     Wallet,
     Stethoscope,
+    Package,
+    Pill,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -38,6 +40,8 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
     const navigate = useNavigate();
     const { signOut, user } = useAuth();
     const [unreadCount, setUnreadCount] = useState(0);
+
+    const isPharmacy = user?.role === 'PHARMACY';
 
     // جلب عدد الرسائل غير المقروءة
     useEffect(() => {
@@ -66,11 +70,12 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
     const { activeDoctor, openLoginModal, logout } = useActiveDoctor();
 
     const allNavItems = [
-        { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
+        { id: 'dashboard', label: 'الرئيسية', icon: isPharmacy ? Pill : LayoutDashboard },
         { id: 'whatsapp-bot', label: 'محادثات واتساب', icon: MessageCircle },
         { id: 'internal-chat', label: 'الرسائل', icon: MessagesSquare },
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
+        { id: 'inventory', label: 'إدارة المنتجات', icon: Package },
         { id: 'finance', label: 'المحاسبة', icon: Wallet },
         { id: 'offers', label: 'آخر الأخبار', icon: Tag },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
@@ -78,14 +83,17 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
     ];
 
     if (clinicCategory === 'beauty_center') {
-        // Insert right after dashboard (index 1)
         allNavItems.splice(1, 0, { id: 'beauty-services', label: 'إدارة الخدمات', icon: Sparkles });
     }
 
     const mainNavItems = allNavItems.filter(item => {
-        if (!activeDoctor) return true; // Admin sees everything
+        if (!activeDoctor && user?.role !== 'PHARMACY') return true;
         
-        const doctorRole = activeDoctor.role || 'doctor';
+        if (user?.role === 'PHARMACY') {
+            return ['dashboard', 'inventory', 'finance', 'internal-chat', 'offers'].includes(item.id);
+        }
+
+        const doctorRole = activeDoctor?.role || 'doctor';
         
         if (doctorRole === 'doctor') {
             return ['contacts', 'appointments', 'internal-chat'].includes(item.id);
@@ -100,13 +108,41 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
         setActiveTab(item.id);
     };
 
+    // ── ألوان الثيم ──
+    const isBeauty = clinicCategory === 'beauty_center';
+    const activeItemClass = isPharmacy
+        ? "bg-white text-emerald-600 shadow-md font-black border-r-4 border-emerald-500 rounded-l-lg rounded-r-none translate-x-1"
+        : isBeauty
+            ? "bg-white text-fuchsia-600 shadow-md font-black border-r-4 border-fuchsia-500 rounded-l-lg rounded-r-none translate-x-1"
+            : "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1";
+
+    const inactiveItemClass = isPharmacy
+        ? "text-emerald-100/80 font-medium hover:text-white hover:bg-emerald-600/30 hover:font-bold hover:translate-x-1"
+        : isBeauty
+            ? "text-fuchsia-600/70 font-medium hover:text-fuchsia-600 hover:bg-white/50 hover:font-bold hover:translate-x-1"
+            : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1";
+
+    const sidebarBg = isPharmacy
+        ? "bg-gradient-to-b from-emerald-800 via-emerald-700 to-emerald-900"
+        : "bg-white/5 dark:bg-black/10 backdrop-blur-[120px]";
+
+    const headerBorderColor = isPharmacy ? "border-emerald-600/40" : "border-white/10";
+    const footerBorderColor = isPharmacy ? "border-emerald-600/30 bg-emerald-900/60" : "border-white/5 bg-card/10 backdrop-blur-2xl";
+    const dividerColor = isPharmacy ? "border-emerald-600/30" : "border-white/10";
+
     return (
-        <div className="w-full h-full bg-white/5 dark:bg-black/10 backdrop-blur-[120px] border-l border-white/5 flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-white/10 flex-shrink-0">
+        <div className={cn("w-full h-full flex flex-col overflow-hidden border-l", isPharmacy ? "border-emerald-600/30" : "border-white/5", sidebarBg)}>
+            {/* Header */}
+            <div className={cn("p-6 border-b flex-shrink-0", headerBorderColor)}>
                 <div className="flex items-center gap-3">
-                    {/* 3D Professional Logo */}
+                    {/* Logo */}
                     <div className="relative h-12 w-12 flex-shrink-0">
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-orange-500 rounded-2xl blur opacity-30 animate-pulse"></div>
+                        <div className={cn(
+                            "absolute -inset-1 rounded-2xl blur opacity-40 animate-pulse",
+                            isPharmacy
+                                ? "bg-gradient-to-r from-emerald-400 to-green-300"
+                                : "bg-gradient-to-r from-blue-600 to-orange-500"
+                        )} />
                         <img
                             src="/hakeem-logo.png"
                             alt="Doctor Jo Logo"
@@ -117,14 +153,33 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         />
                     </div>
                     <div className="overflow-hidden">
-                        <h1 className="text-lg font-display font-black leading-tight bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500 bg-clip-text text-transparent tracking-tight">
+                        <h1 className={cn(
+                            "text-lg font-display font-black leading-tight bg-clip-text text-transparent tracking-tight",
+                            isPharmacy
+                                ? "bg-gradient-to-r from-emerald-200 via-green-100 to-white"
+                                : "bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500"
+                        )}>
                             DOCTOR JO
                         </h1>
-                        <p className="text-[9px] font-bold uppercase tracking-wider bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent">
-                            Clinic Management System
+                        <p className={cn(
+                            "text-[9px] font-bold uppercase tracking-wider bg-clip-text text-transparent",
+                            isPharmacy
+                                ? "bg-gradient-to-r from-emerald-300 to-green-100"
+                                : "bg-gradient-to-r from-orange-500 to-blue-600"
+                        )}>
+                            {isPharmacy ? "Pharmacy Management" : "Clinic Management System"}
                         </p>
                     </div>
                 </div>
+
+                {/* Pharmacy Badge */}
+                {isPharmacy && (
+                    <div className="mt-3 flex items-center gap-2 bg-emerald-600/40 border border-emerald-400/30 rounded-xl px-3 py-2">
+                        <Pill className="h-3.5 w-3.5 text-emerald-200" />
+                        <span className="text-[10px] font-black text-emerald-100 uppercase tracking-wider">نظام الصيدلية</span>
+                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse mr-auto" />
+                    </div>
+                )}
             </div>
 
             <ScrollArea className="flex-1 px-4 pt-4 pb-4">
@@ -136,13 +191,7 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                             variant={activeTab === item.id ? "secondary" : "ghost"}
                             className={cn(
                                 "w-full flex-row-reverse justify-start gap-3 transition-all duration-300 relative overflow-hidden group mb-1",
-                                activeTab === item.id
-                                    ? clinicCategory === 'beauty_center'
-                                        ? "bg-white text-fuchsia-600 shadow-md font-black border-r-4 border-fuchsia-500 rounded-l-lg rounded-r-none translate-x-1"
-                                        : "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1"
-                                    : clinicCategory === 'beauty_center'
-                                        ? "text-fuchsia-600/70 font-medium hover:text-fuchsia-600 hover:bg-white/50 hover:font-bold hover:translate-x-1"
-                                        : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1"
+                                activeTab === item.id ? activeItemClass : inactiveItemClass
                             )}
                             onClick={() => handleNavClick(item)}
                         >
@@ -170,28 +219,29 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         </Button>
                     )}
 
-                    <div className="mt-4 pt-4 border-t border-white/10 space-y-1">
+                    <div className={cn("mt-4 pt-4 border-t space-y-1", dividerColor)}>
                         {!activeDoctor && (
                             <>
                                 <Button
                                     variant="ghost"
-                                    className="w-full flex-row-reverse justify-start gap-3 text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1 transition-all duration-300"
+                                    className={cn(
+                                        "w-full flex-row-reverse justify-start gap-3 font-medium hover:translate-x-1 transition-all duration-300",
+                                        isPharmacy
+                                            ? "text-emerald-100/80 hover:text-white hover:bg-emerald-600/30"
+                                            : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
+                                    )}
                                     onClick={() => navigate('/clinic-doctors')}
                                 >
                                     <Stethoscope className="h-5 w-5 flex-shrink-0" />
-                                    أطباء العيادة
+                                    {isPharmacy ? 'إدارة الموظفين' : 'أطباء العيادة'}
                                 </Button>
                                 <Button
                                     variant={activeTab === 'clinic-settings' ? "secondary" : "ghost"}
                                     className={cn(
-                                        "w-full flex-row-reverse justify-start gap-3 transition-all duration-300", 
-                                        activeTab === 'clinic-settings' 
-                                            ? clinicCategory === 'beauty_center'
-                                                ? "bg-white text-fuchsia-600 shadow-md font-black border-r-4 border-fuchsia-500 rounded-l-lg rounded-r-none translate-x-1"
-                                                : "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1" 
-                                            : clinicCategory === 'beauty_center'
-                                                ? "text-fuchsia-600/70 font-medium hover:text-fuchsia-600 hover:bg-white/50 hover:font-bold hover:translate-x-1"
-                                                : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1"
+                                        "w-full flex-row-reverse justify-start gap-3 transition-all duration-300",
+                                        activeTab === 'clinic-settings'
+                                            ? activeItemClass
+                                            : inactiveItemClass
                                     )}
                                     onClick={() => setActiveTab('clinic-settings')}
                                 >
@@ -202,7 +252,12 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         )}
                         <Button
                             variant="ghost"
-                            className="w-full flex-row-reverse justify-start gap-3 text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1 transition-all duration-300"
+                            className={cn(
+                                "w-full flex-row-reverse justify-start gap-3 font-medium hover:translate-x-1 transition-all duration-300",
+                                isPharmacy
+                                    ? "text-emerald-100/80 hover:text-white hover:bg-emerald-600/30"
+                                    : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
+                            )}
                             onClick={openLoginModal}
                         >
                             <Users className="h-5 w-5 flex-shrink-0" />
@@ -210,7 +265,7 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         </Button>
                         <Button
                             variant="ghost"
-                            className="w-full flex-row-reverse justify-start gap-3 text-red-500 font-medium hover:text-red-600 hover:bg-red-50 hover:font-bold hover:translate-x-1 transition-all duration-300"
+                            className="w-full flex-row-reverse justify-start gap-3 text-red-400 font-medium hover:text-red-300 hover:bg-red-500/20 hover:font-bold hover:translate-x-1 transition-all duration-300"
                             onClick={activeDoctor ? logout : handleSignOut}
                         >
                             <LogOut className="h-5 w-5 flex-shrink-0" />
@@ -220,8 +275,8 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                 </nav>
             </ScrollArea>
 
-            {/* Sidebar Footer - Brand & Socials */}
-            <div className="p-4 border-t border-white/5 bg-card/10 backdrop-blur-2xl">
+            {/* Sidebar Footer */}
+            <div className={cn("p-4 border-t", footerBorderColor)}>
                 <div className="flex flex-col items-center gap-3">
                     {/* Logo */}
                     <a
@@ -230,7 +285,12 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         rel="noopener noreferrer"
                         className="relative group cursor-pointer"
                     >
-                        <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-orange-500 rounded-full blur opacity-20 animate-pulse group-hover:animate-[pulse_0.5s_ease-in-out_infinite]"></div>
+                        <div className={cn(
+                            "absolute -inset-1 rounded-full blur opacity-20 animate-pulse group-hover:animate-[pulse_0.5s_ease-in-out_infinite]",
+                            isPharmacy
+                                ? "bg-gradient-to-r from-emerald-400 to-green-300"
+                                : "bg-gradient-to-r from-blue-600 to-orange-500"
+                        )} />
                         <img
                             src="/hakeem-logo.png"
                             alt="Doctor Jo Logo"
@@ -242,13 +302,21 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                     </a>
 
                     {/* Brand Name */}
-                    <h2 className="text-xs font-black tracking-tight bg-gradient-to-r from-blue-600 via-orange-500 to-blue-600 bg-clip-text text-transparent text-center leading-tight">
+                    <h2 className={cn(
+                        "text-xs font-black tracking-tight bg-clip-text text-transparent text-center leading-tight",
+                        isPharmacy
+                            ? "bg-gradient-to-r from-emerald-300 via-green-200 to-emerald-300"
+                            : "bg-gradient-to-r from-blue-600 via-orange-500 to-blue-600"
+                    )}>
                         AL-KHATIB-MARKETING&SOFTWARE
                     </h2>
 
                     {/* Tagline */}
-                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-blue-600/70 uppercase tracking-wider">
-                        <Sparkles className="h-2 w-2 text-orange-500" />
+                    <div className={cn(
+                        "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider",
+                        isPharmacy ? "text-emerald-300/70" : "text-blue-600/70"
+                    )}>
+                        <Sparkles className={cn("h-2 w-2", isPharmacy ? "text-emerald-400" : "text-orange-500")} />
                         Premium Digital Solutions
                     </div>
 
@@ -265,16 +333,20 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                                 href={social.href}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="p-1 rounded-full border border-blue-600/30 text-blue-600 transition-all duration-300 hover:scale-110 hover:border-orange-500 hover:bg-gradient-to-r hover:from-blue-600 hover:to-orange-500 hover:text-white hover:shadow-lg group"
+                                className={cn(
+                                    "p-1 rounded-full border transition-all duration-300 hover:scale-110 hover:text-white hover:shadow-lg group",
+                                    isPharmacy
+                                        ? "border-emerald-400/30 text-emerald-300 hover:bg-emerald-500 hover:border-emerald-400"
+                                        : "border-blue-600/30 text-blue-600 hover:border-orange-500 hover:bg-gradient-to-r hover:from-blue-600 hover:to-orange-500"
+                                )}
                             >
                                 <social.icon className="h-3 w-3 transition-transform duration-500 group-hover:rotate-[360deg]" />
                             </a>
                         ))}
                     </div>
 
-
                     {/* Version */}
-                    <div className="text-[8px] text-blue-600/40 text-center">
+                    <div className={cn("text-[8px] text-center", isPharmacy ? "text-emerald-400/40" : "text-blue-600/40")}>
                         Doctor Jo v1.0
                     </div>
                 </div>
