@@ -17,7 +17,6 @@ import PatientHero from '@/components/patient/PatientHero';
 import { BASE_URL } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 
 const logoSrc = (url?: string) => {
     if (!url) return null;
