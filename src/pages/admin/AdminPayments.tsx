@@ -9,9 +9,10 @@ import { toastWithSound } from "@/lib/toast-with-sound";
 import { motion } from "framer-motion";
 
 const AdminPayments = () => {
+    const ALL_STATUSES = 'ALL';
     const [payments, setPayments] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const [statusFilter, setStatusFilter] = useState<string>("");
+    const [statusFilter, setStatusFilter] = useState<string>(ALL_STATUSES);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
@@ -23,7 +24,7 @@ const AdminPayments = () => {
         try {
             setLoading(true);
             const params = new URLSearchParams();
-            if (statusFilter) params.append('status', statusFilter);
+            if (statusFilter !== ALL_STATUSES) params.append('status', statusFilter);
             params.append('page', currentPage.toString());
 
             const data = await dataApi.get(`/admin/payments?${params.toString()}`);
@@ -66,7 +67,7 @@ const AdminPayments = () => {
                             <SelectValue placeholder="جميع الحالات" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">جميع الحالات</SelectItem>
+                            <SelectItem value={ALL_STATUSES}>جميع الحالات</SelectItem>
                             <SelectItem value="pending">قيد الانتظار</SelectItem>
                             <SelectItem value="completed">مكتمل</SelectItem>
                         </SelectContent>

@@ -37,12 +37,13 @@ import { toastWithSound } from "@/lib/toast-with-sound";
 import { motion } from "framer-motion";
 
 const AdminUsers = () => {
+    const ALL_FILTER = 'ALL';
     const [users, setUsers] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
-    const [roleFilter, setRoleFilter] = useState<string>("");
-    const [statusFilter, setStatusFilter] = useState<string>("");
-    const [subscriptionFilter, setSubscriptionFilter] = useState<string>("");
+    const [roleFilter, setRoleFilter] = useState<string>(ALL_FILTER);
+    const [statusFilter, setStatusFilter] = useState<string>(ALL_FILTER);
+    const [subscriptionFilter, setSubscriptionFilter] = useState<string>(ALL_FILTER);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [selectedUser, setSelectedUser] = useState<any>(null);
@@ -57,9 +58,9 @@ const AdminUsers = () => {
             setLoading(true);
             const params = new URLSearchParams();
             if (search) params.append('search', search);
-            if (roleFilter) params.append('role', roleFilter);
-            if (statusFilter) params.append('status', statusFilter);
-            if (subscriptionFilter) params.append('subscriptionStatus', subscriptionFilter);
+            if (roleFilter !== ALL_FILTER) params.append('role', roleFilter);
+            if (statusFilter !== ALL_FILTER) params.append('status', statusFilter);
+            if (subscriptionFilter !== ALL_FILTER) params.append('subscriptionStatus', subscriptionFilter);
             params.append('page', currentPage.toString());
             params.append('limit', '20');
 
@@ -192,7 +193,7 @@ const AdminUsers = () => {
                             <SelectValue placeholder="جميع الأدوار" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">جميع الأدوار</SelectItem>
+                            <SelectItem value={ALL_FILTER}>جميع الأدوار</SelectItem>
                             <SelectItem value="USER">طبيب</SelectItem>
                             <SelectItem value="PHARMACY">صيدلية</SelectItem>
                             <SelectItem value="ADMIN">مدير</SelectItem>
@@ -204,7 +205,7 @@ const AdminUsers = () => {
                             <SelectValue placeholder="جميع الحالات" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">جميع الحالات</SelectItem>
+                            <SelectItem value={ALL_FILTER}>جميع الحالات</SelectItem>
                             <SelectItem value="active">نشط</SelectItem>
                             <SelectItem value="banned">محظور</SelectItem>
                         </SelectContent>
@@ -215,7 +216,7 @@ const AdminUsers = () => {
                             <SelectValue placeholder="جميع الاشتراكات" />
                         </SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="">جميع الاشتراكات</SelectItem>
+                            <SelectItem value={ALL_FILTER}>جميع الاشتراكات</SelectItem>
                             <SelectItem value="FREE">مجاني</SelectItem>
                             <SelectItem value="TRIAL">تجريبي</SelectItem>
                             <SelectItem value="ACTIVE">نشط</SelectItem>

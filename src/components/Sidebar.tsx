@@ -208,7 +208,7 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         </Button>
                     ))}
 
-                    {!activeDoctor && user?.role === 'admin' && (
+                    {user?.role === 'ADMIN' && (
                         <Button
                             variant="ghost"
                             className="w-full flex-row-reverse justify-start gap-3 text-amber-600 hover:text-amber-700 hover:bg-amber-50 mt-4"
