@@ -23,7 +23,6 @@ import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { AdminModule } from './admin/admin.module';
 import { BeautyServicesModule } from './beauty-services/beauty-services.module';
 import { InventoryModule } from './inventory/inventory.module';
-import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [

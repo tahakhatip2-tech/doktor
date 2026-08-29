@@ -226,7 +226,7 @@ export class FinanceService {
         const inv = item.inventoryId
           ? await this.prisma.pharmacyInventory.findUnique({
               where: { id: item.inventoryId },
-              select: { name: true, price: true },
+              select: { name: true, sellingPrice: true },
             })
           : null;
         return {
@@ -251,7 +251,7 @@ export class FinanceService {
       select: {
         id: true,
         createdAt: true,
-        patient: { select: { name: true } },
+        patient: { select: { fullName: true } },
       },
       orderBy: { createdAt: 'desc' },
       take: 5,
@@ -262,7 +262,7 @@ export class FinanceService {
       lowStock,
       pendingPrescriptions: pendingRx.map(rx => ({
         id: rx.id,
-        patientName: rx.patient?.name || 'غير معروف',
+        patientName: rx.patient?.fullName || 'غير معروف',
         date: rx.createdAt,
       })),
     };
