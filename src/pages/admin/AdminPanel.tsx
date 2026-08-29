@@ -19,6 +19,7 @@ import {
     UserX,
     Clock,
     Megaphone,
+    ArrowRight,
 } from "lucide-react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -107,19 +108,27 @@ const AdminPanel = () => {
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-orange-50/20" dir="rtl">
             <Header transparent activeTab="admin" />
             
-            <main className="container mx-auto px-4 py-8 max-w-7xl">
+            <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl overflow-hidden">
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
+                    className="mb-6 rounded-2xl border border-blue-100 bg-white/80 p-3 sm:mb-8 sm:p-6 shadow-sm"
                 >
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="p-3 bg-gradient-to-br from-blue-600 to-orange-500 rounded-2xl shadow-lg">
-                            <LayoutDashboard className="h-8 w-8 text-white" />
+                    <div className="flex items-start gap-2 sm:gap-3">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/')}
+                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-blue-100 bg-white text-blue-700 shadow-sm transition-colors hover:bg-blue-50 sm:h-11 sm:w-11"
+                            aria-label="العودة للصفحة السابقة"
+                        >
+                            <ArrowRight className="h-4 w-4 sm:h-5 sm:w-5" />
+                        </button>
+                        <div className="shrink-0 rounded-xl bg-gradient-to-br from-blue-600 to-orange-500 p-2.5 shadow-lg sm:rounded-2xl sm:p-3">
+                            <LayoutDashboard className="h-5 w-5 text-white sm:h-8 sm:w-8" />
                         </div>
-                        <div>
-                            <h1 className="text-4xl font-black text-slate-900">لوحة تحكم المدير</h1>
-                            <p className="text-slate-600 font-medium mt-1">إدارة شاملة للنظام والمستخدمين والاشتراكات</p>
+                        <div className="min-w-0 flex-1 pt-0.5">
+                            <h1 className="whitespace-nowrap text-lg font-black leading-tight text-slate-900 sm:text-4xl">لوحة التحكم والإدارة</h1>
+                            <p className="mt-1 text-xs font-medium leading-5 text-slate-600 sm:text-base">إدارة شاملة للنظام والمستخدمين والاشتراكات</p>
                         </div>
                     </div>
                 </motion.div>
@@ -167,45 +176,45 @@ const AdminPanel = () => {
                 <Card className="border-none shadow-xl rounded-2xl overflow-hidden">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <div className="border-b bg-white px-6 pt-6">
-                            <TabsList className="w-full justify-start bg-slate-100 p-1 rounded-xl">
+                            <TabsList className="grid h-auto w-full grid-cols-2 gap-1 rounded-xl bg-slate-100 p-1 sm:flex sm:justify-start">
                                 <TabsTrigger 
                                     value="dashboard" 
-                                    className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg"
+                                    className="justify-center gap-1.5 rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-md sm:gap-2 sm:text-sm"
                                 >
                                     <Activity className="h-4 w-4" />
                                     لوحة التحكم
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="users"
-                                    className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg"
+                                    className="justify-center gap-1.5 rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-md sm:gap-2 sm:text-sm"
                                 >
                                     <Users className="h-4 w-4" />
                                     المستخدمين
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="payments"
-                                    className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg"
+                                    className="justify-center gap-1.5 rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-md sm:gap-2 sm:text-sm"
                                 >
                                     <CreditCard className="h-4 w-4" />
                                     المدفوعات
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="plans"
-                                    className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg"
+                                    className="justify-center gap-1.5 rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-md sm:gap-2 sm:text-sm"
                                 >
                                     <Package className="h-4 w-4" />
                                     الخطط
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="settings"
-                                    className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg"
+                                    className="justify-center gap-1.5 rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-md sm:gap-2 sm:text-sm"
                                 >
                                     <Settings className="h-4 w-4" />
                                     الإعدادات
                                 </TabsTrigger>
                                 <TabsTrigger 
                                     value="ads"
-                                    className="gap-2 data-[state=active]:bg-white data-[state=active]:shadow-md rounded-lg"
+                                    className="justify-center gap-1.5 rounded-lg text-xs data-[state=active]:bg-white data-[state=active]:shadow-md sm:gap-2 sm:text-sm"
                                 >
                                     <Megaphone className="h-4 w-4" />
                                     الإعلانات

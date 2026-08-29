@@ -7,7 +7,7 @@ const Admin = () => {
 
     useEffect(() => {
         // Redirect to new admin panel
-        navigate("/admin-panel");
+        navigate("/admin-panel", { replace: true });
     }, [navigate]);
 
     return <AdminPanel />;

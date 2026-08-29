@@ -46,12 +46,9 @@ const AdminAds = () => {
     const [dialogOpen, setDialogOpen] = useState(false);
     const [form, setForm] = useState(defaultForm);
     const [submitting, setSubmitting] = useState(false);
-    const [uploadingLogo, setUploadingLogo] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
-    const token = localStorage.getItem("auth_token");
-    const headers = { Authorization: `Bearer ${token}` };
 
     const fetchAds = async () => {
         try {
@@ -67,11 +64,22 @@ const AdminAds = () => {
         try {
             const fd = new FormData();
             fd.append("file", file);
-            const res = await axios.post(`${API_URL}/admin/ads/upload`, fd, { headers });
-            setForm(f => ({ ...f, [field]: res.data.url }));
-            toast({ title: "تم الرفع بنجاح ✅" });
-        } catch { toast({ variant: "destructive", title: "فشل الرفع" }); }
-        finally { field === "sponsorLogo" ? setUploadingLogo(false) : setUploadingImage(false); }
+            const res = await dataApi.upload("/admin/ads/upload", fd);
+            if (res?.url) {
+                setForm(f => ({ ...f, [field]: res.url }));
+                toast({ title: "تم الرفع بنجاح ✅" });
+            } else {
+                throw new Error(res?.error || "فشل الرفع");
+            }
+        } catch (err: any) {
+            toast({
+                variant: "destructive",
+                title: "فشل الرفع",
+                description: err?.message || "حدث خطأ أثناء رفع الملف"
+            });
+        } finally {
+            field === "sponsorLogo" ? setUploadingLogo(false) : setUploadingImage(false);
+        }
     };
 
     const handleSubmit = async () => {

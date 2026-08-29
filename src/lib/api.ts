@@ -10,7 +10,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 export { BASE_URL };
 
 export const apiFetch = async (endpoint: string, options: any = {}) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
     const isFormData = options.body instanceof FormData;
     const headers = {
         ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
@@ -94,6 +94,7 @@ export const adminApi = {
 export const dataApi = {
     get: (url: string) => apiFetch(url),
     post: (url: string, data: any) => apiFetch(url, { method: 'POST', body: JSON.stringify(data) }),
+    upload: (url: string, formData: FormData) => apiFetch(url, { method: 'POST', body: formData }),
     patch: (url: string, data: any) => apiFetch(url, { method: 'PATCH', body: JSON.stringify(data) }),
     delete: (url: string) => apiFetch(url, { method: 'DELETE' }),
     getContacts: () => apiFetch('/contacts'),
