@@ -39,8 +39,9 @@ const AdminPanel = () => {
 
     useEffect(() => {
         if (!authLoading) {
-            if (!user || user.role !== 'ADMIN') {
-                navigate("/");
+            const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
+            if (!token || !user || user.role !== 'ADMIN') {
+                navigate("/admin-login");
                 return;
             }
             fetchStats();
