@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { dataApi } from "@/lib/api";
-import { Megaphone, Plus, Trash2, Upload, Building2, Calendar } from "lucide-react";
+import { Megaphone, Plus, Trash2, Upload, Building2, Calendar, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { BASE_URL } from "@/lib/api";

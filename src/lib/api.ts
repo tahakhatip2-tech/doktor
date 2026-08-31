@@ -5,9 +5,16 @@ if (baseApiUrl.startsWith('http') && !baseApiUrl.endsWith('/api')) {
     baseApiUrl = baseApiUrl.endsWith('/') ? `${baseApiUrl}api` : `${baseApiUrl}/api`;
 }
 export const API_URL = baseApiUrl;
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
 
-export { BASE_URL };
+let derivedBaseUrl = import.meta.env.VITE_API_BASE_URL;
+if (!derivedBaseUrl) {
+    if (baseApiUrl.startsWith('http')) {
+        derivedBaseUrl = baseApiUrl.replace(/\/api\/?$/, '');
+    } else {
+        derivedBaseUrl = typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000';
+    }
+}
+export const BASE_URL = derivedBaseUrl;
 
 export const apiFetch = async (endpoint: string, options: any = {}) => {
     const token = localStorage.getItem('token') || localStorage.getItem('auth_token');
