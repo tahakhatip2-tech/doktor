@@ -8,14 +8,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 import { dataApi } from "@/lib/api";
-import { Megaphone, Plus, Trash2, Upload, Building2, Calendar, Star } from "lucide-react";
+import { Megaphone, Plus, Trash2, Upload, Building2, Calendar } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ar } from "date-fns/locale";
 import { BASE_URL } from "@/lib/api";
-import axios from "axios";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 const logoSrc = (url?: string) => {
     if (!url) return null;
@@ -41,14 +39,23 @@ const defaultForm = { title: "", content: "", sponsorName: "", sponsorLogo: "", 
 
 const AdminAds = () => {
     const { toast } = useToast();
+    const navigate = useNavigate();
     const [ads, setAds] = useState<Ad[]>([]);
     const [loading, setLoading] = useState(true);
     const [dialogOpen, setDialogOpen] = useState(false);
     const [form, setForm] = useState(defaultForm);
     const [submitting, setSubmitting] = useState(false);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
     const logoInputRef = useRef<HTMLInputElement>(null);
     const imageInputRef = useRef<HTMLInputElement>(null);
+
+    // تحقق من توكن المدير
+    const getAdminToken = (): string | null => {
+        const t = localStorage.getItem('token') || localStorage.getItem('auth_token');
+        // تجاهل القيمة الحرفية "null"
+        return (t && t !== 'null') ? t : null;
+    };
 
     const fetchAds = async () => {
         try {
@@ -60,16 +67,37 @@ const AdminAds = () => {
     useEffect(() => { fetchAds(); }, []);
 
     const handleUpload = async (file: File, field: "sponsorLogo" | "image") => {
+        const token = getAdminToken();
+        if (!token) {
+            toast({ variant: "destructive", title: "انتهت الجلسة", description: "يرجى تسجيل الدخول من جديد" });
+            navigate("/admin-login");
+            return;
+        }
         field === "sponsorLogo" ? setUploadingLogo(true) : setUploadingImage(true);
         try {
             const fd = new FormData();
             fd.append("file", file);
-            const res = await dataApi.upload("/admin/ads/upload", fd);
-            if (res?.url) {
-                setForm(f => ({ ...f, [field]: res.url }));
+            // استخدام fetch مباشرةً مع التوكن الصحيح
+            const res = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/admin/ads/upload`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                    'Bypass-Tunnel-Reminder': 'true',
+                },
+                body: fd,
+            });
+            if (res.status === 401) {
+                toast({ variant: "destructive", title: "انتهت الجلسة", description: "يرجى تسجيل الدخول من جديد" });
+                navigate("/admin-login");
+                return;
+            }
+            const data = await res.json();
+            if (data?.url) {
+                setForm(f => ({ ...f, [field]: data.url }));
                 toast({ title: "تم الرفع بنجاح ✅" });
             } else {
-                throw new Error(res?.error || "فشل الرفع");
+                throw new Error(data?.error || data?.message || "فشل الرفع");
             }
         } catch (err: any) {
             toast({
