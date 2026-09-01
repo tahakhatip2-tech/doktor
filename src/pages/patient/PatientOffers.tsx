@@ -131,9 +131,16 @@ export default function PatientOffers() {
 
     const handleShare = (offer: any) => {
         const publisherName = offer.isSponsored ? (offer.sponsorName || 'إعلان') : (offer.user?.clinic_name || offer.user?.name || 'طبيب');
+        const logo = offer.isSponsored ? offer.sponsorLogo : offer.user?.clinic_logo;
+        const logoUrl = logo ? logoSrc(logo) : '';
         
         // Formatting for WhatsApp and other native share targets
-        const shareText = `📢 *${offer.title}*\n👨‍⚕️ من: ${publisherName}\n\n${offer.content}\n\n🌐 تطبيق Doctor JO للرعاية الصحية`;
+        let shareText = `📢 *${offer.title}*\n👨‍⚕️ من: ${publisherName}\n\n${offer.content}\n\n🌐 تطبيق Doctor JO للرعاية الصحية`;
+        
+        if (logoUrl) {
+            shareText += `\n🖼️ شعار العيادة: ${logoUrl}`;
+        }
+
         const url = window.location.href;
         
         if (navigator.share) {
