@@ -226,30 +226,19 @@ export default function PatientOffers() {
                                                     <Badge className="bg-amber-100 text-amber-800 border-amber-300 px-1.5 py-0 text-[9px] font-black gap-1 rounded-full shadow-xs">
                                                         <Star className="h-2 w-2 fill-amber-500 text-amber-500" /> جهة راعية
                                                     </Badge>
-                                                    {offer.isPermanent && (
-                                                        <Badge className="bg-orange-100/80 text-orange-700 border-0 px-1.5 py-0 text-[9px] uppercase font-black tracking-wider rounded-xs">
-                                                            دائم
-                                                        </Badge>
-                                                    )}
-                                                </div>
-
-                                                {/* Line 2: Contact / Commercial Notice */}
-                                                <div className="flex items-center gap-2 text-[11px] text-amber-700 font-medium">
-                                                    <span className="flex items-center gap-0.5">
-                                                        <Building2 className="w-3 h-3 text-amber-500" /> إعلان رسمي
-                                                    </span>
+                                                {/* Line 2: Timestamp & Phone */}
+                                                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                                    <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
+                                                        <Clock className="h-2.5 w-2.5" />
+                                                        {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
+                                                    </p>
                                                     {offer.sponsorPhone && (
-                                                        <span className="text-[10px] font-bold text-slate-500 dir-ltr">
-                                                            • {offer.sponsorPhone}
+                                                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 dir-ltr">
+                                                            <Phone className="h-2.5 w-2.5 text-slate-400" />
+                                                            {offer.sponsorPhone}
                                                         </span>
                                                     )}
                                                 </div>
-
-                                                {/* Line 3: Timestamp */}
-                                                <p className="text-[9px] text-slate-400 flex items-center gap-1 font-medium mt-0.5">
-                                                    <Clock className="h-2.5 w-2.5" />
-                                                    {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
-                                                </p>
                                             </div>
                                         ) : (
                                             <div className="flex-1 min-w-0 flex flex-col justify-center">
@@ -258,11 +247,6 @@ export default function PatientOffers() {
                                                     <p className="font-extrabold text-slate-900 text-sm sm:text-base truncate leading-tight">
                                                         {offer.user.name || 'طبيب'}
                                                     </p>
-                                                    {offer.isPermanent && (
-                                                        <Badge className="bg-orange-100/80 text-orange-700 border-0 px-1.5 py-0 text-[9px] uppercase font-black tracking-wider rounded-xs">
-                                                            دائم
-                                                        </Badge>
-                                                    )}
                                                 </div>
 
                                                 {/* Line 2: Clinic Logo + Clinic Name */}
