@@ -18,6 +18,9 @@ import { BASE_URL } from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
+const CACHE_KEY = 'patient_offers_cache';
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 const logoSrc = (url?: string) => {
     if (!url) return null;
     if (url.startsWith('http') || url.startsWith('data:')) return url;
@@ -54,6 +57,36 @@ interface Offer {
     comments?: any[];
 }
 
+// ── Shimmer skeleton that mirrors real card shape ──
+function OfferSkeleton() {
+    return (
+        <div className="bg-white rounded-sm border border-orange-100 overflow-hidden shadow-sm">
+            {/* header */}
+            <div className="flex items-center gap-3 p-4">
+                <div className="h-11 w-11 rounded-full bg-slate-200 animate-pulse flex-shrink-0" />
+                <div className="flex-1 space-y-1.5">
+                    <div className="h-3.5 w-32 rounded bg-slate-200 animate-pulse" />
+                    <div className="h-2.5 w-20 rounded bg-slate-100 animate-pulse" />
+                </div>
+            </div>
+            {/* image placeholder */}
+            <div className="h-44 w-full bg-slate-100 animate-pulse" />
+            {/* text lines */}
+            <div className="p-4 space-y-2">
+                <div className="h-3 w-full rounded bg-slate-200 animate-pulse" />
+                <div className="h-3 w-5/6 rounded bg-slate-200 animate-pulse" />
+                <div className="h-3 w-4/6 rounded bg-slate-100 animate-pulse" />
+            </div>
+            {/* action bar */}
+            <div className="flex gap-3 px-4 pb-4">
+                <div className="h-7 w-16 rounded-full bg-slate-100 animate-pulse" />
+                <div className="h-7 w-16 rounded-full bg-slate-100 animate-pulse" />
+                <div className="h-7 w-16 rounded-full bg-slate-100 animate-pulse" />
+            </div>
+        </div>
+    );
+}
+
 export default function PatientOffers() {
     const { toast } = useToast();
     const [offers, setOffers] = useState<Offer[]>([]);
@@ -71,10 +104,12 @@ export default function PatientOffers() {
     const headers = { Authorization: `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' };
 
     const fetchOffers = async () => {
+        setLoading(true);
         try {
             const res = await axios.get(`${API_URL}/patient/offers/feed`, { headers });
             setOffers(Array.isArray(res.data) ? res.data : []);
-        } catch {
+        } catch (err) {
+            console.error('Failed to fetch offers:', err);
             setOffers([]);
         } finally {
             setLoading(false);
@@ -157,7 +192,7 @@ export default function PatientOffers() {
                 {loading ? (
                     <div className="space-y-6">
                         {[1, 2, 3].map(i => (
-                            <Skeleton key={i} className="h-[400px] w-full rounded-md border border-orange-500" />
+                            <OfferSkeleton key={i} />
                         ))}
                     </div>
                 ) : offers.length === 0 ? (
@@ -325,9 +360,9 @@ export default function PatientOffers() {
                                                     <video 
                                                         src={logoSrc(offer.image) || ''} 
                                                         controls 
-                                                        className="w-full max-h-[500px] object-contain bg-black" 
-                                                        onClick={(e) => e.stopPropagation()}
-                                                        onPointerDown={(e) => e.stopPropagation()}
+                                                        playsInline
+                                                        preload="metadata"
+                                                        className="w-full max-h-[500px] object-contain bg-black relative z-10" 
                                                     />
                                                 ) : (
                                                     <img

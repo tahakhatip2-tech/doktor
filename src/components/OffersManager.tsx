@@ -16,7 +16,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import {
     Plus, Trash2, Tag, Clock, Image as ImageIcon,
-    Building2, Heart, X, Sparkles, MessageCircle, Send, PlayCircle, Share2, Pill
+    Building2, Heart, X, Sparkles, MessageCircle, Send, PlayCircle, Share2, Pill, Megaphone, Phone, Star
 } from 'lucide-react';
 import axios from 'axios';
 import { format, formatDistanceToNow } from 'date-fns';
@@ -339,57 +339,117 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
                         const isVid = checkIsVideo(offer.image);
                         const isOwn = currentUserId != null && offer.user?.id === currentUserId;
                         return (
-                        <Card key={offer.id} className="overflow-hidden border border-slate-200 shadow-sm hover:shadow-md transition-shadow bg-white rounded-xl">
+                        <Card key={offer.id} className={cn(
+                            "overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] bg-white rounded-sm transition-all duration-500 relative",
+                            offer.isSponsored
+                                ? "border-2 border-amber-400 bg-gradient-to-br from-amber-50/40 to-orange-50/20"
+                                : "border border-orange-500"
+                        )}>
+                            {/* Sponsored badge ribbon */}
+                            {offer.isSponsored && (
+                                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-400 to-orange-400 text-white text-xs font-black">
+                                    <Megaphone className="h-3.5 w-3.5" />
+                                    إعلان ممول
+                                    {offer.sponsorName && <span className="opacity-80">· {offer.sponsorName}</span>}
+                                </div>
+                            )}
                             <CardContent className="p-0">
-                                {/* Header */}
-                                <div className="flex items-start justify-between p-4">
+                                {/* ── Post Header ───────────────── */}
+                                <div className="flex items-start justify-between p-3.5 sm:p-4 pb-2.5">
                                     <div className="flex items-center gap-3">
-                                        <div className={cn(
-                                            "h-12 w-12 rounded-full flex items-center justify-center border border-slate-100 overflow-hidden",
-                                            isPharmacy
-                                                ? "bg-gradient-to-br from-teal-100 to-teal-50"
-                                                : "bg-gradient-to-br from-blue-100 to-orange-50"
-                                        )}>
-                                            {offer.user?.avatar ? (
-                                                <img src={logoSrc(offer.user.avatar) || ''} alt="avatar" className="h-full w-full object-cover" />
-                                            ) : (
-                                                <Building2 className={cn("h-6 w-6", isPharmacy ? "text-teal-800" : "text-blue-800")} />
+                                        {/* AVATAR STACK */}
+                                        <div className="relative flex-shrink-0">
+                                            <div className={cn("absolute inset-0 rounded-full blur-[4px] opacity-50", offer.isSponsored ? "bg-gradient-to-tr from-amber-400 to-orange-500" : "bg-gradient-to-tr from-orange-500 to-blue-600")} />
+                                            <div className="relative h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-white p-0.5 z-10">
+                                                <div className="h-full w-full rounded-full bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center overflow-hidden border border-white shadow-sm">
+                                                    {offer.isSponsored ? (
+                                                        offer.sponsorLogo ? (
+                                                            <img src={logoSrc(offer.sponsorLogo) || ''} className="h-full w-full object-contain p-1" alt="sponsor" />
+                                                        ) : (
+                                                            <Building2 className="h-5 w-5 text-amber-500" />
+                                                        )
+                                                    ) : (
+                                                        offer.user?.avatar ? (
+                                                            <img src={logoSrc(offer.user.avatar) || ''} className="h-full w-full object-cover" alt="doctor" />
+                                                        ) : (
+                                                            <Building2 className="h-5 w-5 text-blue-800" />
+                                                        )
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {!offer.isSponsored && offer.user?.clinic_logo && (
+                                                <div className="absolute -bottom-0.5 -left-0.5 z-20 h-5 w-5 rounded-full border border-white shadow-md overflow-hidden bg-white">
+                                                    <img src={logoSrc(offer.user.clinic_logo) || ''} alt="clinic" className="h-full w-full object-cover" />
+                                                </div>
                                             )}
                                         </div>
-                                        <div>
-                                            <p className="font-bold text-[15px] text-slate-900 leading-tight">{displayName(offer.user)}</p>
-                                            <p className="text-[12px] text-slate-500 flex items-center gap-1 mt-0.5 font-medium">
-                                                {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
-                                                • <Clock className="h-3 w-3" />
-                                            </p>
-                                        </div>
+
+                                        {offer.isSponsored ? (
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <p className="font-extrabold text-slate-900 text-sm sm:text-base truncate leading-tight">
+                                                        {offer.sponsorName || 'إعلان ممول'}
+                                                    </p>
+                                                    <Badge className="bg-amber-100 text-amber-800 border-amber-300 px-1.5 py-0 text-[9px] font-black gap-1 rounded-full shadow-xs">
+                                                        <Star className="h-2 w-2 fill-amber-500 text-amber-500" /> جهة راعية
+                                                    </Badge>
+                                                </div>
+                                                <div className="flex items-center gap-3 mt-1 flex-wrap">
+                                                    <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
+                                                        <Clock className="h-2.5 w-2.5" />
+                                                        {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
+                                                    </p>
+                                                    {offer.sponsorPhone && (
+                                                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1 dir-ltr">
+                                                            <Phone className="h-2.5 w-2.5 text-slate-400" />
+                                                            {offer.sponsorPhone}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                <div className="flex items-center gap-1.5">
+                                                    <p className="font-extrabold text-slate-900 text-sm sm:text-base truncate leading-tight">
+                                                        {displayName(offer.user)}
+                                                    </p>
+                                                </div>
+                                                <div className="flex items-center flex-wrap gap-2 text-[10px] mt-1">
+                                                    <p className="text-slate-400 flex items-center gap-0.5 font-medium">
+                                                        <Clock className="h-2.5 w-2.5" />
+                                                        {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
+                                    
                                     {isOwn && (
                                         <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-destructive hover:bg-destructive/10 rounded-full"
-                                            onClick={() => handleDelete(offer.id)}>
+                                            onClick={(e) => { e.stopPropagation(); handleDelete(offer.id); }}>
                                             <Trash2 className="h-4 w-4" />
                                         </Button>
                                     )}
                                 </div>
 
                                 {/* Content */}
-                                <div className="px-4 pb-3">
-                                    <h3 className="font-bold text-base mb-1 text-slate-900">{offer.title}</h3>
+                                <div className="px-3.5 sm:px-4 pb-2.5 cursor-text">
+                                    <h3 className="font-black text-base sm:text-lg mb-1 text-blue-950 leading-snug">{offer.title}</h3>
                                     <div className="relative">
                                         <p className={cn(
-                                            "text-[15px] text-slate-800 leading-relaxed whitespace-pre-wrap transition-all duration-300",
+                                            "text-xs sm:text-sm text-slate-700 leading-normal whitespace-pre-wrap font-medium transition-all duration-300",
                                             !expandedPosts[offer.id] && "line-clamp-3"
                                         )}>
                                             {offer.content}
                                         </p>
-                                        {(offer.content && (offer.content.length > 130 || offer.content.split('\n').length > 3)) && (
+                                        {(offer.content && (offer.content.length > 120 || offer.content.split('\n').length > 3)) && (
                                             <button
                                                 type="button"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     toggleExpand(offer.id);
                                                 }}
-                                                className="mt-1 text-xs font-bold text-orange-600 hover:text-orange-700 hover:underline inline-flex items-center gap-1 focus:outline-none transition-colors"
+                                                className="mt-1 text-xs font-black text-orange-600 hover:text-orange-700 hover:underline inline-flex items-center gap-0.5 focus:outline-none transition-colors"
                                             >
                                                 {expandedPosts[offer.id] ? 'عرض أقل' : '... المزيد'}
                                             </button>
@@ -397,46 +457,79 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
                                     </div>
                                 </div>
 
-                                {/* Media */}
+                                {/* Media Container */}
                                 {offer.image && (
-                                    <div className="w-full bg-slate-50 border-y border-slate-100">
+                                    <div className="w-full bg-slate-950/5 border-y border-slate-100 flex items-center justify-center overflow-hidden">
                                         {isVid ? (
-                                            <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[500px] object-contain bg-black" />
+                                            <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[500px] object-contain bg-black" 
+                                                onClick={(e) => e.stopPropagation()}
+                                                onPointerDown={(e) => e.stopPropagation()}
+                                            />
                                         ) : (
-                                            <img src={logoSrc(offer.image) || ''} alt="post" className="w-full max-h-[500px] object-cover" />
+                                            <img
+                                                src={logoSrc(offer.image) || ''}
+                                                alt={offer.title}
+                                                className="w-full max-h-[550px] object-cover md:object-contain"
+                                                loading="lazy"
+                                            />
                                         )}
                                     </div>
                                 )}
 
-                                {/* Action Bar */}
-                                <div className="px-4 py-3 bg-slate-50 border-y border-slate-100 flex items-center justify-between">
-                                    <div className="flex items-center gap-4 text-sm font-medium">
-                                        <button
-                                            onClick={() => handleLike(offer.id)}
-                                            className={cn(
-                                                "flex items-center gap-1.5 transition-colors",
-                                                isPharmacy
-                                                    ? (offer.isLikedByMe || offer.isLiked ? "text-teal-500" : "text-slate-500 hover:text-teal-500")
-                                                    : (offer.isLikedByMe || offer.isLiked ? "text-orange-500" : "text-slate-500 hover:text-orange-500")
-                                            )}
-                                        >
-                                            <Heart className={cn("h-4 w-4", (offer.isLikedByMe || offer.isLiked) && isPharmacy ? "fill-teal-500" : (offer.isLikedByMe || offer.isLiked) && "fill-orange-500")} />
-                                            <span>{offer._count?.likes || 0} إعجاب</span>
-                                        </button>
-                                        <div 
-                                            className="flex items-center gap-1.5 text-slate-500 cursor-pointer hover:text-blue-600 transition-colors"
-                                            onClick={() => setSelectedOfferForComments(offer)}
-                                        >
-                                            <MessageCircle className="h-4 w-4" />
-                                            <span>{offer._count?.comments || 0} تعليق</span>
+                                {/* Likes Count Summary */}
+                                {(offer._count?.likes || 0) > 0 && (
+                                    <div className="px-3.5 py-1.5 border-b border-slate-100 text-[11px] text-slate-500 flex items-center gap-1.5 font-medium bg-slate-50/60">
+                                        <div className="h-4 w-4 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center shadow-xs">
+                                            <Heart className="h-2.5 w-2.5 text-white fill-white" />
                                         </div>
+                                        <span className="text-slate-700 font-bold">{offer._count?.likes || 0} شخص أعجبهم هذا</span>
                                     </div>
+                                )}
+
+                                {/* Action Buttons Bar */}
+                                <div className="flex items-center border-t border-slate-100 bg-slate-50/80 overflow-hidden relative z-20">
+                                    {/* Like Button */}
                                     <button
-                                        onClick={() => handleShare(offer)}
-                                        className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors"
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleLike(offer.id);
+                                        }}
+                                        className={cn(
+                                            "flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold transition-all duration-200 cursor-pointer select-none active:scale-95 border-r border-slate-100 hover:bg-slate-100",
+                                            offer.isLikedByMe || offer.isLiked
+                                                ? "text-orange-600"
+                                                : "text-slate-500"
+                                        )}
                                     >
-                                        <Share2 className="h-4 w-4" />
-                                        مشاركة
+                                        <Heart className={cn("h-4 w-4", (offer.isLikedByMe || offer.isLiked) ? "fill-orange-500 text-orange-500" : "text-slate-400")} />
+                                        <span>{(offer.isLikedByMe || offer.isLiked) ? 'أعجبني' : 'إعجاب'}</span>
+                                    </button>
+
+                                    {/* Comments Button */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedOfferForComments(offer);
+                                        }}
+                                        className="flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold text-slate-500 hover:bg-slate-100 transition-all cursor-pointer select-none active:scale-95 border-r border-slate-100"
+                                    >
+                                        <MessageCircle className="h-4 w-4 text-slate-400" />
+                                        <span>تعليق ({offer._count?.comments || 0})</span>
+                                    </button>
+
+                                    {/* Share Button */}
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleShare(offer);
+                                        }}
+                                        className="flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold text-slate-500 hover:bg-slate-100 transition-all cursor-pointer select-none active:scale-95"
+                                    >
+                                        <Share2 className="h-4 w-4 text-slate-400" />
+                                        <span>مشاركة</span>
                                     </button>
                                 </div>
 

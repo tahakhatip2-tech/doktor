@@ -111,43 +111,74 @@ export class OffersService {
     // ── المريض: جلب كل العروض النشطة (Feed) ────────────────────────────
     async getActiveFeed(patientId?: number) {
         const now = new Date();
-        const offers = await this.prisma.executeWithRetry(() =>
-            this.prisma.offer.findMany({
-                where: {
-                    isActive: true,
-                    OR: [
-                        { isPermanent: true },
-                        { endDate: { gte: now }, startDate: { lte: now } },
-                    ],
-                },
-                orderBy: { createdAt: 'desc' },
-                include: {
-                    user: { 
-                        select: { 
-                            id: true, 
-                            name: true, 
-                            clinic_name: true, 
-                            avatar: true, 
-                            clinic_specialty: true, 
-                            phone: true,
-                            settings: {
-                                where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'clinic_specialty'] } },
-                                select: { key: true, value: true }
+
+        // Run the two queries in parallel for speed
+        const [offers, patientLikes] = await Promise.all([
+            this.prisma.executeWithRetry(() =>
+                this.prisma.offer.findMany({
+                    where: {
+                        isActive: true,
+                        OR: [
+                            { isPermanent: true },
+                            { endDate: { gte: now }, startDate: { lte: now } },
+                        ],
+                    },
+                    orderBy: { createdAt: 'desc' },
+                    take: 50, // limit for performance
+                    select: {
+                        id: true,
+                        title: true,
+                        content: true,
+                        image: true,
+                        isPermanent: true,
+                        startDate: true,
+                        endDate: true,
+                        createdAt: true,
+                        isSponsored: true,
+                        sponsorName: true,
+                        sponsorLogo: true,
+                        sponsorPhone: true,
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                clinic_name: true,
+                                avatar: true,
+                                clinic_specialty: true,
+                                phone: true,
+                                settings: {
+                                    where: { key: { in: ['clinic_logo', 'clinic_name', 'clinic_specialty'] } },
+                                    select: { key: true, value: true }
+                                }
                             }
-                        } 
-                    },
-                    likes: true,
-                    comments: {
-                        include: {
-                            user: { select: { id: true, name: true, avatar: true } },
-                            patient: { select: { id: true, fullName: true, avatar: true } }
                         },
-                        orderBy: { createdAt: 'asc' }
+                        // Only fetch last 3 comments (not all of them)
+                        comments: {
+                            take: 3,
+                            orderBy: { createdAt: 'desc' },
+                            select: {
+                                id: true,
+                                offerId: true,
+                                content: true,
+                                createdAt: true,
+                                user: { select: { id: true, name: true, avatar: true } },
+                                patient: { select: { id: true, fullName: true, avatar: true } }
+                            },
+                        },
+                        _count: { select: { likes: true, comments: true } },
                     },
-                    _count: { select: { likes: true, comments: true } },
-                },
-            })
-        );
+                })
+            ),
+            // Fetch only which offer IDs this patient has liked (much lighter)
+            patientId
+                ? this.prisma.offerLike.findMany({
+                    where: { patientId },
+                    select: { offerId: true },
+                })
+                : Promise.resolve([]),
+        ]);
+
+        const likedOfferIds = new Set((patientLikes as any[]).map((l: any) => l.offerId));
 
         return offers.map(offer => {
             const { settings, ...userData } = offer.user as any;
@@ -160,13 +191,11 @@ export class OffersService {
                 sponsorPhone: (offer as any).sponsorPhone ?? null,
                 user: {
                     ...userData,
-                    name: userData.name, // Always use profile name to match patient.service.ts
                     clinic_name: settingsMap['clinic_name'] || userData.clinic_name,
-                    clinic_specialty: settingsMap['clinic_specialty'] || settingsMap['clinic_description'] || userData.clinic_specialty,
-                    clinic_description: settingsMap['clinic_description'] || userData.clinic_description || null,
+                    clinic_specialty: settingsMap['clinic_specialty'] || userData.clinic_specialty,
                     clinic_logo: settingsMap['clinic_logo'] || null,
                 },
-                comments: (offer.comments || []).map((c: any) => ({
+                comments: (offer.comments || []).reverse().map((c: any) => ({
                     id: c.id,
                     offerId: c.offerId,
                     content: c.content,
@@ -178,9 +207,8 @@ export class OffersService {
                             : null,
                 })),
                 likesCount: offer._count.likes,
-                isLikedByMe: patientId
-                    ? offer.likes.some(l => l.patientId === patientId)
-                    : false,
+                commentsCount: offer._count.comments,
+                isLikedByMe: likedOfferIds.has(offer.id),
             };
         });
     }

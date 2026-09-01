@@ -91,7 +91,7 @@ export default function PatientLayout() {
 
     const navItems = [
         { path: '/patient/appointments', label: 'مواعيدي', icon: Calendar },
-        { path: '/patient/clinics', label: 'العيادات', icon: Building2 },
+        { path: '/patient/clinics', label: 'المراكز الطبية', icon: Building2 },
         { path: '/patient/dashboard', label: 'الرئيسية', icon: Home },
         { path: '/patient/medical-records', label: 'السجلات', icon: FileText },
         { path: '/patient/offers', label: 'آخر الأخبار', icon: Tag },
