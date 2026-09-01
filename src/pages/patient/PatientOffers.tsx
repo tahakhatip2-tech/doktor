@@ -130,7 +130,10 @@ export default function PatientOffers() {
     };
 
     const handleShare = (offer: any) => {
-        const shareText = `${offer.title}\n\n${offer.content}`;
+        const publisherName = offer.isSponsored ? (offer.sponsorName || 'إعلان') : (offer.user?.clinic_name || offer.user?.name || 'طبيب');
+        
+        // Formatting for WhatsApp and other native share targets
+        const shareText = `📢 *${offer.title}*\n👨‍⚕️ من: ${publisherName}\n\n${offer.content}\n\n🌐 تطبيق Doctor JO للرعاية الصحية`;
         const url = window.location.href;
         
         if (navigator.share) {
