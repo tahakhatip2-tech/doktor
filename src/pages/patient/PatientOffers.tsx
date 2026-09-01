@@ -337,60 +337,50 @@ export default function PatientOffers() {
                                         </div>
                                     </div>
 
-                                        {/* ── Image & Stats Container ─────────────────────── */}
-                                        <div className="relative w-full">
-                                            {offer.image && (
-                                                <div className="w-full bg-slate-950/5 border-y border-slate-100 flex items-center justify-center overflow-hidden">
-                                                    {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
-                                                        <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[600px] object-contain bg-black" />
-                                                    ) : (
-                                                        <img
-                                                            src={logoSrc(offer.image) || ''}
-                                                            alt={offer.title}
-                                                            className="w-full max-h-[650px] object-cover md:object-contain"
-                                                            loading="lazy"
-                                                        />
-                                                    )}
-                                                </div>
-                                            )}
-
-                                        {offer.likesCount > 0 && !offer.image && (
-                                           <div className="px-6 py-3 border-y border-slate-100 text-xs text-slate-500 flex items-center gap-2 font-medium bg-slate-50">
-                                               <div className="h-5 w-5 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center shadow-sm shadow-orange-500/20">
-                                                   <Heart className="h-3 w-3 text-white fill-white" />
-                                               </div>
-                                               <span className="text-slate-700">{offer.likesCount} شخص أعجبهم هذا</span>
-                                           </div>
+                                        {/* ── Media Container ─────────────────────── */}
+                                        {offer.image && (
+                                            <div className="w-full bg-slate-950/5 border-y border-slate-100 flex items-center justify-center overflow-hidden">
+                                                {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
+                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[600px] object-contain bg-black" />
+                                                ) : (
+                                                    <img
+                                                        src={logoSrc(offer.image) || ''}
+                                                        alt={offer.title}
+                                                        className="w-full max-h-[650px] object-cover md:object-contain"
+                                                        loading="lazy"
+                                                    />
+                                                )}
+                                            </div>
                                         )}
 
-                                        {/* ── Glassmorphism Action Bar ─────────────── */}
-                                        <div className={cn(
-                                            "flex items-center gap-1.5 px-3 py-3",
-                                            offer.image 
-                                                ? "absolute bottom-0 left-0 right-0 bg-white/70 backdrop-blur-lg border-t border-white/40 shadow-lg"
-                                                : "bg-slate-50 border-t border-slate-200"
-                                        )}>
-                                            {offer.image && offer.likesCount > 0 && (
-                                                <div className="absolute -top-8 right-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-md text-[10px] font-bold text-orange-600 flex items-center gap-1 border border-white/50">
-                                                    <Heart className="h-3 w-3 fill-orange-500" />
-                                                    {offer.likesCount}
+                                        {/* Likes Count Summary */}
+                                        {offer.likesCount > 0 && (
+                                            <div className="px-5 py-2 border-b border-slate-100 text-xs text-slate-500 flex items-center gap-2 font-medium bg-slate-50/60">
+                                                <div className="h-5 w-5 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center shadow-sm shadow-orange-500/20">
+                                                    <Heart className="h-3 w-3 text-white fill-white" />
                                                 </div>
-                                            )}
+                                                <span className="text-slate-700 font-bold">{offer.likesCount} شخص أعجبهم هذا</span>
+                                            </div>
+                                        )}
 
-                                            {/* Like */}
+                                        {/* ── Action Buttons Bar ─────────────── */}
+                                        <div className="flex items-center justify-between gap-2 p-3 bg-white border-t border-slate-100 relative z-20">
+                                            {/* Like Button */}
                                             <button
-                                                onClick={() => handleLike(offer)}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleLike(offer);
+                                                }}
                                                 className={cn(
-                                                    "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
+                                                    "flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer select-none active:scale-95 shadow-sm",
                                                     offer.isLikedByMe
-                                                        ? "bg-orange-500 text-white shadow-sm shadow-orange-500/20"
-                                                        : offer.image 
-                                                            ? "bg-white/50 text-slate-700 border border-white/60 hover:bg-white/80"
-                                                            : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
+                                                        ? "bg-orange-500 text-white border-orange-500 shadow-orange-500/20"
+                                                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
                                                 )}
                                             >
-                                                <Heart className={cn("h-3.5 w-3.5 transition-transform duration-300", offer.isLikedByMe ? "fill-white scale-110" : "scale-100")} />
-                                                {offer.isLikedByMe ? 'أعجبني' : 'إعجاب'}
+                                                <Heart className={cn("h-4 w-4 transition-transform", offer.isLikedByMe ? "fill-white text-white" : "text-slate-600")} />
+                                                <span>{offer.isLikedByMe ? 'أعجبني' : 'إعجاب'}</span>
                                             </button>
 
                                             {/* Message (Chat) or WhatsApp for sponsored */}
@@ -399,60 +389,49 @@ export default function PatientOffers() {
                                                     href={`https://wa.me/${offer.sponsorPhone.replace(/[^0-9]/g, '')}`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className={cn(
-                                                        "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
-                                                        offer.image
-                                                            ? "bg-green-600/90 text-white shadow-sm hover:bg-green-700"
-                                                            : "bg-green-600 text-white hover:bg-green-700 shadow-sm"
-                                                    )}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-green-600 hover:bg-green-700 text-white shadow-sm active:scale-95 cursor-pointer select-none"
                                                 >
-                                                    <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.535 5.838L0 24l6.338-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.643-.492-5.17-1.349l-.371-.219-3.865.919.974-3.769-.24-.384A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-                                                    واتساب
+                                                    <svg className="h-4 w-4 fill-white flex-shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.535 5.838L0 24l6.338-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.643-.492-5.17-1.349l-.371-.219-3.865.919.974-3.769-.24-.384A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                                                    <span>واتساب</span>
                                                 </a>
                                             ) : (
                                                 <Link
                                                     to={`/patient/chat/${offer.user.id}`}
-                                                    className={cn(
-                                                        "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
-                                                        offer.image
-                                                            ? "bg-blue-600/90 text-white shadow-sm hover:bg-blue-700"
-                                                            : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-                                                    )}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white shadow-sm active:scale-95 cursor-pointer select-none"
                                                 >
-                                                    <MessageCircle className="h-3.5 w-3.5" />
-                                                    مراسلة
+                                                    <MessageCircle className="h-4 w-4" />
+                                                    <span>مراسلة</span>
                                                 </Link>
                                             )}
 
-                                            {/* Comments Toggle */}
+                                            {/* Comments Toggle Button */}
                                             <button
-                                                onClick={() => setSelectedOfferForComments(offer)}
-                                                className={cn(
-                                                    "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
-                                                    offer.image
-                                                        ? "bg-white/50 text-slate-700 border border-white/60 hover:bg-white/80"
-                                                        : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
-                                                )}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setSelectedOfferForComments(offer);
+                                                }}
+                                                className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-sm active:scale-95 cursor-pointer select-none"
                                             >
-                                                <MessageCircle className="h-3.5 w-3.5" />
-                                                التعليقات
+                                                <MessageCircle className="h-4 w-4 text-slate-600" />
+                                                <span>التعليقات</span>
                                             </button>
 
-                                            {/* Share */}
+                                            {/* Share Button */}
                                             <button
-                                                onClick={() => handleShare(offer)}
-                                                className={cn(
-                                                    "flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300",
-                                                    offer.image
-                                                        ? "bg-white/50 text-slate-700 border border-white/60 hover:bg-white/80"
-                                                        : "bg-white text-slate-700 border border-slate-200 hover:bg-slate-50"
-                                                )}
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleShare(offer);
+                                                }}
+                                                className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-sm active:scale-95 cursor-pointer select-none"
                                             >
-                                                <Share2 className="h-3.5 w-3.5" />
-                                                مشاركة
+                                                <Share2 className="h-4 w-4 text-slate-600" />
+                                                <span>مشاركة</span>
                                             </button>
                                         </div>
-                                    </div>
 
                                     {/* Comments Section */}
                                     {offer.comments && offer.comments.length > 0 && (
