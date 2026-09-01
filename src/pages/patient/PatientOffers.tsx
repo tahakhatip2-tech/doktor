@@ -372,10 +372,10 @@ export default function PatientOffers() {
                                                     handleLike(offer);
                                                 }}
                                                 className={cn(
-                                                    "flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold transition-all duration-200 cursor-pointer select-none active:scale-95 border-r border-slate-100",
+                                                    "flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold transition-all duration-200 cursor-pointer select-none active:scale-95 border-r border-slate-100 hover:bg-slate-100",
                                                     offer.isLikedByMe
-                                                        ? "text-orange-500 bg-orange-50"
-                                                        : "text-slate-500 hover:bg-slate-100"
+                                                        ? "text-orange-600"
+                                                        : "text-slate-500"
                                                 )}
                                             >
                                                 <Heart className={cn("h-4 w-4", offer.isLikedByMe ? "fill-orange-500 text-orange-500" : "text-slate-400")} />
@@ -389,7 +389,7 @@ export default function PatientOffers() {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold text-green-600 hover:bg-green-50 transition-all cursor-pointer select-none active:scale-95 border-r border-slate-100"
+                                                    className="flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold text-green-600 hover:bg-slate-100 transition-all cursor-pointer select-none active:scale-95 border-r border-slate-100"
                                                 >
                                                     <svg className="h-4 w-4 fill-green-600 flex-shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.535 5.838L0 24l6.338-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.643-.492-5.17-1.349l-.371-.219-3.865.919.974-3.769-.24-.384A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
                                                     <span>واتساب</span>
@@ -398,7 +398,7 @@ export default function PatientOffers() {
                                                 <Link
                                                     to={`/patient/chat/${offer.user.id}`}
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold text-blue-600 hover:bg-blue-50 transition-all cursor-pointer select-none active:scale-95 border-r border-slate-100"
+                                                    className="flex-1 flex flex-col justify-center items-center gap-0.5 py-2 min-w-0 text-[10px] font-bold text-blue-600 hover:bg-slate-100 transition-all cursor-pointer select-none active:scale-95 border-r border-slate-100"
                                                 >
                                                     <MessageCircle className="h-4 w-4 text-blue-500" />
                                                     <span>مراسلة</span>
