@@ -184,114 +184,112 @@ export default function PatientOffers() {
                                 )}
                                 <CardContent className="p-0">
                                     {/* ── Post Header ───────────────── */}
-                                    <div className="flex items-start justify-between p-5 pb-4">
-                                        <div className="flex items-center gap-4">
+                                    <div className="flex items-start justify-between p-3.5 sm:p-4 pb-2.5">
+                                        <div className="flex items-center gap-3">
                                         {/* AVATAR STACK: Doctor/Sponsor Logo */}
                                         <div className="relative flex-shrink-0">
                                             {/* Glow ring */}
-                                            <div className={cn("absolute inset-0 rounded-full blur-[5px] opacity-60", offer.isSponsored ? "bg-gradient-to-tr from-amber-400 to-orange-500" : "bg-gradient-to-tr from-orange-500 to-blue-600")} />
+                                            <div className={cn("absolute inset-0 rounded-full blur-[4px] opacity-50", offer.isSponsored ? "bg-gradient-to-tr from-amber-400 to-orange-500" : "bg-gradient-to-tr from-orange-500 to-blue-600")} />
                                             {/* Avatar */}
-                                            <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
+                                            <div className="relative h-11 w-11 sm:h-12 sm:w-12 rounded-full bg-white p-0.5 z-10">
                                                 <div className="h-full w-full rounded-full bg-gradient-to-br from-amber-50 to-orange-100 flex items-center justify-center overflow-hidden border border-white shadow-sm">
                                                     {offer.isSponsored ? (
                                                         offer.sponsorLogo ? (
                                                             <img src={logoSrc(offer.sponsorLogo) || ''} className="h-full w-full object-contain p-1" alt="sponsor" />
                                                         ) : (
-                                                            <Building2 className="h-7 w-7 text-amber-500" />
+                                                            <Building2 className="h-5 w-5 text-amber-500" />
                                                         )
                                                     ) : (
                                                         offer.user.avatar ? (
                                                             <img src={logoSrc(offer.user.avatar) || ''} className="h-full w-full object-cover" alt="doctor" />
                                                         ) : (
-                                                            <Building2 className="h-6 w-6 text-blue-800" />
+                                                            <Building2 className="h-5 w-5 text-blue-800" />
                                                         )
                                                     )}
                                                 </div>
                                             </div>
                                             {/* Clinic logo mini-badge (only for non-sponsored) */}
                                             {!offer.isSponsored && offer.user.clinic_logo && (
-                                                <div className="absolute -bottom-1 -left-1 z-20 h-6 w-6 rounded-full border-2 border-white shadow-md overflow-hidden bg-white">
+                                                <div className="absolute -bottom-0.5 -left-0.5 z-20 h-5 w-5 rounded-full border border-white shadow-md overflow-hidden bg-white">
                                                     <img src={logoSrc(offer.user.clinic_logo) || ''} alt="clinic" className="h-full w-full object-cover" />
                                                 </div>
                                             )}
                                         </div>
 
                                         {offer.isSponsored ? (
-                                            <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
                                                 {/* Line 1: Sponsor Company Name */}
-                                                <div className="flex items-center gap-2 flex-wrap">
-                                                    <p className="font-extrabold text-slate-900 text-[17px] truncate leading-none">
+                                                <div className="flex items-center gap-1.5 flex-wrap">
+                                                    <p className="font-extrabold text-slate-900 text-sm sm:text-base truncate leading-tight">
                                                         {offer.sponsorName || 'إعلان ممول'}
                                                     </p>
-                                                    <Badge className="bg-amber-100 text-amber-800 border-amber-300 px-2 py-0.5 text-[10px] font-black gap-1 rounded-full shadow-sm">
-                                                        <Star className="h-2.5 w-2.5 fill-amber-500 text-amber-500" /> جهة راعية معتمدة
+                                                    <Badge className="bg-amber-100 text-amber-800 border-amber-300 px-1.5 py-0 text-[9px] font-black gap-1 rounded-full shadow-xs">
+                                                        <Star className="h-2 w-2 fill-amber-500 text-amber-500" /> جهة راعية
                                                     </Badge>
                                                     {offer.isPermanent && (
-                                                        <Badge className="bg-orange-100/80 text-orange-700 border-0 px-2 py-0 text-[10px] uppercase font-black tracking-wider rounded-sm shadow-sm">
+                                                        <Badge className="bg-orange-100/80 text-orange-700 border-0 px-1.5 py-0 text-[9px] uppercase font-black tracking-wider rounded-xs">
                                                             دائم
                                                         </Badge>
                                                     )}
                                                 </div>
 
-                                                {/* Line 2: Contact / Phone Info */}
-                                                <div className="flex items-center gap-2 py-0.5">
-                                                    <span className="text-[12px] font-semibold text-amber-700 flex items-center gap-1">
-                                                        <Building2 className="w-3.5 h-3.5 text-amber-500" /> إعلان تجاري رسمي
+                                                {/* Line 2: Contact / Commercial Notice */}
+                                                <div className="flex items-center gap-2 text-[11px] text-amber-700 font-medium">
+                                                    <span className="flex items-center gap-0.5">
+                                                        <Building2 className="w-3 h-3 text-amber-500" /> إعلان رسمي
                                                     </span>
                                                     {offer.sponsorPhone && (
-                                                        <span className="text-[11px] font-bold text-slate-600 dir-ltr">
+                                                        <span className="text-[10px] font-bold text-slate-500 dir-ltr">
                                                             • {offer.sponsorPhone}
                                                         </span>
                                                     )}
                                                 </div>
 
                                                 {/* Line 3: Timestamp */}
-                                                <div className="flex items-center gap-3">
-                                                    <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium italic">
-                                                        <Clock className="h-3 w-3" />
-                                                        {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
-                                                    </p>
-                                                </div>
+                                                <p className="text-[9px] text-slate-400 flex items-center gap-1 font-medium mt-0.5">
+                                                    <Clock className="h-2.5 w-2.5" />
+                                                    {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
+                                                </p>
                                             </div>
                                         ) : (
-                                            <div className="flex-1 min-w-0 flex flex-col justify-center gap-1">
+                                            <div className="flex-1 min-w-0 flex flex-col justify-center">
                                                 {/* Line 1: Doctor Name & Badge */}
-                                                <div className="flex items-center gap-2">
-                                                    <p className="font-extrabold text-slate-900 text-[16px] truncate leading-none">
+                                                <div className="flex items-center gap-1.5">
+                                                    <p className="font-extrabold text-slate-900 text-sm sm:text-base truncate leading-tight">
                                                         {offer.user.name || 'طبيب'}
                                                     </p>
                                                     {offer.isPermanent && (
-                                                        <Badge className="bg-orange-100/80 text-orange-700 border-0 px-2 py-0 text-[10px] uppercase font-black tracking-wider rounded-sm shadow-sm">
+                                                        <Badge className="bg-orange-100/80 text-orange-700 border-0 px-1.5 py-0 text-[9px] uppercase font-black tracking-wider rounded-xs">
                                                             دائم
                                                         </Badge>
                                                     )}
                                                 </div>
 
                                                 {/* Line 2: Clinic Logo + Clinic Name */}
-                                                <div className="flex items-center gap-1.5 py-0.5">
+                                                <div className="flex items-center gap-1 py-0.5">
                                                     {offer.user.clinic_logo ? (
-                                                        <img src={logoSrc(offer.user.clinic_logo) || ''} alt="clinic" className="w-[18px] h-[18px] rounded-full object-cover border border-slate-200 shadow-sm" />
+                                                        <img src={logoSrc(offer.user.clinic_logo) || ''} alt="clinic" className="w-3.5 h-3.5 rounded-full object-cover border border-slate-200" />
                                                     ) : (
-                                                        <div className="w-[18px] h-[18px] rounded-full bg-blue-100 flex items-center justify-center border border-blue-200 text-blue-600">
-                                                            <Building2 className="w-2.5 h-2.5" />
+                                                        <div className="w-3.5 h-3.5 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                                                            <Building2 className="w-2 h-2" />
                                                         </div>
                                                     )}
-                                                    <span className="text-[13px] font-bold text-blue-800 truncate">
+                                                    <span className="text-xs font-bold text-blue-800 truncate">
                                                         {offer.user.clinic_name || 'العيادة'}
                                                     </span>
                                                 </div>
 
                                                 {/* Line 3: Specialty & Time Info */}
-                                                <div className="flex items-center flex-wrap gap-3">
-                                                    <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-1.5 py-0.5 rounded-md">
-                                                        <Stethoscope className="h-[10px] w-[10px] text-orange-500" />
-                                                        <span className="text-[11px] font-bold text-slate-500 truncate max-w-[140px]">
+                                                <div className="flex items-center flex-wrap gap-2 text-[10px]">
+                                                    <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 px-1 py-0.2 rounded text-slate-600 font-medium">
+                                                        <Stethoscope className="h-2.5 w-2.5 text-orange-500" />
+                                                        <span className="truncate max-w-[120px]">
                                                             {offer.user.clinic_specialty || offer.user.clinic_description || 'تخصص عام'}
                                                         </span>
                                                     </div>
 
-                                                    <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium italic">
-                                                        <Clock className="h-3 w-3" />
+                                                    <p className="text-slate-400 flex items-center gap-0.5 font-medium">
+                                                        <Clock className="h-2.5 w-2.5" />
                                                         {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
                                                     </p>
                                                 </div>
@@ -302,8 +300,8 @@ export default function PatientOffers() {
                                         {/* Expiry Badge if not permanent */}
                                         {!offer.isPermanent && offer.endDate && (
                                             <div className="flex flex-col items-end">
-                                               <Badge className="bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/60 gap-1.5 text-xs px-2.5 py-1 rounded-sm font-medium">
-                                                   <Calendar className="h-3.5 w-3.5 text-orange-500" />
+                                               <Badge className="bg-slate-100 text-slate-600 hover:bg-slate-200 border border-slate-200/60 gap-1 text-[10px] px-2 py-0.5 rounded font-medium">
+                                                   <Calendar className="h-3 w-3 text-orange-500" />
                                                    ينتهي {formatDistanceToNow(new Date(offer.endDate), { locale: ar, addSuffix: true })}
                                                </Badge>
                                             </div>
@@ -311,25 +309,25 @@ export default function PatientOffers() {
                                     </div>
 
                                     {/* ── Post Content ──────────────── */}
-                                    <div className="px-6 pb-4 cursor-text">
-                                        <h3 className="font-black text-xl mb-2 text-blue-900 leading-tight">
+                                    <div className="px-3.5 sm:px-4 pb-2.5 cursor-text">
+                                        <h3 className="font-black text-base sm:text-lg mb-1 text-blue-950 leading-snug">
                                             {offer.title}
                                         </h3>
                                         <div className="relative">
                                             <p className={cn(
-                                                "text-sm md:text-base text-slate-700 leading-relaxed whitespace-pre-wrap font-medium transition-all duration-300",
+                                                "text-xs sm:text-sm text-slate-700 leading-normal whitespace-pre-wrap font-medium transition-all duration-300",
                                                 !expandedPosts[offer.id] && "line-clamp-3"
                                             )}>
                                                 {offer.content}
                                             </p>
-                                            {(offer.content && (offer.content.length > 130 || offer.content.split('\n').length > 3)) && (
+                                            {(offer.content && (offer.content.length > 120 || offer.content.split('\n').length > 3)) && (
                                                 <button
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         toggleExpand(offer.id);
                                                     }}
-                                                    className="mt-1.5 text-xs md:text-sm font-black text-orange-600 hover:text-orange-700 hover:underline inline-flex items-center gap-1 focus:outline-none transition-colors"
+                                                    className="mt-1 text-xs font-black text-orange-600 hover:text-orange-700 hover:underline inline-flex items-center gap-0.5 focus:outline-none transition-colors"
                                                 >
                                                     {expandedPosts[offer.id] ? 'عرض أقل' : '... المزيد'}
                                                 </button>
@@ -341,12 +339,12 @@ export default function PatientOffers() {
                                         {offer.image && (
                                             <div className="w-full bg-slate-950/5 border-y border-slate-100 flex items-center justify-center overflow-hidden">
                                                 {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
-                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[600px] object-contain bg-black" />
+                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[500px] object-contain bg-black" />
                                                 ) : (
                                                     <img
                                                         src={logoSrc(offer.image) || ''}
                                                         alt={offer.title}
-                                                        className="w-full max-h-[650px] object-cover md:object-contain"
+                                                        className="w-full max-h-[550px] object-cover md:object-contain"
                                                         loading="lazy"
                                                     />
                                                 )}
@@ -355,16 +353,16 @@ export default function PatientOffers() {
 
                                         {/* Likes Count Summary */}
                                         {offer.likesCount > 0 && (
-                                            <div className="px-5 py-2 border-b border-slate-100 text-xs text-slate-500 flex items-center gap-2 font-medium bg-slate-50/60">
-                                                <div className="h-5 w-5 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center shadow-sm shadow-orange-500/20">
-                                                    <Heart className="h-3 w-3 text-white fill-white" />
+                                            <div className="px-3.5 py-1.5 border-b border-slate-100 text-[11px] text-slate-500 flex items-center gap-1.5 font-medium bg-slate-50/60">
+                                                <div className="h-4 w-4 rounded-full bg-gradient-to-r from-orange-400 to-red-500 flex items-center justify-center shadow-xs">
+                                                    <Heart className="h-2.5 w-2.5 text-white fill-white" />
                                                 </div>
                                                 <span className="text-slate-700 font-bold">{offer.likesCount} شخص أعجبهم هذا</span>
                                             </div>
                                         )}
 
-                                        {/* ── Action Buttons Bar ─────────────── */}
-                                        <div className="flex items-center justify-between gap-2 p-3 bg-white border-t border-slate-100 relative z-20">
+                                        {/* ── Compact Action Buttons Bar ─────────────── */}
+                                        <div className="flex items-center justify-between gap-1 sm:gap-2 p-1.5 sm:p-2 bg-slate-50/90 border-t border-slate-100 relative z-20">
                                             {/* Like Button */}
                                             <button
                                                 type="button"
@@ -373,14 +371,14 @@ export default function PatientOffers() {
                                                     handleLike(offer);
                                                 }}
                                                 className={cn(
-                                                    "flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 border cursor-pointer select-none active:scale-95 shadow-sm",
+                                                    "flex-1 flex justify-center items-center gap-1 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 border cursor-pointer select-none active:scale-95",
                                                     offer.isLikedByMe
-                                                        ? "bg-orange-500 text-white border-orange-500 shadow-orange-500/20"
-                                                        : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100"
+                                                        ? "bg-orange-500 text-white border-orange-500 shadow-xs"
+                                                        : "bg-white text-slate-700 border-slate-200/80 hover:bg-slate-50"
                                                 )}
                                             >
-                                                <Heart className={cn("h-4 w-4 transition-transform", offer.isLikedByMe ? "fill-white text-white" : "text-slate-600")} />
-                                                <span>{offer.isLikedByMe ? 'أعجبني' : 'إعجاب'}</span>
+                                                <Heart className={cn("h-3.5 w-3.5 transition-transform", offer.isLikedByMe ? "fill-white text-white" : "text-slate-600")} />
+                                                <span className="truncate">{offer.isLikedByMe ? 'أعجبني' : 'إعجاب'}</span>
                                             </button>
 
                                             {/* Message (Chat) or WhatsApp for sponsored */}
@@ -390,19 +388,19 @@ export default function PatientOffers() {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-green-600 hover:bg-green-700 text-white shadow-sm active:scale-95 cursor-pointer select-none"
+                                                    className="flex-1 flex justify-center items-center gap-1 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 bg-green-600 hover:bg-green-700 text-white shadow-xs active:scale-95 cursor-pointer select-none"
                                                 >
-                                                    <svg className="h-4 w-4 fill-white flex-shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.535 5.838L0 24l6.338-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.643-.492-5.17-1.349l-.371-.219-3.865.919.974-3.769-.24-.384A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
-                                                    <span>واتساب</span>
+                                                    <svg className="h-3.5 w-3.5 fill-white flex-shrink-0" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.124.558 4.115 1.535 5.838L0 24l6.338-1.507A11.933 11.933 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-1.885 0-3.643-.492-5.17-1.349l-.371-.219-3.865.919.974-3.769-.24-.384A9.94 9.94 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                                                    <span className="truncate">واتساب</span>
                                                 </a>
                                             ) : (
                                                 <Link
                                                     to={`/patient/chat/${offer.user.id}`}
                                                     onClick={(e) => e.stopPropagation()}
-                                                    className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white shadow-sm active:scale-95 cursor-pointer select-none"
+                                                    className="flex-1 flex justify-center items-center gap-1 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 bg-blue-600 hover:bg-blue-700 text-white shadow-xs active:scale-95 cursor-pointer select-none"
                                                 >
-                                                    <MessageCircle className="h-4 w-4" />
-                                                    <span>مراسلة</span>
+                                                    <MessageCircle className="h-3.5 w-3.5" />
+                                                    <span className="truncate">مراسلة</span>
                                                 </Link>
                                             )}
 
@@ -413,10 +411,10 @@ export default function PatientOffers() {
                                                     e.stopPropagation();
                                                     setSelectedOfferForComments(offer);
                                                 }}
-                                                className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-sm active:scale-95 cursor-pointer select-none"
+                                                className="flex-1 flex justify-center items-center gap-1 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 shadow-xs active:scale-95 cursor-pointer select-none"
                                             >
-                                                <MessageCircle className="h-4 w-4 text-slate-600" />
-                                                <span>التعليقات</span>
+                                                <MessageCircle className="h-3.5 w-3.5 text-slate-600" />
+                                                <span className="truncate">التعليقات</span>
                                             </button>
 
                                             {/* Share Button */}
@@ -426,10 +424,10 @@ export default function PatientOffers() {
                                                     e.stopPropagation();
                                                     handleShare(offer);
                                                 }}
-                                                className="flex-1 flex justify-center items-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-bold transition-all duration-200 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 shadow-sm active:scale-95 cursor-pointer select-none"
+                                                className="flex-1 flex justify-center items-center gap-1 py-1.5 sm:py-2 px-1 sm:px-2 rounded-lg text-[11px] sm:text-xs font-bold transition-all duration-200 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200/80 shadow-xs active:scale-95 cursor-pointer select-none"
                                             >
-                                                <Share2 className="h-4 w-4 text-slate-600" />
-                                                <span>مشاركة</span>
+                                                <Share2 className="h-3.5 w-3.5 text-slate-600" />
+                                                <span className="truncate">مشاركة</span>
                                             </button>
                                         </div>
 
