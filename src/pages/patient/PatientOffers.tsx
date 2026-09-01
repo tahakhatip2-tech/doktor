@@ -226,6 +226,8 @@ export default function PatientOffers() {
                                                     <Badge className="bg-amber-100 text-amber-800 border-amber-300 px-1.5 py-0 text-[9px] font-black gap-1 rounded-full shadow-xs">
                                                         <Star className="h-2 w-2 fill-amber-500 text-amber-500" /> جهة راعية
                                                     </Badge>
+                                                </div>
+
                                                 {/* Line 2: Timestamp & Phone */}
                                                 <div className="flex items-center gap-3 mt-1 flex-wrap">
                                                     <p className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
