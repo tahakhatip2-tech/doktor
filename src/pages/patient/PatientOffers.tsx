@@ -143,8 +143,8 @@ export default function PatientOffers() {
     };
 
     return (
-        <div className="space-y-6 animate-fade-in pb-28 bg-slate-50 min-h-screen pt-6" dir="rtl">
-            <div className="px-4 sm:px-0 max-w-3xl mx-auto">
+        <div className="space-y-6 animate-fade-in pb-28 bg-slate-50 min-h-screen pt-4 w-full" dir="rtl">
+            <div className="w-full">
                 {loading ? (
                     <div className="space-y-6">
                         {[1, 2, 3].map(i => (
@@ -315,22 +315,22 @@ export default function PatientOffers() {
                                         </p>
                                     </div>
 
-                                    {/* ── Image & Stats Container ─────────────────────── */}
-                                    <div className="relative">
-                                        {offer.image && (
-                                            <div className="w-full bg-slate-50 border-y border-slate-100">
-                                                {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
-                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[500px] object-contain bg-black" />
-                                                ) : (
-                                                    <img
-                                                        src={logoSrc(offer.image) || ''}
-                                                        alt={offer.title}
-                                                        className="w-full max-h-[500px] object-cover"
-                                                        loading="lazy"
-                                                    />
-                                                )}
-                                            </div>
-                                        )}
+                                        {/* ── Image & Stats Container ─────────────────────── */}
+                                        <div className="relative w-full">
+                                            {offer.image && (
+                                                <div className="w-full bg-slate-950/5 border-y border-slate-100 flex items-center justify-center overflow-hidden">
+                                                    {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
+                                                        <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[600px] object-contain bg-black" />
+                                                    ) : (
+                                                        <img
+                                                            src={logoSrc(offer.image) || ''}
+                                                            alt={offer.title}
+                                                            className="w-full max-h-[650px] object-cover md:object-contain"
+                                                            loading="lazy"
+                                                        />
+                                                    )}
+                                                </div>
+                                            )}
 
                                         {offer.likesCount > 0 && !offer.image && (
                                            <div className="px-6 py-3 border-y border-slate-100 text-xs text-slate-500 flex items-center gap-2 font-medium bg-slate-50">
