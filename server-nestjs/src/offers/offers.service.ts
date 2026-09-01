@@ -111,41 +111,43 @@ export class OffersService {
     // ── المريض: جلب كل العروض النشطة (Feed) ────────────────────────────
     async getActiveFeed(patientId?: number) {
         const now = new Date();
-        const offers = await this.prisma.offer.findMany({
-            where: {
-                isActive: true,
-                OR: [
-                    { isPermanent: true },
-                    { endDate: { gte: now }, startDate: { lte: now } },
-                ],
-            },
-            orderBy: { createdAt: 'desc' },
-            include: {
-                user: { 
-                    select: { 
-                        id: true, 
-                        name: true, 
-                        clinic_name: true, 
-                        avatar: true, 
-                        clinic_specialty: true, 
-                        phone: true,
-                        settings: {
-                            where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'clinic_specialty'] } },
-                            select: { key: true, value: true }
-                        }
-                    } 
+        const offers = await this.prisma.executeWithRetry(() =>
+            this.prisma.offer.findMany({
+                where: {
+                    isActive: true,
+                    OR: [
+                        { isPermanent: true },
+                        { endDate: { gte: now }, startDate: { lte: now } },
+                    ],
                 },
-                likes: true,
-                comments: {
-                    include: {
-                        user: { select: { id: true, name: true, avatar: true } },
-                        patient: { select: { id: true, fullName: true, avatar: true } }
+                orderBy: { createdAt: 'desc' },
+                include: {
+                    user: { 
+                        select: { 
+                            id: true, 
+                            name: true, 
+                            clinic_name: true, 
+                            avatar: true, 
+                            clinic_specialty: true, 
+                            phone: true,
+                            settings: {
+                                where: { key: { in: ['clinic_description', 'clinic_logo', 'clinic_name', 'clinic_specialty'] } },
+                                select: { key: true, value: true }
+                            }
+                        } 
                     },
-                    orderBy: { createdAt: 'asc' }
+                    likes: true,
+                    comments: {
+                        include: {
+                            user: { select: { id: true, name: true, avatar: true } },
+                            patient: { select: { id: true, fullName: true, avatar: true } }
+                        },
+                        orderBy: { createdAt: 'asc' }
+                    },
+                    _count: { select: { likes: true, comments: true } },
                 },
-                _count: { select: { likes: true, comments: true } },
-            },
-        });
+            })
+        );
 
         return offers.map(offer => {
             const { settings, ...userData } = offer.user as any;

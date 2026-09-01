@@ -48,7 +48,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
         this.logger.log('Disconnected from database');
     }
 
-    // Helper method to handle transient errors
+    // Helper method to handle transient errors with auto-reconnect
     async executeWithRetry<T>(operation: () => Promise<T>, maxRetries = 3): Promise<T> {
         let lastError: any;
 
@@ -58,10 +58,19 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
             } catch (error: any) {
                 lastError = error;
 
-                // Only retry on connection errors
+                // Retry on connection errors (P1001 = can't connect, P1017 = connection closed)
                 if (error.code === 'P1001' || error.code === 'P1017') {
-                    this.logger.warn(`Database operation failed (attempt ${i + 1}/${maxRetries}), retrying...`);
-                    await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                    this.logger.warn(`Database connection lost (attempt ${i + 1}/${maxRetries}), reconnecting...`);
+                    const delay = 1000 * (i + 1);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    // Force reconnect before next attempt
+                    try {
+                        await this.$disconnect();
+                        await this.$connect();
+                        this.logger.log('Reconnected to database successfully');
+                    } catch (reconnectErr: any) {
+                        this.logger.error(`Reconnect failed: ${reconnectErr.message}`);
+                    }
                 } else {
                     throw error;
                 }
