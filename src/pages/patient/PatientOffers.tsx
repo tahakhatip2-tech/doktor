@@ -325,7 +325,13 @@ export default function PatientOffers() {
                                         {offer.image && (
                                             <div className="w-full bg-slate-950/5 border-y border-slate-100 flex items-center justify-center overflow-hidden">
                                                 {offer.image.match(/\.(mp4|webm|ogg)$/i) || offer.image.startsWith('data:video/') ? (
-                                                    <video src={logoSrc(offer.image) || ''} controls className="w-full max-h-[500px] object-contain bg-black" />
+                                                    <video 
+                                                        src={logoSrc(offer.image) || ''} 
+                                                        controls 
+                                                        className="w-full max-h-[500px] object-contain bg-black" 
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        onPointerDown={(e) => e.stopPropagation()}
+                                                    />
                                                 ) : (
                                                     <img
                                                         src={logoSrc(offer.image) || ''}
