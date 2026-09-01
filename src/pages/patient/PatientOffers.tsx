@@ -265,15 +265,8 @@ export default function PatientOffers() {
                                                     </span>
                                                 </div>
 
-                                                {/* Line 3: Specialty & Time Info */}
+                                                {/* Line 3: Time Info */}
                                                 <div className="flex items-center flex-wrap gap-2 text-[10px]">
-                                                    <div className="flex items-center gap-1 bg-slate-50 border border-slate-100 px-1 py-0.2 rounded text-slate-600 font-medium">
-                                                        <Stethoscope className="h-2.5 w-2.5 text-orange-500" />
-                                                        <span className="truncate max-w-[120px]">
-                                                            {offer.user.clinic_specialty || offer.user.clinic_description || 'تخصص عام'}
-                                                        </span>
-                                                    </div>
-
                                                     <p className="text-slate-400 flex items-center gap-0.5 font-medium">
                                                         <Clock className="h-2.5 w-2.5" />
                                                         {formatDistanceToNow(new Date(offer.createdAt), { locale: ar, addSuffix: true })}
