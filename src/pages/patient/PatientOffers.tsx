@@ -61,6 +61,11 @@ export default function PatientOffers() {
     const [selectedOfferForComments, setSelectedOfferForComments] = useState<Offer | null>(null);
     const [commentText, setCommentText] = useState('');
     const [postingComment, setPostingComment] = useState(false);
+    const [expandedPosts, setExpandedPosts] = useState<Record<number, boolean>>({});
+
+    const toggleExpand = (id: number) => {
+        setExpandedPosts(prev => ({ ...prev, [id]: !prev[id] }));
+    };
 
     const token = localStorage.getItem('patient_token');
     const headers = { Authorization: `Bearer ${token}`, 'ngrok-skip-browser-warning': 'true' };
@@ -307,12 +312,29 @@ export default function PatientOffers() {
 
                                     {/* ── Post Content ──────────────── */}
                                     <div className="px-6 pb-4 cursor-text">
-                                        <h3 className="font-black text-xl mb-3 text-blue-900 leading-tight">
+                                        <h3 className="font-black text-xl mb-2 text-blue-900 leading-tight">
                                             {offer.title}
                                         </h3>
-                                        <p className="text-sm md:text-base text-slate-700 leading-relaxed whitespace-pre-wrap font-medium">
-                                            {offer.content}
-                                        </p>
+                                        <div className="relative">
+                                            <p className={cn(
+                                                "text-sm md:text-base text-slate-700 leading-relaxed whitespace-pre-wrap font-medium transition-all duration-300",
+                                                !expandedPosts[offer.id] && "line-clamp-3"
+                                            )}>
+                                                {offer.content}
+                                            </p>
+                                            {(offer.content && (offer.content.length > 130 || offer.content.split('\n').length > 3)) && (
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        toggleExpand(offer.id);
+                                                    }}
+                                                    className="mt-1.5 text-xs md:text-sm font-black text-orange-600 hover:text-orange-700 hover:underline inline-flex items-center gap-1 focus:outline-none transition-colors"
+                                                >
+                                                    {expandedPosts[offer.id] ? 'عرض أقل' : '... المزيد'}
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
 
                                         {/* ── Image & Stats Container ─────────────────────── */}

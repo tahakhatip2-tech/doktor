@@ -85,8 +85,12 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
     const [isVideo, setIsVideo] = useState(false);
 
     const [commentText, setCommentText] = useState<{ [key: number]: string }>({});
-    const [postingComment, setPostingComment] = useState<{ [key: number]: boolean }>({});
     const [selectedOfferForComments, setSelectedOfferForComments] = useState<Offer | null>(null);
+    const [expandedPosts, setExpandedPosts] = useState<{ [key: number]: boolean }>({});
+
+    const toggleExpand = (id: number) => {
+        setExpandedPosts(prev => ({ ...prev, [id]: !prev[id] }));
+    };
 
     const isPharmacy = userType === 'pharmacy';
     const tokenKey = isPharmacy ? 'pharmacy_token' : 'token';
@@ -371,7 +375,26 @@ export default function OffersManager({ userType = 'doctor' }: OffersManagerProp
                                 {/* Content */}
                                 <div className="px-4 pb-3">
                                     <h3 className="font-bold text-base mb-1 text-slate-900">{offer.title}</h3>
-                                    <p className="text-[15px] text-slate-800 leading-relaxed whitespace-pre-wrap">{offer.content}</p>
+                                    <div className="relative">
+                                        <p className={cn(
+                                            "text-[15px] text-slate-800 leading-relaxed whitespace-pre-wrap transition-all duration-300",
+                                            !expandedPosts[offer.id] && "line-clamp-3"
+                                        )}>
+                                            {offer.content}
+                                        </p>
+                                        {(offer.content && (offer.content.length > 130 || offer.content.split('\n').length > 3)) && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleExpand(offer.id);
+                                                }}
+                                                className="mt-1 text-xs font-bold text-orange-600 hover:text-orange-700 hover:underline inline-flex items-center gap-1 focus:outline-none transition-colors"
+                                            >
+                                                {expandedPosts[offer.id] ? 'عرض أقل' : '... المزيد'}
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Media */}
