@@ -192,40 +192,40 @@ export default function PatientBeautyCenterDetail() {
                     <Share2 className="w-4 h-4" />
                 </button>
 
-                <div className="relative z-10 px-5 pt-16 pb-10 text-white text-center">
+                <div className="relative z-10 px-5 pt-8 pb-6 text-white text-center">
                     {/* Logo */}
-                    <div className="w-24 h-24 rounded-full mx-auto mb-4 border-4 border-white/40 overflow-hidden bg-white/20 backdrop-blur-sm shadow-2xl">
+                    <div className="w-20 h-20 rounded-full mx-auto mb-3 border-4 border-white/40 overflow-hidden bg-white/20 backdrop-blur-sm shadow-2xl">
                         {logo ? (
                             <img src={logo} alt={displayName} className="w-full h-full object-cover" />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center">
-                                <Sparkles className="w-10 h-10 text-white" />
+                                <Sparkles className="w-8 h-8 text-white" />
                             </div>
                         )}
                     </div>
 
-                    <h1 className="text-2xl font-black mb-1 drop-shadow-md">{displayName}</h1>
+                    <h1 className="text-xl font-black mb-1 drop-shadow-md">{displayName}</h1>
                     {center.clinic_specialty && (
-                        <p className="text-pink-100 text-sm font-medium mb-3">{center.clinic_specialty}</p>
+                        <p className="text-pink-100 text-xs font-medium mb-2">{center.clinic_specialty}</p>
                     )}
 
                     {/* Rating */}
                     {(center.totalReviews ?? 0) > 0 && (
-                        <div className="flex items-center justify-center gap-2 mb-4">
+                        <div className="flex items-center justify-center gap-2 mb-3">
                             <div className="flex items-center gap-0.5">
                                 {[1, 2, 3, 4, 5].map(s => (
-                                    <Star key={s} className={`w-4 h-4 ${s <= Math.round(center.avgRating || 0) ? 'fill-amber-300 text-amber-300' : 'fill-white/20 text-white/20'}`} />
+                                    <Star key={s} className={`w-3 h-3 ${s <= Math.round(center.avgRating || 0) ? 'fill-amber-300 text-amber-300' : 'fill-white/20 text-white/20'}`} />
                                 ))}
                             </div>
-                            <span className="text-white font-bold">{center.avgRating}</span>
-                            <span className="text-pink-200 text-sm">({center.totalReviews} تقييم)</span>
+                            <span className="text-white text-sm font-bold">{center.avgRating}</span>
+                            <span className="text-pink-200 text-xs">({center.totalReviews} تقييم)</span>
                         </div>
                     )}
 
                     {/* Quick info pills */}
                     <div className="flex flex-wrap justify-center gap-2">
                         {center.working_hours && (
-                            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold">
+                            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold">
                                 <Clock className="w-3 h-3" />
                                 {formatArabicTime(center.working_hours)}
                             </span>
@@ -233,7 +233,7 @@ export default function PatientBeautyCenterDetail() {
                         {center.clinic_address && (
                             <button
                                 onClick={handleMap}
-                                className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold hover:bg-white/30 transition-all"
+                                className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold hover:bg-white/30 transition-all"
                             >
                                 <MapPin className="w-3 h-3" />
                                 <span className="max-w-[140px] truncate">{center.clinic_address}</span>
@@ -243,7 +243,25 @@ export default function PatientBeautyCenterDetail() {
                 </div>
             </div>
 
-            <div className="px-4 space-y-5 pt-5">
+            <div className="px-4 space-y-4 pt-4">
+                {/* ── Book Button (Moved to top of content for quick access) ── */}
+                <div className="mt-2 mb-4">
+                    <Button
+                        onClick={() => {
+                            if (!selectedService && services.length > 0) {
+                                toast({ title: 'اختر الخدمة أولاً', description: 'يرجى اختيار نوع الخدمة قبل الحجز', variant: 'default' });
+                                return;
+                            }
+                            navigate(`/clinic/${id}/${encodeURIComponent(displayName.replace(/\s+/g, '-'))}${selectedService ? `?service=${encodeURIComponent(selectedService.name)}` : ''}`);
+                        }}
+                        className="w-full h-14 text-base font-black rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-rose-500 text-white shadow-lg shadow-pink-300/40 hover:shadow-pink-400/50 hover:scale-[1.01] active:scale-95 transition-all"
+                    >
+                        <Sparkles className="w-5 h-5 ml-2" />
+                        {selectedService ? `احجز جلسة ${selectedService.name}` : 'احجز موعدك الآن'}
+                        <ChevronRight className="w-5 h-5 mr-auto" />
+                    </Button>
+                </div>
+
                 {/* ── Action buttons ── */}
                 <div className="grid grid-cols-3 gap-3">
                     <button
@@ -282,20 +300,18 @@ export default function PatientBeautyCenterDetail() {
                     </Card>
                 )}
 
-                {/* ── Services ── */}
-                <div>
-                    <h2 className="text-base font-black text-slate-800 mb-3 flex items-center gap-2">
-                        <span className="w-1 h-5 rounded-full bg-gradient-to-b from-pink-500 to-purple-500 block" />
-                        خدماتنا المتاحة
+                {/* ── Services List ── */}
+                <div className="pb-8">
+                    <h2 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
+                        <Star className="w-5 h-5 text-pink-500" />
+                        خدمات التجميل والعناية
                     </h2>
 
                     {services.length === 0 ? (
-                        <Card className="border-pink-100">
-                            <CardContent className="py-10 text-center">
-                                <Sparkles className="w-12 h-12 mx-auto mb-3 text-pink-300" />
-                                <p className="text-slate-500 text-sm">لم تُضف الخدمات بعد</p>
-                            </CardContent>
-                        </Card>
+                        <div className="text-center py-8 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                            <Sparkles className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                            <p className="text-sm text-slate-500 font-medium">لم يتم إضافة خدمات بعد</p>
+                        </div>
                     ) : (
                         <div className="grid grid-cols-2 gap-3">
                             {services.map((service) => {
@@ -331,25 +347,6 @@ export default function PatientBeautyCenterDetail() {
                             })}
                         </div>
                     )}
-                </div>
-
-                {/* ── Book Button ── */}
-                <div className="sticky bottom-20 pb-2">
-                    <Button
-                        onClick={() => {
-                            if (!selectedService && services.length > 0) {
-                                toast({ title: 'اختر الخدمة أولاً', description: 'يرجى اختيار نوع الخدمة قبل الحجز', variant: 'default' });
-                                return;
-                            }
-                            // Navigate to booking — re-use clinic booking with service note
-                            navigate(`/clinic/${id}/${encodeURIComponent(displayName.replace(/\s+/g, '-'))}${selectedService ? `?service=${encodeURIComponent(selectedService.name)}` : ''}`);
-                        }}
-                        className="w-full h-14 text-base font-black rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-rose-500 text-white shadow-xl shadow-pink-300/40 hover:shadow-pink-400/50 hover:scale-[1.01] active:scale-95 transition-all"
-                    >
-                        <Sparkles className="w-5 h-5 ml-2" />
-                        {selectedService ? `احجز جلسة ${selectedService.name}` : 'احجز موعدك الآن'}
-                        <ChevronRight className="w-5 h-5 mr-auto" />
-                    </Button>
                 </div>
             </div>
         </div>
