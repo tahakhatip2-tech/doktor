@@ -121,18 +121,31 @@ const Index = () => {
         (c.phone?.includes(patientSearchTerm))
     );
 
+    // ── جلب الإعدادات مرة واحدة عند أول تحميل (مستقل عن التبويب النشط) ──
+    useEffect(() => {
+        if (!user) return;
+        const fetchSettings = async () => {
+            try {
+                const settingsData = await whatsappApi.getSettings();
+                setAiSettings(settingsData);
+            } catch (error) {
+                console.error('Error fetching settings:', error);
+            }
+        };
+        fetchSettings();
+    }, [user]);
+
+    // ── جلب بيانات الداشبورد فقط عند فتح تبويب الرئيسية ──
     useEffect(() => {
         const fetchDashboardData = async () => {
             try {
                 const now = new Date();
                 const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                const [statsData, settingsData, upcomingData] = await Promise.all([
+                const [statsData, upcomingData] = await Promise.all([
                     appointmentsApi.getStats(),
-                    whatsappApi.getSettings(),
                     dataApi.get(`/appointments?date_from=${today}`)
                 ]);
                 setStats(statsData);
-                setAiSettings(settingsData);
                 setUpcomingAppointmentsList(upcomingData);
             } catch (error) {
                 console.error('Error fetching dashboard data:', error);

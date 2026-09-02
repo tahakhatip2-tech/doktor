@@ -124,14 +124,16 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
 
     const sidebarBg = isPharmacy
         ? "bg-gradient-to-b from-emerald-800 via-emerald-700 to-emerald-900"
-        : "bg-white/5 dark:bg-black/10 backdrop-blur-[120px]";
+        : isBeauty
+            ? "bg-gradient-to-b from-fuchsia-900 via-purple-900 to-fuchsia-950"
+            : "bg-white/5 dark:bg-black/10 backdrop-blur-[120px]";
 
-    const headerBorderColor = isPharmacy ? "border-emerald-600/40" : "border-white/10";
-    const footerBorderColor = isPharmacy ? "border-emerald-600/30 bg-emerald-900/60" : "border-white/5 bg-card/10 backdrop-blur-2xl";
-    const dividerColor = isPharmacy ? "border-emerald-600/30" : "border-white/10";
+    const headerBorderColor = isPharmacy ? "border-emerald-600/40" : isBeauty ? "border-fuchsia-600/40" : "border-white/10";
+    const footerBorderColor = isPharmacy ? "border-emerald-600/30 bg-emerald-900/60" : isBeauty ? "border-fuchsia-600/30 bg-fuchsia-950/60" : "border-white/5 bg-card/10 backdrop-blur-2xl";
+    const dividerColor = isPharmacy ? "border-emerald-600/30" : isBeauty ? "border-fuchsia-600/30" : "border-white/10";
 
     return (
-        <div className={cn("w-full h-full flex flex-col overflow-hidden border-l", isPharmacy ? "border-emerald-600/30" : "border-white/5", sidebarBg)}>
+        <div className={cn("w-full h-full flex flex-col overflow-hidden border-l", isPharmacy ? "border-emerald-600/30" : isBeauty ? "border-fuchsia-600/30" : "border-white/5", sidebarBg)}>
             {/* Header */}
             <div className={cn("p-6 border-b flex-shrink-0", headerBorderColor)}>
                 <div className="flex items-center gap-3">
@@ -157,7 +159,9 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                             "text-lg font-display font-black leading-tight bg-clip-text text-transparent tracking-tight",
                             isPharmacy
                                 ? "bg-gradient-to-r from-emerald-200 via-green-100 to-white"
-                                : "bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500"
+                                : isBeauty
+                                    ? "bg-gradient-to-r from-fuchsia-200 via-pink-100 to-white"
+                                    : "bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500"
                         )}>
                             DOCTOR JO
                         </h1>
@@ -165,9 +169,11 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                             "text-[9px] font-bold uppercase tracking-wider bg-clip-text text-transparent",
                             isPharmacy
                                 ? "bg-gradient-to-r from-emerald-300 to-green-100"
-                                : "bg-gradient-to-r from-orange-500 to-blue-600"
+                                : isBeauty
+                                    ? "bg-gradient-to-r from-fuchsia-300 to-pink-100"
+                                    : "bg-gradient-to-r from-orange-500 to-blue-600"
                         )}>
-                            {isPharmacy ? "Pharmacy Management" : "Clinic Management System"}
+                            {isPharmacy ? "Pharmacy Management" : isBeauty ? "Beauty Center System" : "Clinic Management System"}
                         </p>
                     </div>
                 </div>
@@ -178,6 +184,14 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         <Pill className="h-3.5 w-3.5 text-emerald-200" />
                         <span className="text-[10px] font-black text-emerald-100 uppercase tracking-wider">نظام الصيدلية</span>
                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse mr-auto" />
+                    </div>
+                )}
+                {/* Beauty Center Badge */}
+                {isBeauty && (
+                    <div className="mt-3 flex items-center gap-2 bg-fuchsia-600/40 border border-fuchsia-400/30 rounded-xl px-3 py-2">
+                        <Sparkles className="h-3.5 w-3.5 text-fuchsia-200" />
+                        <span className="text-[10px] font-black text-fuchsia-100 uppercase tracking-wider">مركز التجميل</span>
+                        <div className="h-1.5 w-1.5 rounded-full bg-fuchsia-400 animate-pulse mr-auto" />
                     </div>
                 )}
             </div>
@@ -228,12 +242,14 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                                         "w-full flex-row-reverse justify-start gap-3 font-medium hover:translate-x-1 transition-all duration-300",
                                         isPharmacy
                                             ? "text-emerald-100/80 hover:text-white hover:bg-emerald-600/30"
-                                            : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
+                                            : isBeauty
+                                                ? "text-fuchsia-100/80 hover:text-white hover:bg-fuchsia-600/30"
+                                                : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
                                     )}
                                     onClick={() => navigate('/clinic-doctors')}
                                 >
                                     <Stethoscope className="h-5 w-5 flex-shrink-0" />
-                                    {isPharmacy ? 'إدارة الموظفين' : 'أطباء العيادة'}
+                                    {isPharmacy ? 'إدارة الموظفين' : isBeauty ? 'فريق المركز' : 'أطباء العيادة'}
                                 </Button>
                                 <Button
                                     variant={activeTab === 'clinic-settings' ? "secondary" : "ghost"}
@@ -256,7 +272,9 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                                 "w-full flex-row-reverse justify-start gap-3 font-medium hover:translate-x-1 transition-all duration-300",
                                 isPharmacy
                                     ? "text-emerald-100/80 hover:text-white hover:bg-emerald-600/30"
-                                    : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
+                                    : isBeauty
+                                        ? "text-fuchsia-100/80 hover:text-white hover:bg-fuchsia-600/30"
+                                        : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
                             )}
                             onClick={openLoginModal}
                         >
@@ -289,7 +307,9 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                             "absolute -inset-1 rounded-full blur opacity-20 animate-pulse group-hover:animate-[pulse_0.5s_ease-in-out_infinite]",
                             isPharmacy
                                 ? "bg-gradient-to-r from-emerald-400 to-green-300"
-                                : "bg-gradient-to-r from-blue-600 to-orange-500"
+                                : isBeauty
+                                    ? "bg-gradient-to-r from-fuchsia-400 to-pink-300"
+                                    : "bg-gradient-to-r from-blue-600 to-orange-500"
                         )} />
                         <img
                             src="/hakeem-logo.png"
@@ -306,7 +326,9 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                         "text-xs font-black tracking-tight bg-clip-text text-transparent text-center leading-tight",
                         isPharmacy
                             ? "bg-gradient-to-r from-emerald-300 via-green-200 to-emerald-300"
-                            : "bg-gradient-to-r from-blue-600 via-orange-500 to-blue-600"
+                            : isBeauty
+                                ? "bg-gradient-to-r from-fuchsia-300 via-pink-200 to-fuchsia-300"
+                                : "bg-gradient-to-r from-blue-600 via-orange-500 to-blue-600"
                     )}>
                         AL-KHATIB-MARKETING&SOFTWARE
                     </h2>
@@ -314,9 +336,9 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                     {/* Tagline */}
                     <div className={cn(
                         "flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider",
-                        isPharmacy ? "text-emerald-300/70" : "text-blue-600/70"
+                        isPharmacy ? "text-emerald-300/70" : isBeauty ? "text-fuchsia-300/70" : "text-blue-600/70"
                     )}>
-                        <Sparkles className={cn("h-2 w-2", isPharmacy ? "text-emerald-400" : "text-orange-500")} />
+                        <Sparkles className={cn("h-2 w-2", isPharmacy ? "text-emerald-400" : isBeauty ? "text-fuchsia-400" : "text-orange-500")} />
                         Premium Digital Solutions
                     </div>
 
@@ -337,7 +359,9 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                                     "p-1 rounded-full border transition-all duration-300 hover:scale-110 hover:text-white hover:shadow-lg group",
                                     isPharmacy
                                         ? "border-emerald-400/30 text-emerald-300 hover:bg-emerald-500 hover:border-emerald-400"
-                                        : "border-blue-600/30 text-blue-600 hover:border-orange-500 hover:bg-gradient-to-r hover:from-blue-600 hover:to-orange-500"
+                                        : isBeauty
+                                            ? "border-fuchsia-400/30 text-fuchsia-300 hover:bg-fuchsia-500 hover:border-fuchsia-400"
+                                            : "border-blue-600/30 text-blue-600 hover:border-orange-500 hover:bg-gradient-to-r hover:from-blue-600 hover:to-orange-500"
                                 )}
                             >
                                 <social.icon className="h-3 w-3 transition-transform duration-500 group-hover:rotate-[360deg]" />
@@ -346,7 +370,7 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                     </div>
 
                     {/* Version */}
-                    <div className={cn("text-[8px] text-center", isPharmacy ? "text-emerald-400/40" : "text-blue-600/40")}>
+                    <div className={cn("text-[8px] text-center", isPharmacy ? "text-emerald-400/40" : isBeauty ? "text-fuchsia-400/40" : "text-blue-600/40")}>
                         Doctor Jo v1.0
                     </div>
                 </div>

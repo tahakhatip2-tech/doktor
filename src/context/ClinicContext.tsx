@@ -15,6 +15,7 @@ interface ClinicSettings {
     auto_reply_enabled: boolean;
     reminder_enabled: boolean;
     reminder_time: number;
+    clinic_category: string;
 }
 
 interface ClinicContextType {
@@ -41,6 +42,7 @@ export function ClinicProvider({ children }: { children: React.ReactNode }) {
                     clinic_name: data.clinic_name || '',
                     clinic_description: data.clinic_description || '',
                     clinic_logo: data.clinic_logo || '',
+                    clinic_category: data.clinic_category || 'clinic',
                     auto_reply_enabled: data.ai_enabled === '1' || data.auto_reply_enabled === '1' || data.auto_reply_enabled === true || data.auto_reply_enabled === 'true',
                     reminder_enabled: data.reminder_enabled === '1' || data.reminder_enabled === true || data.reminder_enabled === 'true',
                     appointment_duration: parseInt(data.appointment_duration) || 30,
