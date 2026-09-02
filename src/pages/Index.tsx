@@ -771,6 +771,8 @@ const Index = () => {
                                 setActiveTab('whatsapp-bot');
                             }} />}
 
+                            {activeTab === 'beauty-services' && <BeautyCenterDashboard />}
+
                             {activeTab === 'clinic-settings' && <ClinicSettings />}
 
                             {activeTab === 'bot-stats' && <ClinicStats />}
