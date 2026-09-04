@@ -141,4 +141,28 @@ export class PatientController {
     async getBeautyCenterById(@Param('id', ParseIntPipe) id: number) {
         return this.patientService.getBeautyCenterById(id);
     }
+
+    // ─── الرعاية المنزلية ────────────────────────────────────────────────────────
+
+    @Get('home-care-providers')
+    @UseGuards(PatientAuthGuard)
+    async getHomeCareProviders() {
+        return this.patientService.getHomeCareProviders();
+    }
+
+    @Get('home-care-providers/:id')
+    @UseGuards(PatientAuthGuard)
+    async getHomeCareProviderById(@Param('id', ParseIntPipe) id: number) {
+        return this.patientService.getHomeCareProviderById(id);
+    }
+
+    @Get('home-care-providers/:id/available-slots')
+    @UseGuards(PatientAuthGuard)
+    async getHomeCareAvailableSlots(
+        @Param('id', ParseIntPipe) providerId: number,
+        @Query('date') date: string,
+    ) {
+        const slots = await this.appointmentsService.getAvailableSlots(providerId, date);
+        return { date, providerId, slots };
+    }
 }

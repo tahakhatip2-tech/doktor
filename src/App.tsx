@@ -22,6 +22,8 @@ import PatientDashboard from "./pages/patient/PatientDashboard";
 import PatientClinics from "./pages/patient/PatientClinics";
 import PatientClinicDetail from "./pages/patient/PatientClinicDetail";
 import PatientBeautyCenterDetail from "./pages/patient/PatientBeautyCenterDetail";
+import PatientHomeCareList from "./pages/patient/PatientHomeCareList";
+import PatientHomeCareDetail from "./pages/patient/PatientHomeCareDetail";
 import PatientAppointments from "./pages/patient/PatientAppointments";
 import PatientNotifications from "./pages/patient/PatientNotifications";
 import PatientMedicalRecords from "./pages/patient/PatientMedicalRecords";
@@ -99,6 +101,8 @@ const App = () => (
                             <Route path="clinics" element={<PatientClinics />} />
                             <Route path="clinics/:id" element={<PatientClinicDetail />} />
                             <Route path="beauty/:id" element={<PatientBeautyCenterDetail />} />
+                            <Route path="home-care" element={<PatientHomeCareList />} />
+                            <Route path="home-care/:id" element={<PatientHomeCareDetail />} />
                             <Route path="appointments" element={<PatientAppointments />} />
                             <Route path="appointments/:id" element={<AppointmentDetail />} />
                             <Route path="appointments/:id/:slug" element={<AppointmentDetail />} />

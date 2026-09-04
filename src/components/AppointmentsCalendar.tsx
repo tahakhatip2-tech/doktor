@@ -436,13 +436,18 @@ export default function AppointmentsCalendar({ onOpenChat, selectedAppointmentId
                                                         })()}
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <p className="font-bold text-[13px] text-slate-800 leading-tight truncate">
-                                                            {(() => {
-                                                                const name = appointment.customerName || appointment.patient_name;
-                                                                if (!name || name === 'Unspecified') return 'غير محدد';
-                                                                return name;
-                                                            })()}
-                                                        </p>
+                                                        <div className="flex items-center gap-1.5 mt-0.5">
+                                                            <p className="font-bold text-[13px] text-slate-800 leading-tight truncate">
+                                                                {(() => {
+                                                                    const name = appointment.customerName || appointment.patient_name;
+                                                                    if (!name || name === 'Unspecified') return 'غير محدد';
+                                                                    return name;
+                                                                })()}
+                                                            </p>
+                                                            {appointment.type === 'home_care' && (
+                                                                <span className="text-[10px] bg-purple-100 text-purple-700 px-1 py-0.5 rounded font-bold whitespace-nowrap">🏠 رعاية منزلية</span>
+                                                            )}
+                                                        </div>
                                                         <a href={`tel:${appointment.phone}`} className="text-[11px] text-slate-400 font-mono hover:text-blue-500 transition-colors block truncate mt-0.5">
                                                             {appointment.phone?.split('@')[0]}
                                                         </a>

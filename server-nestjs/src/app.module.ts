@@ -22,6 +22,7 @@ import { ClinicDoctorsModule } from './clinic-doctors/clinic-doctors.module';
 import { PharmacyModule } from './pharmacy/pharmacy.module';
 import { AdminModule } from './admin/admin.module';
 import { BeautyServicesModule } from './beauty-services/beauty-services.module';
+import { HomeCareServicesModule } from './home-care-services/home-care-services.module';
 import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
@@ -56,6 +57,7 @@ import { InventoryModule } from './inventory/inventory.module';
     PharmacyModule,
     AdminModule,
     BeautyServicesModule,
+    HomeCareServicesModule,
     InventoryModule,
   ],
   controllers: [AppController],

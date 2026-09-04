@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
     Building2, MapPin, Phone, Clock, Search, Calendar, Pill,
     MessageCircle, Star, Share2, Eye, Navigation,
-    LocateFixed, X, ChevronDown, Stethoscope, Sparkles, Heart, FlaskConical
+    LocateFixed, X, ChevronDown, Stethoscope, Sparkles, Heart, FlaskConical, HeartPulse
 } from 'lucide-react';
 import axios from 'axios';
 import { BASE_URL } from '@/lib/api';
@@ -34,6 +34,8 @@ interface Clinic {
     avgRating?: number;
     totalReviews?: number;
     phone?: string;
+    // home care services
+    services?: { id: number; name: string; price?: string; duration?: number }[];
     // computed
     distanceKm?: number;
 }
@@ -45,6 +47,7 @@ type SortMode = 'default' | 'nearest';
 export default function PatientClinics() {
     const { toast } = useToast();
     const navigate = useNavigate();
+    const location = useLocation();
 
     const [loading, setLoading] = useState(true);
     const [clinics, setClinics] = useState<Clinic[]>([]);
@@ -56,8 +59,13 @@ export default function PatientClinics() {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locating, setLocating] = useState(false);
     const [mapClinic, setMapClinic] = useState<Clinic | null>(null);
-    const [activeTab, setActiveTab] = useState<'clinics' | 'pharmacies' | 'beauty'>('clinics');
+    const [activeTab, setActiveTab] = useState<'clinics' | 'pharmacies' | 'beauty' | 'home'>(
+        (location.state as { activeTab?: string })?.activeTab as 'clinics' | 'pharmacies' | 'beauty' | 'home' || 'clinics'
+    );
     const [beautyCenters, setBeautyCenters] = useState<Clinic[]>();
+    const [homeProviders, setHomeProviders] = useState<Clinic[]>([]);
+    const [homeLoading, setHomeLoading] = useState(false);
+    const [homeSearchTerm, setHomeSearchTerm] = useState('');
 
     // Unique specialties list
     const [specialties, setSpecialties] = useState<string[]>([]);
@@ -66,10 +74,12 @@ export default function PatientClinics() {
         fetchClinics(); 
         fetchPharmacies();
         fetchBeautyCenters();
+        fetchHomeProviders();
     }, []);
 
     // ── Build filtered list whenever deps change ──
     useEffect(() => {
+        if (activeTab === 'home') { setFiltered([]); return; }
         const sourceData = activeTab === 'clinics' ? clinics : activeTab === 'pharmacies' ? pharmacies : (beautyCenters || []);
         let result = [...sourceData];
 
@@ -114,20 +124,24 @@ export default function PatientClinics() {
                     'bypass-tunnel-reminder': 'true',
                 },
             });
-            const data: Clinic[] = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+            const raw: Clinic[] = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+            // فلتر احتياطي: استثناء أي مزود رعاية منزلية أو تجميل وصل بالخطأ
+            const data = raw.filter(c => {
+                const specialty = (c.clinic_specialty || '').toLowerCase();
+                return !specialty.includes('home_care') && !specialty.includes('رعاية منزلية');
+            });
             setClinics(data);
 
             // Extract unique specialties only for clinics
-            if (activeTab === 'clinics') {
-                const specs = Array.from(new Set(data.map(c => c.clinic_specialty).filter(Boolean))) as string[];
-                setSpecialties(specs);
-            }
+            const specs = Array.from(new Set(data.map(c => c.clinic_specialty).filter(Boolean))) as string[];
+            setSpecialties(specs);
         } catch {
             toast({ variant: 'destructive', title: 'خطأ', description: 'حدث خطأ أثناء تحميل المراكز الطبية' });
         } finally {
             setLoading(false);
         }
     };
+
 
     const fetchPharmacies = async () => {
         try {
@@ -160,6 +174,26 @@ export default function PatientClinics() {
             setBeautyCenters(data);
         } catch {
             // ليس خطأً حرجاً إذا لم توجد مراكز تجميل
+        }
+    };
+
+    const fetchHomeProviders = async () => {
+        try {
+            setHomeLoading(true);
+            const token = localStorage.getItem('patient_token');
+            const res = await axios.get(`${API_URL}/patient/home-care-providers`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                    'bypass-tunnel-reminder': 'true',
+                },
+            });
+            const data: Clinic[] = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+            setHomeProviders(data);
+        } catch {
+            // silent
+        } finally {
+            setHomeLoading(false);
         }
     };
 
@@ -232,10 +266,10 @@ export default function PatientClinics() {
             {/* Hero */}
             <PatientHero
                 showBackButton={true}
-                title={activeTab === 'clinics' ? "المراكز الطبية المتاحة" : activeTab === 'pharmacies' ? "الصيدليات المتاحة" : "مراكز التجميل"}
-                subtitle={activeTab === 'clinics' ? "اكتشف أفضل الأطباء" : activeTab === 'pharmacies' ? "اكتشف أقرب الصيدليات" : "عناية بالبشرة والتجميل"}
-                description={activeTab === 'clinics' ? "اختر المركز الطبي المناسب واحجز موعدك من المواعيد المتاحة." : activeTab === 'pharmacies' ? "تواصل مع الصيدليات وأرسل وصفاتك الطبية بكل سهولة." : "ليزر، بوتوكس، فيلر، وعناية كاملة بالبشرة بأيدي خبراء."}
-                badgeText={activeTab === 'clinics' ? "صحتك أولاً" : activeTab === 'pharmacies' ? "دوائك عندنا" : "جمالك يهمنا"}
+                title={activeTab === 'clinics' ? "المراكز الطبية المتاحة" : activeTab === 'pharmacies' ? "الصيدليات المتاحة" : activeTab === 'home' ? "الرعاية والتمريض المنزلي" : "مراكز التجميل"}
+                subtitle={activeTab === 'clinics' ? "اكتشف أفضل الأطباء" : activeTab === 'pharmacies' ? "اكتشف أقرب الصيدليات" : activeTab === 'home' ? "صحتك في بيتك" : "عناية بالبشرة والتجميل"}
+                description={activeTab === 'clinics' ? "اختر المركز الطبي المناسب واحجز موعدك من المواعيد المتاحة." : activeTab === 'pharmacies' ? "تواصل مع الصيدليات وأرسل وصفاتك الطبية بكل سهولة." : activeTab === 'home' ? "نقدم لك أفضل خدمات الرعاية الطبية والتمريض المنزلي براحة وأمان." : "ليزر، بوتوكس، فيلر، وعناية كاملة بالبشرة بأيدي خبراء."}
+                badgeText={activeTab === 'clinics' ? "صحتك أولاً" : activeTab === 'pharmacies' ? "دوائك عندنا" : activeTab === 'home' ? "رعاية منزلية" : "جمالك يهمنا"}
             />
 
             <div className="px-4 sm:px-0 space-y-4 pt-6">
@@ -245,7 +279,7 @@ export default function PatientClinics() {
                         { id: 'clinics', label: 'المراكز الطبية', icon: Stethoscope, color: 'from-blue-500 to-blue-700', ring: 'ring-blue-400', active: activeTab === 'clinics' },
                         { id: 'pharmacies', label: 'الصيدليات', icon: Building2, color: 'from-green-500 to-green-700', ring: 'ring-green-400', active: activeTab === 'pharmacies' },
                         { id: 'beauty', label: 'التجميل', icon: Sparkles, color: 'from-pink-500 to-pink-700', ring: 'ring-pink-400', active: activeTab === 'beauty' },
-                        { id: 'home', label: 'رعاية منزلية', icon: Heart, color: 'from-purple-500 to-purple-700', ring: 'ring-purple-400', comingSoon: true },
+                        { id: 'home', label: 'رعاية منزلية', icon: Heart, color: 'from-purple-500 to-purple-700', ring: 'ring-purple-400', active: activeTab === 'home' },
                         { id: 'labs', label: 'مختبرات طبية', icon: FlaskConical, color: 'from-orange-500 to-orange-700', ring: 'ring-orange-400', comingSoon: true },
                     ].map((tab, idx) => (
                         <button
@@ -254,9 +288,10 @@ export default function PatientClinics() {
                                 if (tab.comingSoon) {
                                     toast({ title: tab.label, description: "قيد التطوير سنطورها لاحقا" });
                                 } else {
-                                    setActiveTab(tab.id as 'clinics' | 'pharmacies' | 'beauty');
+                                    setActiveTab(tab.id as 'clinics' | 'pharmacies' | 'beauty' | 'home');
                                     setActiveSpec('الكل');
                                     setSearchTerm('');
+                                    setHomeSearchTerm('');
                                 }
                             }}
                             className={`relative group flex items-center justify-between w-full h-11 sm:h-12 rounded-full border border-white/60 shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-95 ${idx < 3 ? 'col-span-2' : 'col-span-3'} ${tab.active ? `ring-2 ring-offset-2 ring-offset-slate-50 ${tab.ring} shadow-[0_0_20px_rgba(0,0,0,0.15)]` : ''}`}
@@ -341,12 +376,153 @@ export default function PatientClinics() {
                     </div>
                 )}
 
-                {/* ── Clinics Grid ── */}
-                {loading ? (
+                {/* ── Home Care Tab ── */}
+                {activeTab === 'home' && (
+                    <div>
+                        <div className="flex gap-2 mb-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="ابحث عن مزود رعاية منزلية..."
+                                    value={homeSearchTerm}
+                                    onChange={(e) => setHomeSearchTerm(e.target.value)}
+                                    className="pr-10"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {homeLoading ? (
+                                Array.from({ length: 6 }).map((_, i) => (
+                                    <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+                                ))
+                            ) : homeProviders.filter(p => {
+                                if (!homeSearchTerm) return true;
+                                const q = homeSearchTerm.toLowerCase();
+                                return (p.clinic_name || p.name || '').toLowerCase().includes(q) ||
+                                    (p.clinic_address || '').toLowerCase().includes(q);
+                            }).length === 0 ? (
+                                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-white rounded-3xl border border-dashed border-purple-200">
+                                    <HeartPulse className="h-16 w-16 text-purple-200 mb-4" />
+                                    <h3 className="text-xl font-bold text-slate-700">لا يوجد مزودي رعاية</h3>
+                                    <p className="text-slate-500 mt-2 max-w-sm">لم نتمكن من العثور على مزودي رعاية منزلية حالياً.</p>
+                                </div>
+                            ) : (
+                                homeProviders
+                                    .filter(p => {
+                                        if (!homeSearchTerm) return true;
+                                        const q = homeSearchTerm.toLowerCase();
+                                        return (p.clinic_name || p.name || '').toLowerCase().includes(q) ||
+                                            (p.clinic_address || '').toLowerCase().includes(q);
+                                    })
+                                    .map(clinic => {
+                                        const logo = (clinic.clinic_logo || clinic.avatar);
+                                        const logoUrl = logo ? (logo.startsWith('http') ? logo : `${BASE_URL}${logo.startsWith('/') ? '' : '/'}${logo}`) : null;
+                                        const name = clinic.clinic_name || clinic.name || 'مزود رعاية';
+                                        const services = clinic.services || [];
+                                        const serviceIcons: Record<string, string> = {
+                                            'تمريض': '🩺', 'جرح': '🩹', 'حقن': '💉', 'فيزياء': '🦽',
+                                            'علاج': '💊', 'متابعة': '📋', 'فحص': '🔬', 'ضغط': '❤️',
+                                            'سكر': '🍬', 'قدم': '🦶', 'تغذية': '🥗', 'جلسة': '🛋️',
+                                        };
+                                        const getIcon = (n: string) => {
+                                            for (const [k, e] of Object.entries(serviceIcons)) {
+                                                if (n.includes(k)) return e;
+                                            }
+                                            return '🏥';
+                                        };
+                                        return (
+                                            <Card
+                                                key={clinic.id}
+                                                className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-purple-100 group relative bg-white"
+                                                onClick={() => navigate(`/patient/home-care/${clinic.id}`)}
+                                            >
+                                                {/* Gradient accent top */}
+                                                <div className="h-1.5 w-full bg-gradient-to-r from-indigo-500 via-violet-500 to-purple-500" />
+
+                                                <CardContent className="p-4">
+                                                    {/* Header: logo + name + specialty */}
+                                                    <div className="flex items-start gap-3 mb-3">
+                                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-50 to-purple-50 border border-purple-100 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+                                                            {logoUrl ? (
+                                                                <img src={logoUrl} alt={name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                                            ) : (
+                                                                <HeartPulse className="w-7 h-7 text-purple-400" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="font-bold text-base text-slate-800 truncate group-hover:text-purple-700 transition-colors leading-tight">{name}</h3>
+                                                            <span className="inline-block text-[10px] font-bold text-purple-600 bg-purple-50 border border-purple-100 px-2 py-0.5 rounded-full mt-0.5">
+                                                                🏠 رعاية منزلية
+                                                            </span>
+                                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                                {clinic.clinic_address && (
+                                                                    <span className="flex items-center text-[10px] text-slate-500">
+                                                                        <MapPin className="w-2.5 h-2.5 ml-0.5 text-slate-400" />
+                                                                        <span className="truncate max-w-[90px]">{clinic.clinic_address}</span>
+                                                                    </span>
+                                                                )}
+                                                                {(clinic.totalReviews ?? 0) > 0 && (
+                                                                    <span className="flex items-center gap-0.5 text-[10px] font-bold text-yellow-600">
+                                                                        ⭐ {clinic.avgRating}
+                                                                        <span className="font-normal text-slate-400">({clinic.totalReviews})</span>
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Service category pills */}
+                                                    {services.length > 0 && (
+                                                        <div className="mb-3">
+                                                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wide mb-1.5">الخدمات المتاحة</p>
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {services.slice(0, 4).map(s => (
+                                                                    <span key={s.name} className="inline-flex items-center gap-0.5 text-[10px] font-medium bg-indigo-50 text-indigo-700 border border-indigo-100 px-1.5 py-0.5 rounded-full">
+                                                                        {getIcon(s.name)} {s.name}
+                                                                    </span>
+                                                                ))}
+                                                                {services.length > 4 && (
+                                                                    <span className="inline-flex items-center text-[10px] font-bold text-slate-500 bg-slate-50 border border-slate-200 px-1.5 py-0.5 rounded-full">
+                                                                        +{services.length - 4}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Action buttons */}
+                                                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); navigate(`/patient/home-care/${clinic.id}`); }}
+                                                            className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white transition-all h-9 rounded-xl flex items-center justify-center gap-1.5 font-bold text-xs shadow-sm active:scale-95"
+                                                        >
+                                                            <Eye className="w-3.5 h-3.5" />
+                                                            عرض الخدمات
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); const url = `${window.location.origin}/#/patient/home-care/${clinic.id}`; navigator.clipboard?.writeText(url); toast({ title: '✅ تم نسخ الرابط' }); }}
+                                                            className="w-9 h-9 rounded-xl bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-200 flex items-center justify-center text-slate-500 hover:text-purple-600 transition-all shadow-sm active:scale-95"
+                                                            title="مشاركة"
+                                                        >
+                                                            <Share2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })
+
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Clinics/Pharmacies/Beauty Grid ── */}
+                {activeTab !== 'home' && loading ? (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                         {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-64 w-full rounded-2xl" />)}
                     </div>
-                ) : filtered.length === 0 ? (
+                ) : activeTab !== 'home' && filtered.length === 0 ? (
                     <Card className="shadow-sm rounded-2xl">
                         <CardContent className="py-16 text-center">
                             <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-30" />
@@ -356,7 +532,7 @@ export default function PatientClinics() {
                             </p>
                         </CardContent>
                     </Card>
-                ) : (
+                ) : activeTab !== 'home' ? (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
                         {filtered.map((clinic, cardIdx) => {
                             const logo = logoSrc(clinic);
@@ -525,7 +701,7 @@ export default function PatientClinics() {
                             );
                         })}
                     </div>
-                )}
+                ) : null}
             </div>
 
             {/* Map Modal */}

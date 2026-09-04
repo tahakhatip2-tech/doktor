@@ -23,6 +23,7 @@ import {
     Stethoscope,
     Package,
     Pill,
+    HeartPulse,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -84,6 +85,8 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
 
     if (clinicCategory === 'beauty_center') {
         allNavItems.splice(1, 0, { id: 'beauty-services', label: 'إدارة الخدمات', icon: Sparkles });
+    } else if (clinicCategory === 'home_care') {
+        allNavItems.splice(1, 0, { id: 'homecare-services', label: 'خدمات الرعاية', icon: HeartPulse });
     }
 
     const mainNavItems = allNavItems.filter(item => {
@@ -110,30 +113,38 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
 
     // ── ألوان الثيم ──
     const isBeauty = clinicCategory === 'beauty_center';
+    const isHomeCare = clinicCategory === 'home_care';
+    
     const activeItemClass = isPharmacy
         ? "bg-white text-emerald-600 shadow-md font-black border-r-4 border-emerald-500 rounded-l-lg rounded-r-none translate-x-1"
         : isBeauty
             ? "bg-white text-fuchsia-600 shadow-md font-black border-r-4 border-fuchsia-500 rounded-l-lg rounded-r-none translate-x-1"
-            : "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1";
+            : isHomeCare
+                ? "bg-white text-indigo-600 shadow-md font-black border-r-4 border-indigo-500 rounded-l-lg rounded-r-none translate-x-1"
+                : "bg-white text-primary shadow-md font-black border-r-4 border-primary rounded-l-lg rounded-r-none translate-x-1";
 
     const inactiveItemClass = isPharmacy
         ? "text-emerald-100/80 font-medium hover:text-white hover:bg-emerald-600/30 hover:font-bold hover:translate-x-1"
         : isBeauty
             ? "text-fuchsia-600/70 font-medium hover:text-fuchsia-600 hover:bg-white/50 hover:font-bold hover:translate-x-1"
-            : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1";
+            : isHomeCare
+                ? "text-indigo-600/70 font-medium hover:text-indigo-600 hover:bg-white/50 hover:font-bold hover:translate-x-1"
+                : "text-primary/70 font-medium hover:text-primary hover:bg-white/50 hover:font-bold hover:translate-x-1";
 
     const sidebarBg = isPharmacy
         ? "bg-gradient-to-b from-emerald-800 via-emerald-700 to-emerald-900"
         : isBeauty
             ? "bg-gradient-to-b from-fuchsia-900 via-purple-900 to-fuchsia-950"
-            : "bg-white/5 dark:bg-black/10 backdrop-blur-[120px]";
+            : isHomeCare
+                ? "bg-gradient-to-b from-indigo-900 via-violet-900 to-indigo-950"
+                : "bg-white/5 dark:bg-black/10 backdrop-blur-[120px]";
 
-    const headerBorderColor = isPharmacy ? "border-emerald-600/40" : isBeauty ? "border-fuchsia-600/40" : "border-white/10";
-    const footerBorderColor = isPharmacy ? "border-emerald-600/30 bg-emerald-900/60" : isBeauty ? "border-fuchsia-600/30 bg-fuchsia-950/60" : "border-white/5 bg-card/10 backdrop-blur-2xl";
-    const dividerColor = isPharmacy ? "border-emerald-600/30" : isBeauty ? "border-fuchsia-600/30" : "border-white/10";
+    const headerBorderColor = isPharmacy ? "border-emerald-600/40" : isBeauty ? "border-fuchsia-600/40" : isHomeCare ? "border-indigo-600/40" : "border-white/10";
+    const footerBorderColor = isPharmacy ? "border-emerald-600/30 bg-emerald-900/60" : isBeauty ? "border-fuchsia-600/30 bg-fuchsia-950/60" : isHomeCare ? "border-indigo-600/30 bg-indigo-950/60" : "border-white/5 bg-card/10 backdrop-blur-2xl";
+    const dividerColor = isPharmacy ? "border-emerald-600/30" : isBeauty ? "border-fuchsia-600/30" : isHomeCare ? "border-indigo-600/30" : "border-white/10";
 
     return (
-        <div className={cn("w-full h-full flex flex-col overflow-hidden border-l", isPharmacy ? "border-emerald-600/30" : isBeauty ? "border-fuchsia-600/30" : "border-white/5", sidebarBg)}>
+        <div className={cn("w-full h-full flex flex-col overflow-hidden border-l", isPharmacy ? "border-emerald-600/30" : isBeauty ? "border-fuchsia-600/30" : isHomeCare ? "border-indigo-600/30" : "border-white/5", sidebarBg)}>
             {/* Header */}
             <div className={cn("p-6 border-b flex-shrink-0", headerBorderColor)}>
                 <div className="flex items-center gap-3">
@@ -161,7 +172,9 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                                 ? "bg-gradient-to-r from-emerald-200 via-green-100 to-white"
                                 : isBeauty
                                     ? "bg-gradient-to-r from-fuchsia-200 via-pink-100 to-white"
-                                    : "bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500"
+                                    : isHomeCare
+                                        ? "bg-gradient-to-r from-indigo-200 via-violet-100 to-white"
+                                        : "bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500"
                         )}>
                             DOCTOR JO
                         </h1>
@@ -171,9 +184,11 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                                 ? "bg-gradient-to-r from-emerald-300 to-green-100"
                                 : isBeauty
                                     ? "bg-gradient-to-r from-fuchsia-300 to-pink-100"
-                                    : "bg-gradient-to-r from-orange-500 to-blue-600"
+                                    : isHomeCare
+                                        ? "bg-gradient-to-r from-indigo-300 to-violet-100"
+                                        : "bg-gradient-to-r from-orange-500 to-blue-600"
                         )}>
-                            {isPharmacy ? "Pharmacy Management" : isBeauty ? "Beauty Center System" : "Clinic Management System"}
+                            {isPharmacy ? "Pharmacy Management" : isBeauty ? "Beauty Center System" : isHomeCare ? "Home Care Services" : "Clinic Management System"}
                         </p>
                     </div>
                 </div>
@@ -244,12 +259,14 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
                                             ? "text-emerald-100/80 hover:text-white hover:bg-emerald-600/30"
                                             : isBeauty
                                                 ? "text-fuchsia-100/80 hover:text-white hover:bg-fuchsia-600/30"
-                                                : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
+                                                : isHomeCare
+                                                    ? "text-indigo-100/80 hover:text-white hover:bg-indigo-600/30"
+                                                    : "text-primary/70 hover:text-primary hover:bg-white/50 hover:font-bold"
                                     )}
                                     onClick={() => navigate('/clinic-doctors')}
                                 >
                                     <Stethoscope className="h-5 w-5 flex-shrink-0" />
-                                    {isPharmacy ? 'إدارة الموظفين' : isBeauty ? 'فريق المركز' : 'أطباء العيادة'}
+                                    {isPharmacy ? 'إدارة الموظفين' : isBeauty ? 'فريق المركز' : isHomeCare ? 'فريق الرعاية' : 'أطباء العيادة'}
                                 </Button>
                                 <Button
                                     variant={activeTab === 'clinic-settings' ? "secondary" : "ghost"}

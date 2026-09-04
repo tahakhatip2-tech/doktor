@@ -29,6 +29,7 @@ import ClinicSettings from "@/components/ClinicSettings";
 import { ClinicStats } from "@/components/ClinicStats";
 import OffersManager from "@/components/OffersManager";
 import BeautyCenterDashboard from "@/components/BeautyCenterDashboard";
+import HomeCareDashboard from "@/components/homecare/HomeCareDashboard";
 import FinancialAnalytics from "./doctor/FinancialAnalytics";
 import InventoryManager from "./pharmacy/InventoryManager";
 import PharmacyDashboard from "./pharmacy/PharmacyDashboard";
@@ -772,6 +773,7 @@ const Index = () => {
                             }} />}
 
                             {activeTab === 'beauty-services' && <BeautyCenterDashboard />}
+                            {activeTab === 'homecare-services' && <HomeCareDashboard />}
 
                             {activeTab === 'clinic-settings' && <ClinicSettings />}
 

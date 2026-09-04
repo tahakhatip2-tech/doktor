@@ -205,10 +205,13 @@ export class PatientService {
             where: {
                 role: { in: ['USER', 'ADMIN'] },
                 status: 'active',
-                // استثناء مراكز التجميل — يتم تصنيفها عبر الإعداد clinic_category
+                // استثناء مراكز التجميل والرعاية المنزلية — يتم تصنيفها عبر الإعداد clinic_category
                 NOT: {
                     settings: {
-                        some: { key: 'clinic_category', value: 'beauty_center' },
+                        some: {
+                            key: 'clinic_category',
+                            value: { in: ['beauty_center', 'home_care'] },
+                        },
                     },
                 },
             },
@@ -611,5 +614,131 @@ export class PatientService {
         });
 
         return updatedPrescription;
+    }
+
+    async getHomeCareProviders() {
+        const users = await this.prisma.user.findMany({
+            where: {
+                status: 'active',
+                settings: {
+                    some: { key: 'clinic_category', value: 'home_care' },
+                },
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                clinic_name: true,
+                clinic_address: true,
+                clinic_phone: true,
+                working_hours: true,
+                settings: {
+                    where: {
+                        key: { in: ['clinic_name', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng'] },
+                    },
+                    select: { key: true, value: true },
+                },
+                clinicReviews: {
+                    select: { rating: true },
+                },
+                services: {
+                    where: { isActive: true, category: 'home_care' },
+                    select: { id: true, name: true, price: true, duration: true },
+                    take: 6,
+                },
+            },
+            orderBy: { name: 'asc' },
+        });
+
+        return users.map((u) => {
+            const settingsMap: Record<string, string> = {};
+            u.settings.forEach((s) => { settingsMap[s.key] = s.value; });
+
+            const totalReviews = u.clinicReviews?.length || 0;
+            const avgRating = totalReviews > 0
+                ? +(u.clinicReviews!.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
+                : 0;
+
+            return {
+                ...u,
+                settings: undefined,
+                clinicReviews: undefined,
+                avgRating,
+                totalReviews,
+                clinic_name: settingsMap['clinic_name'] || u.clinic_name,
+                clinic_logo: settingsMap['clinic_logo'] || null,
+                clinic_description: settingsMap['clinic_description'] || null,
+                location_url: settingsMap['location_url'] || null,
+                clinic_address: settingsMap['address'] || u.clinic_address,
+                clinic_phone: settingsMap['phone'] || u.clinic_phone,
+                lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
+                lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
+            };
+        }).filter(u => u.clinic_name);
+    }
+
+    async getHomeCareProviderById(providerId: number) {
+        const provider = await this.prisma.user.findUnique({
+            where: { id: providerId },
+            select: {
+                id: true,
+                role: true,
+                name: true,
+                email: true,
+                phone: true,
+                avatar: true,
+                clinic_name: true,
+                clinic_address: true,
+                clinic_phone: true,
+                working_hours: true,
+                settings: {
+                    where: {
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
+                    },
+                    select: { key: true, value: true },
+                },
+                clinicReviews: {
+                    select: { rating: true },
+                },
+                services: {
+                    where: { isActive: true, category: 'home_care' },
+                    select: { id: true, name: true, description: true, price: true, duration: true },
+                },
+            },
+        });
+
+        if (!provider) throw new NotFoundException('مزود الرعاية المنزلية غير موجود');
+
+        const settingsMap: Record<string, string> = {};
+        provider.settings.forEach((s) => { settingsMap[s.key] = s.value; });
+
+        const totalReviews = provider.clinicReviews?.length || 0;
+        const avgRating = totalReviews > 0
+            ? +(provider.clinicReviews!.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
+            : 0;
+
+        const working_hours = (settingsMap['working_hours_start'] && settingsMap['working_hours_end'])
+            ? `${settingsMap['working_hours_start']} - ${settingsMap['working_hours_end']}`
+            : provider.working_hours;
+
+        return {
+            ...provider,
+            settings: undefined,
+            clinicReviews: undefined,
+            avgRating,
+            totalReviews,
+            working_hours,
+            clinic_name: settingsMap['clinic_name'] || provider.clinic_name,
+            clinic_specialty: settingsMap['clinic_specialty'] || 'رعاية ومتابعة منزلية',
+            clinic_logo: settingsMap['clinic_logo'] || null,
+            clinic_description: settingsMap['clinic_description'] || null,
+            location_url: settingsMap['location_url'] || null,
+            clinic_address: settingsMap['address'] || provider.clinic_address,
+            clinic_phone: settingsMap['phone'] || provider.clinic_phone,
+            lat: settingsMap['lat'] ? parseFloat(settingsMap['lat']) : null,
+            lng: settingsMap['lng'] ? parseFloat(settingsMap['lng']) : null,
+        };
     }
 }

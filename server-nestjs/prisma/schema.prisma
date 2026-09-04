@@ -355,6 +355,7 @@ model Service {
   name        String
   description String?
   price       String?
+  duration    Int?     // مدة الخدمة بالدقائق
   category    String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())

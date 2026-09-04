@@ -211,8 +211,20 @@ export default function PatientAppointments() {
                                                     </p>
                                                     
                                                     {appointment.user?.clinic_specialty && (
-                                                        <p className="text-xs text-orange-600 font-bold mt-1 bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100 truncate">
-                                                            {appointment.user.clinic_specialty}
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <p className="text-xs text-orange-600 font-bold bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100 truncate">
+                                                                {appointment.user.clinic_specialty}
+                                                            </p>
+                                                            {appointment.type === 'home_care' && (
+                                                                <p className="text-xs text-purple-600 font-bold bg-purple-50 w-fit px-1.5 py-0.5 rounded border border-purple-100 flex items-center gap-1">
+                                                                    <span>🏠</span> رعاية منزلية
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {!appointment.user?.clinic_specialty && appointment.type === 'home_care' && (
+                                                        <p className="text-xs text-purple-600 font-bold mt-1 bg-purple-50 w-fit px-1.5 py-0.5 rounded border border-purple-100 flex items-center gap-1">
+                                                            <span>🏠</span> رعاية منزلية
                                                         </p>
                                                     )}
                                                 </div>

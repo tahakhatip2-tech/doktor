@@ -217,7 +217,9 @@ export default function CompleteAppointmentDialog({ isOpen, onClose, appointment
                             </div>
                             <div>
                                 <DialogTitle className="text-2xl font-black tracking-tight">{branding.name}</DialogTitle>
-                                <p className="text-muted-foreground text-sm font-medium">إتمام الزيارة والتوثيق الطبي</p>
+                                <p className="text-muted-foreground text-sm font-medium">
+                                    {appointment.type === 'home_care' ? 'إتمام الخدمة المنزلية والتوثيق' : 'إتمام الزيارة والتوثيق الطبي'}
+                                </p>
                             </div>
                         </div>
                         <div className="hidden md:flex flex-col items-end opacity-50">

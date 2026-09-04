@@ -10,7 +10,7 @@ import {
     Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Sparkles } from "lucide-react";
+import { Sparkles, HeartPulse } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useClinicContext } from "@/context/ClinicContext";
 import AddAppointmentDialog from "@/components/AddAppointmentDialog";
@@ -27,6 +27,7 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
     const { settings } = useClinicContext();
     const isPharmacy = user?.role === 'PHARMACY';
     const isBeauty = settings?.clinic_category === 'beauty_center';
+    const isHomeCare = settings?.clinic_category === 'home_care';
     
     const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
     const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -46,9 +47,6 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
     ];
 
     if (isBeauty) {
-        // Find index of add-patient and insert beauty services before it or replace something
-        // Just insert it as the 4th item if needed, but the bottom nav only fits 5 items well.
-        // Let's replace 'offers' with 'beauty-services' to fit in 5 slots.
         navItems = [
             { id: 'dashboard', label: 'الرئيسية', icon: Home },
             { id: 'contacts', label: 'المرضى', icon: Users },
@@ -56,20 +54,30 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
             { id: 'beauty-services', label: 'الخدمات', icon: Sparkles },
             { id: 'clinic-settings', label: 'الإعدادات', icon: Settings },
         ];
+    } else if (isHomeCare) {
+        navItems = [
+            { id: 'dashboard', label: 'الرئيسية', icon: Home },
+            { id: 'contacts', label: 'المرضى', icon: Users },
+            { id: 'add-patient', label: 'إضافة', icon: Plus, isSpecial: true },
+            { id: 'homecare-services', label: 'الخدمات', icon: HeartPulse },
+            { id: 'clinic-settings', label: 'الإعدادات', icon: Settings },
+        ];
     }
 
     // Dynamic color theme based on role
-    const borderColor   = isPharmacy ? 'border-emerald-500'  : isBeauty ? 'border-fuchsia-500' : 'border-orange-500';
+    const borderColor   = isPharmacy ? 'border-emerald-500'  : isBeauty ? 'border-fuchsia-500' : isHomeCare ? 'border-indigo-500' : 'border-orange-500';
     const mainBtnClass  = isPharmacy
         ? 'bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 shadow-[0_8px_25px_rgba(16,185,129,0.4)]'
         : isBeauty
         ? 'bg-gradient-to-tr from-fuchsia-600 via-purple-500 to-fuchsia-400 shadow-[0_8px_25px_rgba(217,70,239,0.4)]'
+        : isHomeCare
+        ? 'bg-gradient-to-tr from-indigo-600 via-violet-500 to-indigo-400 shadow-[0_8px_25px_rgba(79,70,229,0.4)]'
         : 'bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)]';
-    const pingColor     = isPharmacy ? 'bg-emerald-400' : isBeauty ? 'bg-fuchsia-400' : 'bg-orange-400';
-    const activeBg      = isPharmacy ? 'bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500/50' : isBeauty ? 'bg-fuchsia-50 dark:bg-fuchsia-500/10 border-2 border-fuchsia-500/50' : 'bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50';
-    const activeIcon    = isPharmacy ? 'text-emerald-600' : isBeauty ? 'text-fuchsia-600' : 'text-orange-600';
-    const activeDot     = isPharmacy ? 'bg-emerald-600' : isBeauty ? 'bg-fuchsia-600' : 'bg-orange-600';
-    const mainLabelCls  = isPharmacy ? 'text-emerald-600 bg-emerald-50' : isBeauty ? 'text-fuchsia-600 bg-fuchsia-50' : 'text-orange-600 bg-orange-50';
+    const pingColor     = isPharmacy ? 'bg-emerald-400' : isBeauty ? 'bg-fuchsia-400' : isHomeCare ? 'bg-indigo-400' : 'bg-orange-400';
+    const activeBg      = isPharmacy ? 'bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500/50' : isBeauty ? 'bg-fuchsia-50 dark:bg-fuchsia-500/10 border-2 border-fuchsia-500/50' : isHomeCare ? 'bg-indigo-50 dark:bg-indigo-500/10 border-2 border-indigo-500/50' : 'bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50';
+    const activeIcon    = isPharmacy ? 'text-emerald-600' : isBeauty ? 'text-fuchsia-600' : isHomeCare ? 'text-indigo-600' : 'text-orange-600';
+    const activeDot     = isPharmacy ? 'bg-emerald-600' : isBeauty ? 'bg-fuchsia-600' : isHomeCare ? 'bg-indigo-600' : 'bg-orange-600';
+    const mainLabelCls  = isPharmacy ? 'text-emerald-600 bg-emerald-50' : isBeauty ? 'text-fuchsia-600 bg-fuchsia-50' : isHomeCare ? 'text-indigo-600 bg-indigo-50' : 'text-orange-600 bg-orange-50';
 
     return (
         <>

@@ -331,7 +331,9 @@ export default function AppointmentDetailView({
                                         <TestTube className="h-6 w-6" />
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black text-slate-900">الفحوصات والإجراءات الأولية</h3>
+                                        <h3 className="text-xl font-black text-slate-900">
+                                            {appointment.type === 'home_care' ? 'تفاصيل الخدمة والإجراءات المتخذة' : 'الفحوصات والإجراءات الأولية'}
+                                        </h3>
                                         <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">مرحلة ما قبل التشخيص النهائي</p>
                                     </div>
                                 </div>
@@ -388,7 +390,9 @@ export default function AppointmentDetailView({
                                         <div className="flex items-center justify-between p-3 bg-green-50 rounded-xl border border-green-100">
                                             <div className="flex items-center gap-2 text-green-700">
                                                 <CheckCircle2 className="h-5 w-5" />
-                                                <span className="font-bold text-sm">تم حفظ الإجراءات. يمكنك الآن إتمام الكشف.</span>
+                                                <span className="font-bold text-sm">
+                                                    {appointment.type === 'home_care' ? 'تم حفظ الإجراءات. يمكنك الآن إتمام الخدمة.' : 'تم حفظ الإجراءات. يمكنك الآن إتمام الكشف.'}
+                                                </span>
                                             </div>
                                             <Button 
                                                 variant="ghost" 
@@ -506,7 +510,7 @@ export default function AppointmentDetailView({
                                             }`}
                                         >
                                             <CheckCircle2 className="h-5 w-5 ml-2" />
-                                            {proceduresSaved ? 'إتمام الكشف (وصفة وتشخيص)' : 'أكمل الإجراءات أولاً'}
+                                            {proceduresSaved ? (appointment.type === 'home_care' ? 'إتمام الخدمة (وصفة طبية وتفاصيل)' : 'إتمام الكشف (وصفة وتشخيص)') : 'أكمل الإجراءات أولاً'}
                                         </Button>
                                         {!proceduresSaved && (
                                             <p className="text-[10px] text-center text-slate-500 font-bold px-2 leading-relaxed">

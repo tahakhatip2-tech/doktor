@@ -97,8 +97,8 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                                                 <p className="font-extrabold text-sm text-slate-900 truncate leading-none">
                                                     {appointment.patientName}
                                                 </p>
-                                                <div className="text-[9px] font-bold px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-sm shrink-0">
-                                                    {appointment.type}
+                                                <div className={`text-[9px] font-bold px-2 py-0.5 border rounded-sm shrink-0 ${appointment.type === 'home_care' ? 'bg-purple-50 text-purple-600 border-purple-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                                                    {appointment.type === 'home_care' ? 'رعاية منزلية 🏠' : appointment.type}
                                                 </div>
                                             </div>
                                             {appointment.date && (
@@ -126,8 +126,8 @@ export function UpcomingAppointments({ appointments = [], onViewAll }: UpcomingA
                                             <p className="font-extrabold text-lg text-slate-900 truncate block">
                                                 {appointment.patientName}
                                             </p>
-                                            <div className="text-[10px] font-bold px-2 py-0.5 bg-blue-50 text-blue-600 border border-blue-100 rounded-sm inline-block w-fit">
-                                                {appointment.type}
+                                            <div className={`text-[10px] font-bold px-2 py-0.5 border rounded-sm inline-block w-fit ${appointment.type === 'home_care' ? 'bg-purple-50 text-purple-600 border-purple-100' : 'bg-blue-50 text-blue-600 border-blue-100'}`}>
+                                                {appointment.type === 'home_care' ? 'رعاية منزلية 🏠' : appointment.type}
                                             </div>
                                         </div>
                                     </div>

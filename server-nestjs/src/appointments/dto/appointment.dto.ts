@@ -55,7 +55,7 @@ export class CreateAppointmentDto {
     @ApiPropertyOptional({
         description: 'نوع الموعد',
         example: 'consultation',
-        enum: ['consultation', 'follow-up', 'emergency', 'checkup', 'video-consultation'],
+        enum: ['consultation', 'follow-up', 'emergency', 'checkup', 'video-consultation', 'home_care'],
         default: 'consultation',
     })
     type?: string;
