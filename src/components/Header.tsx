@@ -237,7 +237,7 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                 )}
 
                                 {/* Navigation Items */}
-                                <div className={cn("grid gap-2 mb-3", isPharmacy ? "grid-cols-1" : "grid-cols-2")}>
+                                <div className="grid grid-cols-2 gap-2 mb-3">
                                     {filteredNavItems.map((item, idx) => {
                                         // Colors for pharmacy capsule style
                                         const capsuleColors = [
@@ -298,54 +298,102 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                 <DropdownMenuSeparator className="bg-blue-100/50 dark:bg-blue-900/50 my-2" />
 
                                 {/* Management Quick Actions */}
-                                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 mb-2">
-                                    <DropdownMenuItem
-                                        onSelect={() => onNavigate ? onNavigate('/profile') : navigate('/profile')}
-                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
-                                    >
-                                        <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        <span className="text-[8px] font-black">حسابي</span>
-                                    </DropdownMenuItem>
+                                <div className={cn("grid gap-2 mb-2", isPharmacy ? "grid-cols-2" : "grid-cols-3 sm:grid-cols-4")}>
+                                    {(() => {
+                                        const mgmtItems = [
+                                            { id: 'profile', label: 'حسابي', icon: User, action: () => onNavigate ? onNavigate('/profile') : navigate('/profile'), color: 'from-cyan-500 to-blue-500', shape: 'rounded-full', iconPos: 'right', isRed: false },
+                                            ...(!activeDoctor ? [
+                                                { id: 'doctors', label: 'الأطباء', icon: Stethoscope, action: () => navigate('/clinic-doctors'), color: 'from-amber-400 to-orange-500', shape: 'rounded-l-full rounded-r-xl', iconPos: 'left', isRed: false },
+                                                { id: 'admin', label: 'الأدمن', icon: LayoutDashboard, action: () => onNavigate ? onNavigate('/admin') : navigate('/admin'), color: 'from-indigo-500 to-purple-500', shape: 'rounded-r-full rounded-l-xl', iconPos: 'right', isRed: false },
+                                                { id: 'settings', label: 'الإعدادات', icon: Settings, action: () => onTabChange && onTabChange('clinic-settings'), color: 'from-slate-600 to-slate-500', shape: 'rounded-tl-full rounded-br-full rounded-tr-xl rounded-bl-xl', iconPos: 'left', isRed: false },
+                                            ] : []),
+                                            { id: 'staff', label: 'الطاقم', icon: Users, action: () => setTimeout(openLoginModal, 100), color: 'from-emerald-500 to-teal-500', shape: 'rounded-[2rem]', iconPos: 'right', isRed: false },
+                                            { id: 'logout', label: 'خروج', icon: LogOut, action: () => activeDoctor ? logout() : signOut(), color: 'from-red-500 to-rose-600', shape: 'rounded-full', iconPos: 'center', isRed: true },
+                                        ];
 
-                                    {!activeDoctor && (
-                                        <>
-                                            <DropdownMenuItem
-                                                onSelect={() => navigate('/clinic-doctors')}
-                                                className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
-                                            >
-                                                <Stethoscope className="h-5 w-5 text-orange-500" />
-                                                <span className="text-[8px] font-black">الأطباء</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onSelect={() => onNavigate ? onNavigate('/admin') : navigate('/admin')}
-                                                className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
-                                            >
-                                                <LayoutDashboard className="h-5 w-5 text-orange-500" />
-                                                <span className="text-[8px] font-black">الأدمن</span>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onSelect={() => onTabChange && onTabChange('clinic-settings')}
-                                                className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
-                                            >
-                                                <Settings className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                                <span className="text-[8px] font-black">الإعدادات</span>
-                                            </DropdownMenuItem>
-                                        </>
-                                    )}
-                                    <DropdownMenuItem
-                                        onSelect={() => setTimeout(openLoginModal, 100)}
-                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
-                                    >
-                                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        <span className="text-[8px] font-black">الطاقم الطبي</span>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                        onSelect={() => activeDoctor ? logout() : signOut()}
-                                        className="flex flex-col items-center justify-center p-2 rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-900 dark:text-red-100 hover:bg-red-100"
-                                    >
-                                        <LogOut className="h-5 w-5 text-red-600 dark:text-red-400" />
-                                        <span className="text-[8px] font-black">خروج</span>
-                                    </DropdownMenuItem>
+                                        if (isPharmacy) {
+                                            return mgmtItems.map((item, idx) => (
+                                                <DropdownMenuItem
+                                                    key={item.id}
+                                                    onSelect={item.action}
+                                                    className={cn(
+                                                        "relative border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer w-full p-0 h-10",
+                                                        item.shape,
+                                                        `bg-gradient-to-l ${item.color}`,
+                                                        "text-white focus:text-white"
+                                                    )}
+                                                >
+                                                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
+                                                    
+                                                    <div className={cn("w-full h-full relative z-10 flex items-center px-3", item.iconPos === 'center' ? 'justify-center' : 'justify-between', item.iconPos === 'left' ? 'flex-row-reverse' : '')}>
+                                                        {item.iconPos !== 'center' && (
+                                                            <div className="flex-1 text-center">
+                                                                <p className="text-[11px] font-black text-white whitespace-nowrap">{item.label}</p>
+                                                            </div>
+                                                        )}
+                                                        <div className={cn("p-1.5 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0", item.iconPos === 'center' ? 'mr-1' : '')}>
+                                                            <item.icon className="h-3.5 w-3.5 text-white" />
+                                                        </div>
+                                                        {item.iconPos === 'center' && (
+                                                            <p className="text-[11px] font-black text-white whitespace-nowrap mr-1">{item.label}</p>
+                                                        )}
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            ));
+                                        }
+
+                                        // Standard styling for non-pharmacy roles
+                                        return (
+                                            <>
+                                                <DropdownMenuItem
+                                                    onSelect={() => onNavigate ? onNavigate('/profile') : navigate('/profile')}
+                                                    className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
+                                                >
+                                                    <User className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                    <span className="text-[8px] font-black">حسابي</span>
+                                                </DropdownMenuItem>
+                                                {!activeDoctor && (
+                                                    <>
+                                                        <DropdownMenuItem
+                                                            onSelect={() => navigate('/clinic-doctors')}
+                                                            className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
+                                                        >
+                                                            <Stethoscope className="h-5 w-5 text-orange-500" />
+                                                            <span className="text-[8px] font-black">الأطباء</span>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onSelect={() => onNavigate ? onNavigate('/admin') : navigate('/admin')}
+                                                            className="flex flex-col items-center justify-center p-2 rounded-2xl border border-orange-100 dark:border-orange-900/30 bg-orange-50/50 dark:bg-orange-900/10 text-orange-900 dark:text-orange-100 hover:bg-orange-100"
+                                                        >
+                                                            <LayoutDashboard className="h-5 w-5 text-orange-500" />
+                                                            <span className="text-[8px] font-black">الأدمن</span>
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            onSelect={() => onTabChange && onTabChange('clinic-settings')}
+                                                            className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
+                                                        >
+                                                            <Settings className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                            <span className="text-[8px] font-black">الإعدادات</span>
+                                                        </DropdownMenuItem>
+                                                    </>
+                                                )}
+                                                <DropdownMenuItem
+                                                    onSelect={() => setTimeout(openLoginModal, 100)}
+                                                    className="flex flex-col items-center justify-center p-2 rounded-2xl border border-blue-100 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 text-blue-900 dark:text-blue-100 hover:bg-blue-100"
+                                                >
+                                                    <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+                                                    <span className="text-[8px] font-black">الطاقم الطبي</span>
+                                                </DropdownMenuItem>
+                                                <DropdownMenuItem
+                                                    onSelect={() => activeDoctor ? logout() : signOut()}
+                                                    className="flex flex-col items-center justify-center p-2 rounded-2xl border border-red-100 dark:border-red-900/30 bg-red-50/50 dark:bg-red-900/10 text-red-900 dark:text-red-100 hover:bg-red-100"
+                                                >
+                                                    <LogOut className="h-5 w-5 text-red-600 dark:text-red-400" />
+                                                    <span className="text-[8px] font-black">خروج</span>
+                                                </DropdownMenuItem>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-2 mt-2">
