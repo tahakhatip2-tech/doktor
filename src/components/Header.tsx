@@ -195,24 +195,26 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                 sideOffset={8}
                             >
                                 {/* Doctor Jo Branding Section */}
-                                <div className={cn("flex flex-col items-center p-6 mb-2 rounded-t-[2rem] border-b", isPharmacy ? "bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-900/20 border-emerald-100/20" : "bg-gradient-to-b from-blue-50/50 to-transparent dark:from-blue-900/20 border-blue-100/20")}>
-                                    <div className="relative group mb-3">
+                                <div className={cn("flex mb-2 rounded-t-[2rem] border-b", isPharmacy ? "flex-row items-center justify-center p-4 gap-3 bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-900/20 border-emerald-100/20" : "flex-col items-center p-6 bg-gradient-to-b from-blue-50/50 to-transparent dark:from-blue-900/20 border-blue-100/20")}>
+                                    <div className={cn("relative group", isPharmacy ? "mb-0" : "mb-3")}>
                                         <div className={cn("absolute -inset-2 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity", isPharmacy ? "bg-gradient-to-r from-emerald-600 to-green-500" : "bg-gradient-to-r from-blue-600 to-orange-500")}></div>
                                         <img
                                             src="/hakeem-logo.png"
                                             alt="Doctor Jo"
-                                            className="h-16 w-16 object-contain relative rounded-2xl transition-transform duration-500 group-hover:scale-110"
+                                            className={cn("object-contain relative rounded-2xl transition-transform duration-500 group-hover:scale-110", isPharmacy ? "h-10 w-10" : "h-16 w-16")}
                                             onError={(e) => {
                                                 (e.target as HTMLImageElement).src = '/logo.png';
                                             }}
                                         />
                                     </div>
-                                    <h2 className={cn("text-xl font-black tracking-tighter bg-clip-text text-transparent", isPharmacy ? "bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-500" : "bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500")}>
-                                        DOCTOR JO
-                                    </h2>
-                                    <p className={cn("text-[9px] font-bold uppercase tracking-[0.2em] bg-clip-text text-transparent opacity-80 mt-1", isPharmacy ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-gradient-to-r from-orange-500 to-blue-600")}>
-                                        {isPharmacy ? "Pharmacy Management" : "Clinic Management System"}
-                                    </p>
+                                    <div className={cn("flex flex-col justify-center", isPharmacy ? "items-start text-left" : "items-center text-center")}>
+                                        <h2 className={cn("font-black tracking-tighter bg-clip-text text-transparent leading-none", isPharmacy ? "text-lg bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-500 mb-1" : "text-xl bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500 mb-0")}>
+                                            DOCTOR JO
+                                        </h2>
+                                        <p className={cn("font-bold uppercase tracking-[0.2em] bg-clip-text text-transparent opacity-80 leading-none", isPharmacy ? "text-[8px] bg-gradient-to-r from-green-500 to-emerald-600" : "text-[9px] bg-gradient-to-r from-orange-500 to-blue-600 mt-1")}>
+                                            {isPharmacy ? "Pharmacy Management" : "Clinic Management System"}
+                                        </p>
+                                    </div>
                                 </div>
 
                                 {/* Counters Section */}
