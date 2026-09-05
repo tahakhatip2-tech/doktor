@@ -37,6 +37,7 @@ import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PatientCardSkeleton } from "@/components/skeletons/PatientCardSkeleton";
 import HeroSection from "@/components/HeroSection";
 import DoctorAISecretary from "@/components/DoctorAISecretary";
+import PharmacyAIAssistant from "@/components/PharmacyAIAssistant";
 import { appointmentsApi, whatsappApi, dataApi } from "@/lib/api";
 import {
     Users,
@@ -811,8 +812,8 @@ const Index = () => {
                     />
                 )}
 
-                {/* AI Secretary - Floating button for doctor */}
-                {activeTab !== 'offers' && <DoctorAISecretary />}
+                {/* AI Secretary - Floating button */}
+                {activeTab !== 'offers' && (isPharmacy ? <PharmacyAIAssistant /> : <DoctorAISecretary />)}
             </ClinicProvider >
         </div >
     );
