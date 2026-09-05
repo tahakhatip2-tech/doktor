@@ -77,39 +77,39 @@ export default function PatientDashboard() {
 
             <div className="px-4 sm:px-0 flex flex-col gap-6 -mt-4 relative z-20">
                 {/* Quick Actions - Capsule Style */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                     {/* صرف وصفة - capsule orange */}
                     <button
                         onClick={() => setIsDispenseDialogOpen(true)}
-                        className="relative rounded-full border-0 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group bg-gradient-to-l from-orange-500 from-50% to-orange-400 to-50% text-white w-full h-14"
+                        className="relative rounded-full border-0 shadow-md hover:shadow-lg active:scale-95 transition-all duration-300 overflow-hidden group bg-gradient-to-l from-orange-500 from-50% to-orange-400 to-50% text-white w-full h-11"
                     >
                         {/* Capsule Middle Shine Divider */}
-                        <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
+                        <div className="absolute top-0 right-1/2 w-1 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
                         <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
                         
-                        <div className="py-2 px-6 relative z-10 flex items-center justify-between h-full">
-                            <div className="flex-1 text-right ml-2 flex items-center h-full">
-                                <p className="text-sm font-black text-white whitespace-nowrap">صرف وصفة</p>
+                        <div className="py-1 px-4 relative z-10 flex items-center justify-between h-full">
+                            <div className="flex-1 text-right ml-1.5 flex items-center h-full">
+                                <p className="text-[13px] font-black text-white whitespace-nowrap">صرف وصفة</p>
                             </div>
-                            <div className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
-                                <Pill className="h-5 w-5 text-white" />
+                            <div className="p-1.5 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                <Pill className="h-4 w-4 text-white" />
                             </div>
                         </div>
                     </button>
 
                     {/* حجز موعد - capsule blue */}
                     <Link to="/patient/clinics" className="w-full">
-                        <button className="relative rounded-full border-0 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group bg-gradient-to-l from-blue-600 from-50% to-blue-500 to-50% text-white w-full h-14">
+                        <button className="relative rounded-full border-0 shadow-md hover:shadow-lg active:scale-95 transition-all duration-300 overflow-hidden group bg-gradient-to-l from-blue-600 from-50% to-blue-500 to-50% text-white w-full h-11">
                             {/* Capsule Middle Shine Divider */}
-                            <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
+                            <div className="absolute top-0 right-1/2 w-1 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
                             <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
                             
-                            <div className="py-2 px-6 relative z-10 flex items-center justify-between h-full">
-                                <div className="flex-1 text-right ml-2 flex items-center h-full">
-                                    <p className="text-sm font-black text-white whitespace-nowrap">حجز موعد</p>
+                            <div className="py-1 px-4 relative z-10 flex items-center justify-between h-full">
+                                <div className="flex-1 text-right ml-1.5 flex items-center h-full">
+                                    <p className="text-[13px] font-black text-white whitespace-nowrap">حجز موعد</p>
                                 </div>
-                                <div className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
-                                    <Plus className="h-5 w-5 text-white" />
+                                <div className="p-1.5 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                    <Calendar className="h-4 w-4 text-white" />
                                 </div>
                             </div>
                         </button>

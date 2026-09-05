@@ -14,6 +14,7 @@ interface ClinicSettings {
     clinic_name: string;
     clinic_description: string;
     clinic_logo: string;
+    clinic_cover: string;
     phone: string;
     emergency_phone: string;
     address: string;
@@ -34,6 +35,7 @@ export default function ClinicSettings() {
         clinic_name: 'عيادتي',
         clinic_description: 'نظام إدارة العيادات',
         clinic_logo: '/logo.png',
+        clinic_cover: '',
         phone: '',
         emergency_phone: '',
         address: '',
@@ -50,7 +52,9 @@ export default function ClinicSettings() {
     });
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
+    const [uploadingCover, setUploadingCover] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const coverInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         loadSettings();
@@ -115,6 +119,28 @@ export default function ClinicSettings() {
             toastWithSound.error(error.message || 'فشل رفع الشعار');
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setUploadingCover(true);
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const data = await whatsappApi.upload(formData);
+            if (data.url) {
+                updateSetting('clinic_cover', data.url);
+                toastWithSound.success('تم رفع صورة الغلاف بنجاح');
+            }
+        } catch (error: any) {
+            console.error('Error uploading cover:', error);
+            toastWithSound.error(error.message || 'فشل رفع صورة الغلاف');
+        } finally {
+            setUploadingCover(false);
         }
     };
 
@@ -252,6 +278,49 @@ export default function ClinicSettings() {
                                         onChange={handleLogoUpload}
                                     />
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Cover Photo Upload */}
+                        <div className="pt-6 border-t border-blue-100 dark:border-blue-800/50">
+                            <Label className="block mb-1 text-blue-900 dark:text-blue-100 font-semibold text-right w-full">
+                                صورة الغلاف (Cover Photo)
+                            </Label>
+                            <p className="text-xs text-slate-400 text-right mb-3">تُستخدم كخلفية لصفحة مركزك في بوابة المرضى — يُفضّل أبعاد 16:9 بجودة عالية</p>
+                            <div className="relative w-full h-36 rounded-2xl border-2 border-dashed border-pink-300 dark:border-pink-700 overflow-hidden bg-pink-50/50 dark:bg-pink-900/20 shadow-inner group/cover">
+                                {settings.clinic_cover ? (
+                                    <img
+                                        src={settings.clinic_cover.startsWith('http') ? settings.clinic_cover : `${BASE_URL}${settings.clinic_cover}`}
+                                        alt="Cover Preview"
+                                        className="w-full h-full object-cover transition-transform duration-700 group-hover/cover:scale-105"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-pink-400/60">
+                                        <ImageIcon className="w-9 h-9" />
+                                        <span className="text-xs font-medium">لا توجد صورة غلاف — انقر لرفع صورة</span>
+                                    </div>
+                                )}
+                                {uploadingCover && (
+                                    <div className="absolute inset-0 bg-background/60 backdrop-blur-sm flex items-center justify-center">
+                                        <Loader2 className="h-7 w-7 animate-spin text-pink-600" />
+                                    </div>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => coverInputRef.current?.click()}
+                                    disabled={uploadingCover}
+                                    className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-white/85 dark:bg-black/60 backdrop-blur-sm text-pink-700 dark:text-pink-300 text-xs font-bold px-3 py-1.5 rounded-full shadow border border-pink-200 dark:border-pink-700 hover:bg-white transition-all"
+                                >
+                                    <Upload className="h-3.5 w-3.5" />
+                                    {settings.clinic_cover ? 'تغيير الغلاف' : 'رفع صورة الغلاف'}
+                                </button>
+                                <input
+                                    type="file"
+                                    ref={coverInputRef}
+                                    className="hidden"
+                                    accept="image/*"
+                                    onChange={handleCoverUpload}
+                                />
                             </div>
                         </div>
                     </div>

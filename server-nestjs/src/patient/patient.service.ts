@@ -228,7 +228,7 @@ export class PatientService {
                 working_hours: true,
                 settings: {
                     where: {
-                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_cover', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
                     },
                     select: { key: true, value: true },
                 },
@@ -265,6 +265,7 @@ export class PatientService {
                     clinic_name: resolvedClinicName,
                     clinic_specialty: settingsMap['clinic_specialty'] || u.clinic_specialty,
                     clinic_logo: settingsMap['clinic_logo'] || null,
+                    clinic_cover: settingsMap['clinic_cover'] || null,
                     clinic_description: settingsMap['clinic_description'] || null,
                     location_url: settingsMap['location_url'] || null,
                     clinic_address: settingsMap['address'] || u.clinic_address,
@@ -294,7 +295,7 @@ export class PatientService {
                 working_hours: true,
                 settings: {
                     where: {
-                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_cover', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
                     },
                     select: { key: true, value: true },
                 },
@@ -337,6 +338,7 @@ export class PatientService {
             clinic_name: settingsMap['clinic_name'] || clinic.clinic_name,
             clinic_specialty: settingsMap['clinic_specialty'] || clinic.clinic_specialty,
             clinic_logo: settingsMap['clinic_logo'] || null,
+            clinic_cover: settingsMap['clinic_cover'] || null,
             clinic_description: settingsMap['clinic_description'] || null,
             location_url: settingsMap['location_url'] || null,
             clinic_address: settingsMap['address'] || clinic.clinic_address,
@@ -464,6 +466,7 @@ export class PatientService {
                 totalReviews,
                 clinic_name: settingsMap['clinic_name'] || u.clinic_name,
                 clinic_logo: settingsMap['clinic_logo'] || null,
+                clinic_cover: settingsMap['clinic_cover'] || null,
                 clinic_description: settingsMap['clinic_description'] || null,
                 location_url: settingsMap['location_url'] || null,
                 clinic_address: settingsMap['address'] || u.clinic_address,
@@ -490,7 +493,7 @@ export class PatientService {
                 working_hours: true,
                 settings: {
                     where: {
-                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
+                        key: { in: ['clinic_name', 'clinic_specialty', 'clinic_logo', 'clinic_cover', 'clinic_description', 'address', 'phone', 'location_url', 'lat', 'lng', 'working_hours_start', 'working_hours_end'] },
                     },
                     select: { key: true, value: true },
                 },
@@ -528,6 +531,7 @@ export class PatientService {
             clinic_name: settingsMap['clinic_name'] || center.clinic_name,
             clinic_specialty: settingsMap['clinic_specialty'] || 'مركز تجميل وعناية بالبشرة',
             clinic_logo: settingsMap['clinic_logo'] || null,
+            clinic_cover: settingsMap['clinic_cover'] || null,
             clinic_description: settingsMap['clinic_description'] || null,
             location_url: settingsMap['location_url'] || null,
             clinic_address: settingsMap['address'] || center.clinic_address,

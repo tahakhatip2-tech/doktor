@@ -15,7 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2, Star, LayoutGrid, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2, Star, LayoutGrid, CheckCircle2, Home } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -183,9 +183,21 @@ export default function PatientAppointments() {
                             <div className="space-y-4">
                                 {filteredAppointments.map((appointment) => (
                                     <Card key={appointment.id} className="relative rounded-md border border-orange-500 bg-white shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group">
+                                        {/* ── Status Banner ─────────── */}
+                                        <div className={`w-full text-center py-1.5 text-xs font-black tracking-wide border-b ${
+                                            appointment.status === 'confirmed' ? 'text-blue-600 border-blue-200 bg-blue-50/50' : 
+                                            appointment.status === 'pending' ? 'text-orange-600 border-orange-200 bg-orange-50/50' : 
+                                            appointment.status === 'completed' ? 'text-emerald-600 border-emerald-200 bg-emerald-50/50' : 
+                                            'text-red-600 border-red-200 bg-red-50/50'
+                                        }`}>
+                                            {appointment.status === 'confirmed' ? 'مؤكد' : 
+                                             appointment.status === 'pending' ? 'في الانتظار' : 
+                                             appointment.status === 'completed' ? 'مكتمل' : 'ملغي'}
+                                        </div>
+
                                         {/* ── Header ───────────────── */}
-                                        <div className="flex items-start justify-between p-5 pb-4">
-                                            <div className="flex items-center gap-4">
+                                        <div className="flex items-start justify-between p-4 pb-3 gap-2 sm:gap-4">
+                                            <div className="flex items-center gap-2.5 sm:gap-4 flex-1 min-w-0">
                                                 <div className="relative flex-shrink-0">
                                                     <div className="absolute inset-0 bg-gradient-to-tr from-orange-500 to-blue-600 rounded-full blur-[4px] opacity-70 group-hover:opacity-100 transition-opacity duration-300"></div>
                                                     <div className="relative h-14 w-14 rounded-full bg-white p-0.5 z-10">
@@ -206,32 +218,24 @@ export default function PatientAppointments() {
                                                 </div>
                                                 
                                                 <div className="flex-1 min-w-0 flex flex-col justify-center">
-                                                    <p className="font-extrabold text-base text-slate-900 truncate">
+                                                    <p className="font-extrabold text-[14px] sm:text-base text-slate-900 leading-tight">
                                                         {appointment.user?.clinic_name || appointment.user?.name}
                                                     </p>
                                                     
                                                     {appointment.user?.clinic_specialty && (
-                                                        <div className="flex items-center gap-2 mt-1">
-                                                            <p className="text-xs text-orange-600 font-bold bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100 truncate">
-                                                                {appointment.user.clinic_specialty}
-                                                            </p>
-                                                            {appointment.type === 'home_care' && (
-                                                                <p className="text-xs text-purple-600 font-bold bg-purple-50 w-fit px-1.5 py-0.5 rounded border border-purple-100 flex items-center gap-1">
-                                                                    <span>🏠</span> رعاية منزلية
-                                                                </p>
-                                                            )}
-                                                        </div>
-                                                    )}
-                                                    {!appointment.user?.clinic_specialty && appointment.type === 'home_care' && (
-                                                        <p className="text-xs text-purple-600 font-bold mt-1 bg-purple-50 w-fit px-1.5 py-0.5 rounded border border-purple-100 flex items-center gap-1">
-                                                            <span>🏠</span> رعاية منزلية
+                                                        <p className="text-xs text-orange-600 font-bold mt-1 bg-orange-50 w-fit px-1.5 py-0.5 rounded border border-orange-100">
+                                                            {appointment.user.clinic_specialty}
                                                         </p>
                                                     )}
+                                                    {appointment.type === 'home_care' && (
+                                                        <div className="flex items-center gap-1.5 bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200/60 shadow-[0_2px_10px_-3px_rgba(168,85,247,0.2)] rounded-lg px-2.5 py-1 transition-all w-fit mt-2">
+                                                            <Home className="w-3.5 h-3.5 text-purple-600" />
+                                                            <span className="text-[11px] font-black bg-gradient-to-l from-purple-700 to-fuchsia-600 bg-clip-text text-transparent tracking-wide whitespace-nowrap">
+                                                                رعاية منزلية
+                                                            </span>
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            </div>
-                                            
-                                            <div className="flex flex-col items-end pt-1">
-                                                {getStatusBadge(appointment.status)}
                                             </div>
                                         </div>
 
@@ -313,14 +317,14 @@ export default function PatientAppointments() {
                                                         setExistingReview(existing);
                                                         setReviewDialogOpen(true);
                                                     }}
-                                                    className={`flex-1 flex justify-center items-center gap-1.5 py-1.5 rounded text-xs font-bold transition-all duration-300 shadow-sm ${
+                                                    className={`flex-1 flex justify-center items-center gap-1 px-1 py-1.5 rounded text-[11px] font-bold transition-all duration-300 shadow-sm whitespace-nowrap ${
                                                         reviewedDoctorIds.has(appointment.clinicDoctorId)
                                                             ? 'bg-amber-50 text-amber-700 border border-amber-200'
                                                             : 'bg-amber-500 text-white hover:bg-amber-600'
                                                     }`}
                                                 >
-                                                    <Star className="h-3.5 w-3.5 fill-current" />
-                                                    {reviewedDoctorIds.has(appointment.clinicDoctorId) ? 'تعديل تقييمك' : 'قيّم الطبيب'}
+                                                    <Star className="h-3 w-3 fill-current" />
+                                                    <span>{reviewedDoctorIds.has(appointment.clinicDoctorId) ? 'تعديل التقييم' : 'قيّم الطبيب'}</span>
                                                 </button>
                                             )}
                                         </div>

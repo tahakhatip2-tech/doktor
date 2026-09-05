@@ -72,6 +72,7 @@
     "framer-motion": "^12.25.0",
     "google-tts-api": "^2.0.2",
     "helmet": "^8.1.0",
+    "html2pdf.js": "^0.14.0",
     "html5-qrcode": "^2.3.8",
     "input-otp": "^1.4.2",
     "jsonwebtoken": "^9.0.3",

@@ -17,7 +17,10 @@ import { Label } from '@/components/ui/label';
 import {
     HeartPulse, MapPin, Phone, Clock, Star, ArrowRight,
     MessageCircle, Share2, ChevronRight, CheckCircle2,
-    Calendar, ChevronLeft, Loader2
+    Calendar, ChevronLeft, Loader2,
+    Stethoscope, Bandage, Syringe, Dumbbell, Pill, ClipboardList,
+    Microscope, Activity, Cookie, Footprints, Salad, Sofa, Home,
+    type LucideIcon
 } from 'lucide-react';
 import axios from 'axios';
 import { format, startOfDay, isSameDay, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, getDay } from 'date-fns';
@@ -27,26 +30,28 @@ import { BASE_URL } from '@/lib/api';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-const SERVICE_ICONS: Record<string, string> = {
-    'تمريض': '🩺',
-    'جرح': '🩹',
-    'حقن': '💉',
-    'فيزياء': '🦽',
-    'علاج': '💊',
-    'متابعة': '📋',
-    'فحص': '🔬',
-    'ضغط': '❤️',
-    'سكر': '🍬',
-    'قدم': '🦶',
-    'تغذية': '🥗',
-    'جلسة': '🛋️',
-};
+const SERVICE_ICONS: Array<{ keys: string[]; icon: LucideIcon; color: string }> = [
+    { keys: ['تمريض', 'ممرض', 'تمريضي'], icon: Stethoscope, color: 'text-blue-500' },
+    { keys: ['جرح', 'ضماد', 'تضميد'], icon: Bandage, color: 'text-rose-500' },
+    { keys: ['حقن', 'حقنة', 'إبرة'], icon: Syringe, color: 'text-purple-500' },
+    { keys: ['فيزياء', 'علاج طبيعي', 'تأهيل'], icon: Dumbbell, color: 'text-orange-500' },
+    { keys: ['علاج', 'دواء', 'أدوية'], icon: Pill, color: 'text-emerald-500' },
+    { keys: ['متابعة', 'مراجعة'], icon: ClipboardList, color: 'text-indigo-500' },
+    { keys: ['فحص', 'تشخيص'], icon: Microscope, color: 'text-cyan-500' },
+    { keys: ['ضغط', 'قلب'], icon: Activity, color: 'text-red-500' },
+    { keys: ['سكر', 'سكري'], icon: Cookie, color: 'text-amber-500' },
+    { keys: ['قدم', 'قدم السكري'], icon: Footprints, color: 'text-teal-500' },
+    { keys: ['تغذية', 'نظام غذائي'], icon: Salad, color: 'text-green-500' },
+    { keys: ['جلسة', 'راحة'], icon: Sofa, color: 'text-violet-500' },
+];
 
-function getServiceIcon(name: string): string {
-    for (const [key, emoji] of Object.entries(SERVICE_ICONS)) {
-        if (name.includes(key)) return emoji;
+function getServiceIconConfig(name: string): { icon: LucideIcon; color: string } {
+    for (const entry of SERVICE_ICONS) {
+        if (entry.keys.some(k => name.includes(k))) {
+            return { icon: entry.icon, color: entry.color };
+        }
     }
-    return '🏠';
+    return { icon: Home, color: 'text-slate-500' };
 }
 
 function formatArabicTime(timeStr: string) {
@@ -409,35 +414,57 @@ export default function PatientHomeCareDetail() {
                             <p className="text-sm text-slate-500 font-medium">لم يتم إضافة خدمات بعد</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 gap-2">
                             {services.map((service) => {
                                 const isSelected = selectedService?.id === service.id;
                                 return (
                                     <button
                                         key={service.id}
                                         onClick={() => setSelectedService(isSelected ? null : service)}
-                                        className={`relative text-right p-4 rounded-2xl border-2 transition-all duration-200 active:scale-95 ${
+                                        className={`relative text-right w-full p-3 rounded-2xl border-2 transition-all duration-200 active:scale-[0.98] ${
                                             isSelected
                                                 ? 'border-indigo-500 bg-gradient-to-br from-indigo-50 to-violet-50 shadow-md shadow-indigo-200/50'
                                                 : 'border-slate-100 bg-white hover:border-indigo-200 hover:shadow-sm'
                                         }`}
                                     >
-                                        {isSelected && (
-                                            <CheckCircle2 className="absolute top-2 left-2 w-4 h-4 text-indigo-500" />
-                                        )}
-                                        <div className="text-2xl mb-2">{getServiceIcon(service.name)}</div>
-                                        <p className="font-bold text-sm text-slate-800 leading-tight">{service.name}</p>
-                                        {service.description && (
-                                            <p className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">{service.description}</p>
-                                        )}
-                                        <div className="flex items-center justify-between mt-2">
-                                            {service.price && (
-                                                <span className="text-xs font-black text-indigo-600">{service.price}</span>
-                                            )}
-                                            {service.duration && (
-                                                <span className="text-[10px] text-slate-400 font-medium">{service.duration} دقيقة</span>
+                                        {/* Top row: icon + name + check */}
+                                        <div className="flex items-center gap-3">
+                                            {(() => {
+                                                const { icon: Icon, color } = getServiceIconConfig(service.name);
+                                                return (
+                                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                                                        isSelected ? 'bg-indigo-100' : 'bg-slate-50'
+                                                    }`}>
+                                                        <Icon className={`w-5 h-5 ${isSelected ? 'text-indigo-500' : color}`} />
+                                                    </div>
+                                                );
+                                            })()}
+                                            <div className="flex-1 min-w-0 text-right">
+                                                <p className="font-bold text-[13px] text-slate-800 leading-tight truncate">{service.name}</p>
+                                                {service.description && (
+                                                    <p className="text-[10px] text-slate-500 mt-0.5 line-clamp-1">{service.description}</p>
+                                                )}
+                                            </div>
+                                            {isSelected && (
+                                                <CheckCircle2 className="w-5 h-5 text-indigo-500 shrink-0" />
                                             )}
                                         </div>
+
+                                        {/* Bottom row: price + duration as capsules */}
+                                        {(service.price || service.duration) && (
+                                            <div className="flex items-center gap-1.5 mt-2 pr-[52px]">
+                                                {service.price && (
+                                                    <span className="text-[10px] font-black text-indigo-600 bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full">
+                                                        {service.price}
+                                                    </span>
+                                                )}
+                                                {service.duration && (
+                                                    <span className="text-[10px] font-semibold text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded-full">
+                                                        {service.duration} دقيقة
+                                                    </span>
+                                                )}
+                                            </div>
+                                        )}
                                     </button>
                                 );
                             })}
@@ -449,31 +476,31 @@ export default function PatientHomeCareDetail() {
                 {selectedService && (
                     <div className="space-y-6 animate-fade-in mt-6 border-t pt-6 border-slate-100">
                         <Card className="shadow-card border-indigo-100">
-                            <CardHeader className="bg-indigo-50/30">
-                                <div className="flex items-center justify-between">
-                                    <CardTitle className="text-lg flex items-center gap-2 text-indigo-800">
-                                        <Calendar className="h-5 w-5 text-indigo-500" />
+                            <CardHeader className="pb-3 px-4 pt-4 bg-indigo-50/30 border-b border-indigo-100/50">
+                                <div className="flex flex-row items-center justify-between w-full">
+                                    <CardTitle className="text-base font-bold flex items-center gap-1.5 whitespace-nowrap m-0 p-0 text-indigo-800">
+                                        <Calendar className="h-4 w-4 text-indigo-500" />
                                         حدد الموعد
                                     </CardTitle>
-                                    <div className="flex items-center gap-1">
+                                    <div className="flex items-center gap-0.5" dir="ltr">
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-indigo-600 hover:bg-indigo-100"
+                                            className="h-7 w-7 text-indigo-600 hover:bg-indigo-100"
                                             onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
                                         >
-                                            <ChevronRight className="h-4 w-4" />
+                                            <ChevronLeft className="h-4 w-4" />
                                         </Button>
-                                        <span className="text-sm font-bold min-w-[100px] text-center text-indigo-900">
+                                        <span className="text-xs font-bold min-w-[85px] text-center whitespace-nowrap text-indigo-900">
                                             {format(currentMonth, 'MMMM yyyy', { locale: ar })}
                                         </span>
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            className="h-8 w-8 text-indigo-600 hover:bg-indigo-100"
+                                            className="h-7 w-7 text-indigo-600 hover:bg-indigo-100"
                                             onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
                                         >
-                                            <ChevronLeft className="h-4 w-4" />
+                                            <ChevronRight className="h-4 w-4" />
                                         </Button>
                                     </div>
                                 </div>
@@ -578,7 +605,10 @@ export default function PatientHomeCareDetail() {
                         <div className="pt-1">
                             <p className="text-[11px] font-bold text-indigo-400 uppercase tracking-wider mb-0.5">الخدمة المطلوبة</p>
                             <p className="text-sm font-bold text-indigo-700 flex items-center gap-1.5">
-                                <span className="text-base">{selectedService && getServiceIcon(selectedService.name)}</span>
+                                {selectedService && (() => {
+                                    const { icon: Icon, color } = getServiceIconConfig(selectedService.name);
+                                    return <Icon className={`w-4 h-4 ${color}`} />;
+                                })()}
                                 {selectedService?.name}
                             </p>
                         </div>

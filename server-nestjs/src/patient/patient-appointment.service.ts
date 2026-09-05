@@ -131,6 +131,7 @@ export class PatientAppointmentService {
                         clinic_phone: true,
                         clinic_specialty: true,
                         avatar: true,
+                        clinic_logo: true,
                     },
                 },
             },
@@ -141,9 +142,14 @@ export class PatientAppointmentService {
 
         for (const appt of appointments) {
             if (appt.user) {
-                const setting = await this.prisma.setting.findFirst({ where: { userId: appt.user.id, key: 'clinic_name' } });
-                if (setting && setting.value) {
-                    appt.user.clinic_name = setting.value;
+                const settings = await this.prisma.setting.findMany({ where: { userId: appt.user.id, key: { in: ['clinic_name', 'clinic_logo'] } } });
+                const nameSetting = settings.find(s => s.key === 'clinic_name');
+                if (nameSetting && nameSetting.value) {
+                    appt.user.clinic_name = nameSetting.value;
+                }
+                const logoSetting = settings.find(s => s.key === 'clinic_logo');
+                if (logoSetting && logoSetting.value) {
+                    appt.user.clinic_logo = logoSetting.value;
                 }
             }
         }
@@ -174,6 +180,7 @@ export class PatientAppointmentService {
                         clinic_phone: true,
                         clinic_specialty: true,
                         avatar: true,
+                        clinic_logo: true,
                     },
                 },
                 assignedDoctor: {
@@ -192,9 +199,14 @@ export class PatientAppointmentService {
 
         for (const appt of appointments) {
             if (appt.user) {
-                const setting = await this.prisma.setting.findFirst({ where: { userId: appt.user.id, key: 'clinic_name' } });
-                if (setting && setting.value) {
-                    appt.user.clinic_name = setting.value;
+                const settings = await this.prisma.setting.findMany({ where: { userId: appt.user.id, key: { in: ['clinic_name', 'clinic_logo'] } } });
+                const nameSetting = settings.find(s => s.key === 'clinic_name');
+                if (nameSetting && nameSetting.value) {
+                    appt.user.clinic_name = nameSetting.value;
+                }
+                const logoSetting = settings.find(s => s.key === 'clinic_logo');
+                if (logoSetting && logoSetting.value) {
+                    appt.user.clinic_logo = logoSetting.value;
                 }
             }
         }
@@ -218,6 +230,7 @@ export class PatientAppointmentService {
                         clinic_phone: true,
                         clinic_specialty: true,
                         avatar: true,
+                        clinic_logo: true,
                     },
                 },
                 patientUser: {
@@ -263,13 +276,18 @@ export class PatientAppointmentService {
             throw new NotFoundException('الموعد غير موجود');
         }
 
-        // Fetch clinic name from settings
+        // Fetch clinic name and logo from settings
         if (appointment.user) {
-            const clinicNameSetting = await this.prisma.setting.findFirst({
-                where: { userId: appointment.user.id, key: 'clinic_name' }
+            const settings = await this.prisma.setting.findMany({
+                where: { userId: appointment.user.id, key: { in: ['clinic_name', 'clinic_logo'] } }
             });
+            const clinicNameSetting = settings.find(s => s.key === 'clinic_name');
             if (clinicNameSetting && clinicNameSetting.value) {
                 appointment.user.clinic_name = clinicNameSetting.value;
+            }
+            const clinicLogoSetting = settings.find(s => s.key === 'clinic_logo');
+            if (clinicLogoSetting && clinicLogoSetting.value) {
+                appointment.user.clinic_logo = clinicLogoSetting.value;
             }
         }
 

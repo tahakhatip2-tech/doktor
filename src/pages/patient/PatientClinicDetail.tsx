@@ -320,56 +320,90 @@ export default function PatientClinicDetail() {
     return (
         <div className="space-y-0 animate-fade-in w-full pb-20">
 
-            {/* ── Hero Section ── */}
-            <PatientHero
-                title={clinic.clinic_name || clinic.name}
-                subtitle={`الدكتور: ${clinic.name}`}
-                badgeText={clinic.clinic_specialty || 'العيادة'}
-                showBackButton={true}
-            />
+            {/* ── Hero Section — Facebook Style ── */}
+            <div className="relative" dir="rtl">
 
-            {/* ── Action Bar ── */}
-            <div className="px-4 mt-2 relative z-50 max-w-5xl mx-auto">
-                <div className="bg-white dark:bg-card rounded-2xl shadow-lg border border-border p-3 flex flex-col gap-3">
+                {/* Cover Photo */}
+                <div className="relative h-48 overflow-hidden">
+                    {clinic.clinic_cover ? (
+                        <img
+                            src={clinic.clinic_cover.startsWith('http') ? clinic.clinic_cover : `${BASE_URL}${clinic.clinic_cover.startsWith('/') ? '' : '/'}${clinic.clinic_cover}`}
+                            alt="cover"
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <>
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-600 to-orange-500" />
+                            <div className="absolute inset-0 opacity-20" style={{
+                                backgroundImage: 'radial-gradient(circle at 20% 80%, white 0%, transparent 50%), radial-gradient(circle at 80% 20%, white 0%, transparent 50%)'
+                            }} />
+                        </>
+                    )}
+                    <div className="absolute inset-0 bg-black/25" />
 
-                    {/* Row 1: Clinic Logo + Name + Info */}
-                    <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden border-2 border-orange-100 bg-gradient-to-br from-blue-50 to-blue-100 shrink-0 flex items-center justify-center shadow-sm">
-                            {(clinic.clinic_logo || clinic.avatar) ? (
-                                <img
-                                    src={(clinic.clinic_logo || clinic.avatar)?.startsWith('http')
-                                        ? (clinic.clinic_logo || clinic.avatar)
-                                        : `${BASE_URL}${(clinic.clinic_logo || clinic.avatar)?.startsWith('/') ? '' : '/'}${clinic.clinic_logo || clinic.avatar}`}
-                                    alt={clinic.clinic_name}
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <span className="text-xl font-black text-blue-700">
-                                    {(clinic.clinic_name || clinic.name || '?').charAt(0)}
-                                </span>
-                            )}
-                        </div>
-                        <div className="flex flex-col gap-0.5 flex-1 min-w-0">
-                            <p className="font-black text-sm text-foreground truncate">{clinic.clinic_name || clinic.name}</p>
-                            <div className="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
-                                {clinic.clinic_address && (
-                                    <span className="flex items-center gap-1 truncate max-w-[130px]">
-                                        <MapPin className="h-3 w-3 text-orange-400 shrink-0" />
-                                        {clinic.clinic_address}
-                                    </span>
-                                )}
-                                {clinic.working_hours && (
-                                    <span className="flex items-center gap-1">
-                                        <Clock className="h-3 w-3 text-orange-400 shrink-0" />
-                                        {formatArabicTime(clinic.working_hours)}
-                                    </span>
+                    {/* Back button */}
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="absolute top-4 right-4 z-10 flex items-center gap-1 text-white font-bold text-sm bg-black/30 backdrop-blur-sm px-3 py-2 rounded-full transition-all hover:bg-black/50"
+                    >
+                        <ArrowRight className="w-4 h-4" />
+                        رجوع
+                    </button>
+                </div>
+
+                {/* Info Card (below cover) */}
+                <div className="relative bg-white dark:bg-card px-4 pt-0 pb-4 shadow-sm border-b border-border">
+
+                    {/* Floating Logo */}
+                    <div className="absolute -top-10 right-4 z-20">
+                        <div className="relative">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-500 to-orange-400 blur-[6px] opacity-50" />
+                            <div className="relative w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white">
+                                {(clinic.clinic_logo || clinic.avatar) ? (
+                                    <img
+                                        src={(clinic.clinic_logo || clinic.avatar)!.startsWith('http')
+                                            ? (clinic.clinic_logo || clinic.avatar)!
+                                            : `${BASE_URL}${(clinic.clinic_logo || clinic.avatar)!.startsWith('/') ? '' : '/'}${clinic.clinic_logo || clinic.avatar}`}
+                                        alt={clinic.clinic_name}
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-blue-100 to-orange-100 flex items-center justify-center">
+                                        <span className="text-2xl font-black text-blue-700">
+                                            {(clinic.clinic_name || clinic.name || '?').charAt(0)}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                         </div>
                     </div>
 
-                    {/* Row 2: Action Buttons */}
-                    <div className="flex items-center gap-2 w-full">
+                    {/* Clinic Name & Specialty */}
+                    <div className="pt-3 pr-28">
+                        <h1 className="text-base font-black text-slate-900 dark:text-white leading-tight">{clinic.clinic_name || clinic.name}</h1>
+                        {clinic.clinic_specialty && (
+                            <p className="text-xs text-blue-600 font-semibold mt-0.5">{clinic.clinic_specialty}</p>
+                        )}
+                    </div>
+
+                    {/* Info Pills */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {clinic.clinic_address && (
+                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-600 truncate max-w-[160px]">
+                                <MapPin className="w-3 h-3 text-orange-400 shrink-0" />
+                                {clinic.clinic_address}
+                            </span>
+                        )}
+                        {clinic.working_hours && (
+                            <span className="flex items-center gap-1 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-blue-700">
+                                <Clock className="w-3 h-3" />
+                                {formatArabicTime(clinic.working_hours)}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 mt-3 w-full">
                         {clinic.location_url && (
                             <Button size="sm" variant="outline"
                                 className="flex-1 gap-1.5 rounded-xl h-9 text-xs border-blue-200 text-blue-600 hover:bg-blue-50"
@@ -391,6 +425,7 @@ export default function PatientClinicDetail() {
                 </div>
             </div>
 
+
             {/* ── Container for the rest ── */}
             <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-6 mt-4">
 
@@ -401,90 +436,80 @@ export default function PatientClinicDetail() {
                             <User className="w-5 h-5 text-blue-500" />
                             طاقم العيادة
                         </h3>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div 
+                            className="flex overflow-x-auto gap-3 pb-2 pt-1 snap-x"
+                            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' }}
+                        >
+                            <style>{`
+                                .snap-x::-webkit-scrollbar { display: none; }
+                            `}</style>
                             {clinic.clinicDoctors.filter((d: any) => d.role === 'doctor' || (!d.role && !!d.specialty)).map((doctor: any) => (
-                                <Card key={doctor.id} className="shadow-sm hover:shadow-md transition-shadow border-slate-100">
-                                    <CardContent className="p-4 flex gap-4">
-                                        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-100 shrink-0 bg-blue-50">
-                                            {doctor.avatar ? (
-                                                <img 
-                                                    src={doctor.avatar.startsWith('http') || doctor.avatar.startsWith('data:') ? doctor.avatar : `${BASE_URL}${doctor.avatar.startsWith('/') ? '' : '/'}${doctor.avatar}`} 
-                                                    alt={doctor.name} 
-                                                    className="w-full h-full object-cover" 
-                                                    onError={(e) => {
-                                                        const target = e.target as HTMLImageElement;
-                                                        target.style.display = 'none';
-                                                        target.nextElementSibling?.classList.remove('hidden');
-                                                    }}
-                                                />
-                                            ) : null}
-                                            <div className={cn("w-full h-full bg-blue-50 items-center justify-center text-blue-600 font-bold text-xl", doctor.avatar ? "hidden flex" : "flex")}>
-                                                {doctor.name.charAt(0)}
+                                <Card key={doctor.id} className="shadow-sm border-slate-100 w-[220px] shrink-0 snap-center flex flex-col overflow-hidden relative">
+                                    <CardContent className="p-3 flex flex-col gap-2.5 h-full">
+                                        
+                                        {/* Avatar & Name Row */}
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-100 bg-blue-50 shrink-0">
+                                                {doctor.avatar ? (
+                                                    <img 
+                                                        src={doctor.avatar.startsWith('http') || doctor.avatar.startsWith('data:') ? doctor.avatar : `${BASE_URL}${doctor.avatar.startsWith('/') ? '' : '/'}${doctor.avatar}`} 
+                                                        alt={doctor.name} 
+                                                        className="w-full h-full object-cover" 
+                                                        onError={(e) => {
+                                                            const target = e.target as HTMLImageElement;
+                                                            target.style.display = 'none';
+                                                            target.nextElementSibling?.classList.remove('hidden');
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <div className={cn("w-full h-full bg-blue-50 items-center justify-center text-blue-600 font-bold text-lg", doctor.avatar ? "hidden flex" : "flex")}>
+                                                    {doctor.name.charAt(0)}
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex flex-col min-w-0 flex-1 justify-center">
+                                                <p className="font-bold text-slate-800 text-[13px] leading-tight truncate">{doctor.name}</p>
+                                                {doctor.specialty && (
+                                                    <p className="text-[10px] text-blue-600 font-medium truncate mt-0.5">{doctor.specialty}</p>
+                                                )}
+                                                {/* Compact Rating inside the row */}
+                                                <div className="flex items-center gap-1 mt-0.5" dir="ltr">
+                                                    <div className="flex">
+                                                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                                                    </div>
+                                                    <span className="text-[10px] text-slate-600 font-bold">
+                                                        {doctor.avgRating || 0} <span className="text-slate-400 font-normal">({doctor.totalReviews || 0})</span>
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div className="flex flex-col flex-1 min-w-0 justify-center">
-                                            <p className="font-bold text-slate-800 text-sm truncate">{doctor.name}</p>
-                                            {doctor.specialty && (
-                                                <p className="text-xs text-blue-600 font-medium truncate">{doctor.specialty}</p>
-                                            )}
-                                            {/* Rating stars */}
-                                            <div className="flex items-center gap-1 mt-0.5 mb-1">
-                                                {[1,2,3,4,5].map((s) => (
-                                                    <Star
-                                                        key={s}
-                                                        className={`w-3 h-3 ${s <= Math.round(doctor.avgRating || 0) ? 'text-amber-400 fill-amber-400' : 'text-slate-200 fill-slate-200'}`}
-                                                    />
-                                                ))}
-                                                {doctor.totalReviews > 0 ? (
-                                                    <span className="text-[10px] text-slate-500 font-medium mr-0.5">
-                                                        {doctor.avgRating} ({doctor.totalReviews})
-                                                    </span>
-                                                ) : (
-                                                    <span className="text-[10px] text-slate-400 mr-0.5">لا يوجد تقييمات بعد</span>
-                                                )}
-                                            </div>
-                                            {(doctor.workingHours || doctor.workingDays) && (
-                                                <div className="flex flex-col gap-0.5 mt-1">
-                                                    {doctor.workingDays && (
-                                                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                                            <Calendar className="w-3 h-3 text-orange-400" />
-                                                            <span className="truncate">{doctor.workingDays}</span>
-                                                        </div>
-                                                    )}
-                                                    {doctor.workingHours && (
-                                                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-                                                            <Clock className="w-3 h-3 text-orange-400" />
-                                                            <span className="truncate">{formatArabicTime(doctor.workingHours)}</span>
-                                                        </div>
-                                                    )}
-                                                    {(doctor.certifications || doctor.experienceYears) && (
-                                                        <div className="mt-2 space-y-1.5">
-                                                            {doctor.certifications && (
-                                                                <div className="flex items-start gap-2 text-xs text-blue-700 bg-blue-50 p-2 rounded-lg border border-blue-100/50">
-                                                                    <Award className="w-4 h-4 text-blue-500 shrink-0" />
-                                                                    <span className="line-clamp-2 leading-relaxed font-medium" title={doctor.certifications}>{doctor.certifications}</span>
-                                                                </div>
-                                                            )}
-                                                            {doctor.experienceYears && (
-                                                                <div className="flex items-center gap-2 text-xs text-amber-700 bg-amber-50 p-2 rounded-lg border border-amber-100/50">
-                                                                    <Star className="w-4 h-4 text-amber-500 shrink-0 fill-amber-500/20" />
-                                                                    <span className="font-bold">خبرة {doctor.experienceYears} سنوات</span>
-                                                                </div>
-                                                            )}
-                                                        </div>
-                                                    )}
+
+                                        {/* Timing Info */}
+                                        <div className="w-full flex gap-1.5 mt-0.5">
+                                            {doctor.workingDays && (
+                                                <div className="flex-1 flex items-center justify-center gap-1 text-[9px] text-slate-500 bg-slate-50 p-1.5 rounded-full border border-slate-100">
+                                                    <Calendar className="w-2.5 h-2.5 text-orange-400 shrink-0" />
+                                                    <span className="truncate font-medium">{doctor.workingDays}</span>
                                                 </div>
                                             )}
-                                            
+                                            {doctor.workingHours && (
+                                                <div className="flex-1 flex items-center justify-center gap-1 text-[9px] text-slate-500 bg-slate-50 p-1.5 rounded-full border border-slate-100">
+                                                    <Clock className="w-2.5 h-2.5 text-orange-400 shrink-0" />
+                                                    <span className="truncate font-medium">{formatArabicTime(doctor.workingHours)}</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                        
+                                        <div className="mt-auto pt-1 w-full">
                                             <Button 
                                                 size="sm" 
-                                                className="mt-4 w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-bold shadow-md hover:shadow-lg transition-all border-0 rounded-xl"
+                                                className="w-full h-8 text-[11px] bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full border-0 shadow-sm"
                                                 onClick={() => {
                                                     setSelectedDoctorToBook(doctor);
                                                     setBookingSheetOpen(true);
                                                 }}
                                             >
-                                                احجز مع الطبيب
+                                                حجز موعد
                                             </Button>
                                         </div>
                                     </CardContent>
@@ -569,31 +594,31 @@ export default function PatientClinicDetail() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
                     {/* التقويم */}
                     <Card className="shadow-card">
-                        <CardHeader>
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <Calendar className="h-5 w-5 text-primary" />
+                        <CardHeader className="pb-3 px-4 pt-4">
+                            <div className="flex flex-row items-center justify-between w-full">
+                                <CardTitle className="text-base font-bold flex items-center gap-1.5 whitespace-nowrap m-0 p-0">
+                                    <Calendar className="h-4 w-4 text-primary" />
                                     اختر اليوم
                                 </CardTitle>
-                                <div className="flex items-center gap-1">
+                                <div className="flex items-center gap-0.5" dir="ltr">
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8"
+                                        className="h-7 w-7"
                                         onClick={() => setCurrentMonth(prev => subMonths(prev, 1))}
                                     >
-                                        <ChevronRight className="h-4 w-4" />
+                                        <ChevronLeft className="h-4 w-4" />
                                     </Button>
-                                    <span className="text-sm font-medium min-w-[100px] text-center">
+                                    <span className="text-xs font-bold min-w-[85px] text-center whitespace-nowrap">
                                         {format(currentMonth, 'MMMM yyyy', { locale: ar })}
                                     </span>
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8"
+                                        className="h-7 w-7"
                                         onClick={() => setCurrentMonth(prev => addMonths(prev, 1))}
                                     >
-                                        <ChevronLeft className="h-4 w-4" />
+                                        <ChevronRight className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>
@@ -637,16 +662,18 @@ export default function PatientClinicDetail() {
 
                     {/* الـ Slots */}
                     <Card className="shadow-card">
-                        <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                                <Clock className="h-5 w-5 text-primary" />
-                                المواعيد المتاحة
+                        <CardHeader className="pb-3 px-4 pt-4 border-b border-slate-100">
+                            <div className="flex flex-row items-center justify-between w-full">
+                                <CardTitle className="text-base font-bold flex items-center gap-1.5 whitespace-nowrap m-0 p-0">
+                                    <Clock className="h-4 w-4 text-primary" />
+                                    المواعيد
+                                </CardTitle>
                                 {selectedDate && (
-                                    <span className="text-sm font-normal text-muted-foreground mr-auto">
+                                    <span className="text-xs font-medium text-slate-500 whitespace-nowrap bg-slate-50 px-2 py-1 rounded-md">
                                         {format(selectedDate, 'EEEE dd MMM', { locale: ar })}
                                     </span>
                                 )}
-                            </CardTitle>
+                            </div>
                         </CardHeader>
                         <CardContent>
                             {!selectedDate ? (

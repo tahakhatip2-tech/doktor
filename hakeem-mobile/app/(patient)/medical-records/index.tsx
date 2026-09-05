@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  ScrollView, RefreshControl, Share, Alert,
+  ScrollView, RefreshControl, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -12,12 +12,12 @@ import { AppHeader, useToast, Toast } from '../../../src/components/common';
 import { medicalRecordsApi } from '../../../src/api/modules.api';
 import { getErrorMessage } from '../../../src/api/client';
 
-// Record type config
+// Record type config - using vibrant modern colors
 const RECORD_TYPES: Record<string, { label: string; icon: any; color: string; bg: string }> = {
-  prescription: { label: 'وصفة طبية', icon: 'document-text', color: '#10B981', bg: '#10B98115' },
-  report:       { label: 'تقرير طبي', icon: 'clipboard',      color: '#3B82F6', bg: '#3B82F615' },
-  xray:         { label: 'أشعة وتحاليل', icon: 'body',        color: '#8B5CF6', bg: '#8B5CF615' },
-  default:      { label: 'سجل طبي',    icon: 'medkit',        color: '#F59E0B', bg: '#F59E0B15' },
+  prescription: { label: 'وصفة طبية', icon: 'document-text', color: '#10B981', bg: 'rgba(16, 185, 129, 0.15)' },
+  report:       { label: 'تقرير طبي', icon: 'clipboard',      color: '#3B82F6', bg: 'rgba(59, 130, 246, 0.15)' },
+  xray:         { label: 'أشعة وتحاليل', icon: 'body',        color: '#8B5CF6', bg: 'rgba(139, 92, 246, 0.15)' },
+  default:      { label: 'سجل طبي',    icon: 'medkit',        color: '#F59E0B', bg: 'rgba(245, 158, 11, 0.15)' },
 };
 
 const FILTERS = ['الكل', 'وصفات', 'تقارير', 'أشعة'];
@@ -78,7 +78,7 @@ export default function MedicalRecordsScreen() {
     const typeKey = item.recordType || 'default';
     const cfg = RECORD_TYPES[typeKey] || RECORD_TYPES.default;
     const date = new Date(item.createdAt).toLocaleDateString('ar-SA', {
-      year: 'numeric', month: 'long', day: 'numeric',
+      year: 'numeric', month: 'short', day: 'numeric',
     });
     const doctorName  = item.appointment?.user?.name || '—';
     const clinicName  = item.appointment?.user?.clinic_name || '—';
@@ -86,11 +86,15 @@ export default function MedicalRecordsScreen() {
     const fee         = Number(item.feeAmount) || 0;
 
     return (
-      <View style={styles.card}>
+      <TouchableOpacity 
+        style={styles.card}
+        activeOpacity={0.7}
+        onPress={() => router.push(`/(patient)/medical-records/${item.id}` as any)}
+      >
         {/* ── Header ── */}
         <View style={styles.cardHeader}>
           <View style={[styles.typeIcon, { backgroundColor: cfg.bg }]}>
-            <Ionicons name={cfg.icon} size={22} color={cfg.color} />
+            <Ionicons name={cfg.icon} size={18} color={cfg.color} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={[styles.typeLabel, { color: cfg.color }]}>{cfg.label}</Text>
@@ -101,65 +105,55 @@ export default function MedicalRecordsScreen() {
               <Text style={styles.feeText}>{fee} د</Text>
             </View>
           )}
+          {/* Share Action on Header */}
+          <TouchableOpacity style={styles.iconBtn} onPress={() => sharePrescription(item)}>
+            <Ionicons name="share-social-outline" size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
-        {/* ── Clinic / Doctor ── */}
+        {/* ── Clinic / Doctor (Compressed Info Row) ── */}
         <View style={styles.clinicRow}>
-          <Ionicons name="business-outline" size={14} color={colors.textSecondary} />
-          <Text style={styles.clinicName}>{clinicName}</Text>
-          {specialty ? <Text style={styles.specialtyText}> · {specialty}</Text> : null}
-        </View>
-        <View style={styles.clinicRow}>
-          <Ionicons name="person-outline" size={14} color={colors.textSecondary} />
-          <Text style={styles.clinicName}>{doctorName}</Text>
+          <Ionicons name="business-outline" size={12} color={colors.textSecondary} />
+          <Text style={styles.clinicName} numberOfLines={1}>
+            {clinicName} <Text style={styles.specialtyText}>• {doctorName}</Text> {specialty ? <Text style={styles.specialtyText}>({specialty})</Text> : null}
+          </Text>
         </View>
 
         <View style={styles.divider} />
 
-        {/* ── Diagnosis ── */}
-        {item.diagnosis ? (
-          <View style={styles.section}>
-            <View style={styles.sectionHead}>
-              <Ionicons name="search-outline" size={15} color={colors.primary} />
-              <Text style={styles.sectionTitle}>التشخيص</Text>
-            </View>
-            <Text style={styles.sectionBody}>{item.diagnosis}</Text>
-          </View>
-        ) : null}
+        {/* ── Sections (Compact) ── */}
+        {item.diagnosis || item.treatment ? (
+           <View style={styles.compactSections}>
+              {item.diagnosis ? (
+                <View style={styles.section}>
+                  <View style={styles.sectionHead}>
+                    <Ionicons name="search-outline" size={13} color={colors.primaryLight} />
+                    <Text style={[styles.sectionTitle, { color: colors.primaryLight }]}>التشخيص</Text>
+                  </View>
+                  <Text style={styles.sectionBody} numberOfLines={1}>{item.diagnosis}</Text>
+                </View>
+              ) : null}
 
-        {/* ── Treatment ── */}
-        {item.treatment ? (
-          <View style={[styles.section, { backgroundColor: `${colors.success}0A` }]}>
-            <View style={styles.sectionHead}>
-              <Ionicons name="flask-outline" size={15} color={colors.success} />
-              <Text style={[styles.sectionTitle, { color: colors.success }]}>العلاج / الدواء</Text>
-            </View>
-            <Text style={styles.sectionBody}>{item.treatment}</Text>
-          </View>
+              {item.treatment ? (
+                <View style={[styles.section, { backgroundColor: 'rgba(16, 185, 129, 0.05)' }]}>
+                  <View style={styles.sectionHead}>
+                    <Ionicons name="flask-outline" size={13} color={colors.success} />
+                    <Text style={[styles.sectionTitle, { color: colors.success }]}>العلاج / الدواء</Text>
+                  </View>
+                  <Text style={styles.sectionBody} numberOfLines={1}>{item.treatment}</Text>
+                </View>
+              ) : null}
+           </View>
         ) : null}
 
         {/* ── AI Advice badge ── */}
         {item.aiAdvice ? (
           <View style={styles.aiRow}>
-            <Ionicons name="sparkles" size={14} color="#8B5CF6" />
-            <Text style={styles.aiLabel}>توجد نصيحة ذكاء اصطناعي</Text>
+            <Ionicons name="sparkles" size={12} color="#A78BFA" />
+            <Text style={styles.aiLabel}>نصيحة ذكاء اصطناعي متاحة</Text>
           </View>
         ) : null}
-
-        {/* ── Actions ── */}
-        <View style={styles.actionsRow}>
-          <TouchableOpacity
-            style={styles.primaryBtn}
-            onPress={() => router.push(`/(patient)/medical-records/${item.id}` as any)}
-          >
-            <Ionicons name="eye-outline" size={16} color="white" />
-            <Text style={styles.primaryBtnText}>عرض التفاصيل</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.iconBtn} onPress={() => sharePrescription(item)}>
-            <Ionicons name="share-social-outline" size={18} color={colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      </TouchableOpacity>
     );
   };
 
@@ -168,7 +162,7 @@ export default function MedicalRecordsScreen() {
     <SafeAreaView style={styles.container} edges={['top']}>
       <AppHeader title="السجلات والوصفات" showBack />
 
-      {/* Filter chips */}
+      {/* Filter chips (Compact) */}
       <View style={styles.filtersWrap}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersInner}>
           {FILTERS.map(f => {
@@ -195,7 +189,7 @@ export default function MedicalRecordsScreen() {
 
       {isLoading && !refreshing ? (
         <View style={styles.centered}>
-          <Ionicons name="document-text-outline" size={48} color={colors.primary} style={{ opacity: 0.5 }} />
+          <Ionicons name="document-text-outline" size={42} color={colors.primary} style={{ opacity: 0.5 }} />
           <Text style={styles.loadingText}>جاري تحميل السجلات...</Text>
         </View>
       ) : (
@@ -212,8 +206,8 @@ export default function MedicalRecordsScreen() {
             <View style={styles.emptyWrap}>
               <Ionicons
                 name={errorMsg ? 'warning-outline' : 'document-text-outline'}
-                size={64}
-                color={errorMsg ? colors.error : colors.border}
+                size={54}
+                color={errorMsg ? colors.error : colors.textMuted}
               />
               <Text style={[styles.emptyTitle, errorMsg && { color: colors.error }]}>
                 {errorMsg ? 'حدث خطأ' : activeFilter === 'الكل' ? 'لا توجد سجلات طبية' : `لا توجد ${activeFilter}`}
@@ -243,144 +237,132 @@ export default function MedicalRecordsScreen() {
 // ─── Styles ────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 12 },
-  loadingText: { fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 10 },
+  loadingText: { fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary },
 
-  // Filters
+  // Filters (Compact)
   filtersWrap: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: colors.backgroundCard,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
-    paddingVertical: 10,
+    borderBottomColor: colors.border,
+    paddingVertical: 8,
   },
-  filtersInner: { paddingHorizontal: 16, gap: 8 },
+  filtersInner: { paddingHorizontal: 12, gap: 6 },
   chip: {
-    paddingHorizontal: 14,
-    paddingVertical: 6,
-    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 16,
     borderWidth: 1,
     borderColor: colors.borderLight,
-    backgroundColor: 'transparent',
+    backgroundColor: colors.surfaceMid,
   },
-  chipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  chipText: { fontFamily: 'Cairo-SemiBold', fontSize: 13, color: colors.textSecondary },
-  chipTextActive: { color: '#fff' },
+  chipActive: { backgroundColor: colors.primary, borderColor: colors.primaryGlow },
+  chipText: { fontFamily: 'Cairo-SemiBold', fontSize: 12, color: colors.textSecondary },
+  chipTextActive: { color: colors.white },
   countBadge: {
     marginRight: 12,
-    minWidth: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.primary + '20',
+    minWidth: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: colors.primaryGlow,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 6,
   },
-  countText: { fontFamily: 'Cairo-Bold', fontSize: 13, color: colors.primary },
+  countText: { fontFamily: 'Cairo-Bold', fontSize: 12, color: colors.primaryLight },
 
   // List
-  list: { padding: 16, gap: 16, paddingBottom: 40 },
+  list: { padding: 12, gap: 10, paddingBottom: 32 },
 
-  // Card
+  // Card (Compressed)
   card: {
-    backgroundColor: colors.surface,
-    borderRadius: 16,
-    padding: 16,
-    gap: 10,
+    backgroundColor: colors.surfaceMid,
+    borderRadius: 12,
+    padding: 12,
+    gap: 8,
     borderWidth: 1,
     borderColor: colors.borderLight,
-    shadowColor: '#000',
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   typeIcon: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
+    width: 36,
+    height: 36,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,
   },
-  typeLabel: { fontFamily: 'Cairo-Bold', fontSize: 14 },
-  dateText: { fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textSecondary, marginTop: 2 },
+  typeLabel: { fontFamily: 'Cairo-Bold', fontSize: 13 },
+  dateText: { fontFamily: 'Cairo-Regular', fontSize: 11, color: colors.textSecondary, marginTop: -2 },
   feeBadge: {
-    backgroundColor: '#10B98115',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
+    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginRight: 6,
   },
-  feeText: { fontFamily: 'Cairo-Bold', fontSize: 13, color: '#10B981' },
+  feeText: { fontFamily: 'Cairo-Bold', fontSize: 11, color: colors.success },
 
-  // Clinic row
-  clinicRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  clinicName: { fontFamily: 'Cairo-SemiBold', fontSize: 13, color: colors.textMain },
-  specialtyText: { fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textSecondary },
+  iconBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: colors.surfaceLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 
-  divider: { height: 1, backgroundColor: colors.borderLight },
+  // Clinic row (Dense)
+  clinicRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 2 },
+  clinicName: { fontFamily: 'Cairo-SemiBold', fontSize: 12, color: colors.textMain, flex: 1 },
+  specialtyText: { fontFamily: 'Cairo-Regular', fontSize: 11, color: colors.textMuted },
+
+  divider: { height: 1, backgroundColor: colors.borderLight, opacity: 0.5, marginVertical: 2 },
 
   // Section
+  compactSections: { gap: 6 },
   section: {
-    backgroundColor: colors.background,
-    borderRadius: 10,
-    padding: 12,
-    gap: 6,
+    backgroundColor: colors.surfaceLight,
+    borderRadius: 8,
+    padding: 8,
+    gap: 4,
     borderWidth: 1,
     borderColor: colors.borderLight,
   },
-  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  sectionTitle: { fontFamily: 'Cairo-Bold', fontSize: 13, color: colors.primary },
-  sectionBody: { fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, lineHeight: 22, textAlign: 'right' },
+  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  sectionTitle: { fontFamily: 'Cairo-Bold', fontSize: 12, color: colors.primaryLight },
+  sectionBody: { fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textSecondary, textAlign: 'right' },
 
   // AI
   aiRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#8B5CF615',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
+    gap: 4,
+    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
     alignSelf: 'flex-start',
   },
-  aiLabel: { fontFamily: 'Cairo-SemiBold', fontSize: 12, color: '#8B5CF6' },
-
-  // Actions
-  actionsRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 },
-  primaryBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: colors.primary,
-    paddingVertical: 10,
-    borderRadius: 10,
-  },
-  primaryBtnText: { fontFamily: 'Cairo-Bold', fontSize: 13, color: '#fff' },
-  iconBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: colors.borderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+  aiLabel: { fontFamily: 'Cairo-SemiBold', fontSize: 11, color: '#A78BFA' },
 
   // Empty
-  emptyWrap: { alignItems: 'center', marginTop: 60, paddingHorizontal: 32, gap: 12 },
-  emptyTitle: { fontFamily: 'Cairo-Bold', fontSize: 18, color: colors.textMain, textAlign: 'center' },
-  emptySubtitle: { fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
+  emptyWrap: { alignItems: 'center', marginTop: 50, paddingHorizontal: 24, gap: 10 },
+  emptyTitle: { fontFamily: 'Cairo-Bold', fontSize: 16, color: colors.textMain, textAlign: 'center' },
+  emptySubtitle: { fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, textAlign: 'center', lineHeight: 20 },
   retryBtn: {
     marginTop: 8,
     backgroundColor: colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
   },
-  retryText: { fontFamily: 'Cairo-Bold', fontSize: 14, color: '#fff' },
+  retryText: { fontFamily: 'Cairo-Bold', fontSize: 13, color: colors.white },
 });

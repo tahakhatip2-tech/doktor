@@ -74,6 +74,7 @@ interface BeautyCenter {
     clinic_address?: string;
     clinic_phone?: string;
     clinic_logo?: string;
+    clinic_cover?: string;
     clinic_description?: string;
     working_hours?: string;
     location_url?: string;
@@ -167,65 +168,87 @@ export default function PatientBeautyCenterDetail() {
 
     return (
         <div className="pb-24 animate-fade-in" dir="rtl">
-            {/* ── Hero Section ── */}
-            <div className="relative overflow-hidden">
-                {/* Background gradient */}
-                <div className="absolute inset-0 bg-gradient-to-br from-pink-600 via-purple-600 to-rose-500" />
-                <div className="absolute inset-0 opacity-20" style={{
-                    backgroundImage: 'radial-gradient(circle at 20% 80%, white 0%, transparent 50%), radial-gradient(circle at 80% 20%, white 0%, transparent 50%)'
-                }} />
+            {/* ── Hero Section — Facebook Style ── */}
+            <div className="relative">
 
-                {/* Back button */}
-                <button
-                    onClick={() => navigate(-1)}
-                    className="absolute top-4 right-4 z-10 flex items-center gap-1 text-white/90 hover:text-white font-bold text-sm bg-white/20 backdrop-blur-sm px-3 py-2 rounded-full transition-all hover:bg-white/30"
-                >
-                    <ArrowRight className="w-4 h-4" />
-                    رجوع
-                </button>
+                {/* ── Cover Photo (Top) ── */}
+                <div className="relative h-48 overflow-hidden">
+                    {center.clinic_cover ? (
+                        <img
+                            src={center.clinic_cover.startsWith('http') ? center.clinic_cover : `${BASE_URL}${center.clinic_cover.startsWith('/') ? '' : '/'}${center.clinic_cover}`}
+                            alt="cover"
+                            className="w-full h-full object-cover"
+                        />
+                    ) : (
+                        <>
+                            <div className="absolute inset-0 bg-gradient-to-br from-pink-600 via-purple-600 to-rose-500" />
+                            <div className="absolute inset-0 opacity-20" style={{
+                                backgroundImage: 'radial-gradient(circle at 20% 80%, white 0%, transparent 50%), radial-gradient(circle at 80% 20%, white 0%, transparent 50%)'
+                            }} />
+                        </>
+                    )}
+                    {/* Dark overlay for readability of buttons */}
+                    <div className="absolute inset-0 bg-black/20" />
 
-                {/* Share */}
-                <button
-                    onClick={handleShare}
-                    className="absolute top-4 left-4 z-10 text-white/90 hover:text-white bg-white/20 backdrop-blur-sm p-2 rounded-full transition-all hover:bg-white/30"
-                >
-                    <Share2 className="w-4 h-4" />
-                </button>
+                    {/* Back button */}
+                    <button
+                        onClick={() => navigate(-1)}
+                        className="absolute top-4 right-4 z-10 flex items-center gap-1 text-white font-bold text-sm bg-black/30 backdrop-blur-sm px-3 py-2 rounded-full transition-all hover:bg-black/50"
+                    >
+                        <ArrowRight className="w-4 h-4" />
+                        رجوع
+                    </button>
 
-                <div className="relative z-10 px-5 pt-8 pb-6 text-white text-center">
-                    {/* Logo */}
-                    <div className="w-20 h-20 rounded-full mx-auto mb-3 border-4 border-white/40 overflow-hidden bg-white/20 backdrop-blur-sm shadow-2xl">
-                        {logo ? (
-                            <img src={logo} alt={displayName} className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                                <Sparkles className="w-8 h-8 text-white" />
+                    {/* Share */}
+                    <button
+                        onClick={handleShare}
+                        className="absolute top-4 left-4 z-10 text-white bg-black/30 backdrop-blur-sm p-2 rounded-full transition-all hover:bg-black/50"
+                    >
+                        <Share2 className="w-4 h-4" />
+                    </button>
+                </div>
+
+                {/* ── Info Card (below cover) ── */}
+                <div className="relative bg-white dark:bg-slate-900 px-4 pt-0 pb-4 shadow-sm">
+                    {/* Floating Logo — overlapping cover bottom edge */}
+                    <div className="absolute -top-10 right-4 z-20">
+                        <div className="relative">
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-500 to-purple-500 blur-[6px] opacity-60" />
+                            <div className="relative w-20 h-20 rounded-full border-4 border-white shadow-xl overflow-hidden bg-white">
+                                {logo ? (
+                                    <img src={logo} alt={displayName} className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full bg-gradient-to-br from-pink-100 to-purple-100 flex items-center justify-center">
+                                        <Sparkles className="w-8 h-8 text-pink-500" />
+                                    </div>
+                                )}
                             </div>
+                        </div>
+                    </div>
+
+                    {/* Clinic Info — pushed right to leave space for logo */}
+                    <div className="pt-3 pr-28">
+                        <h1 className="text-lg font-black text-slate-900 dark:text-white leading-tight">{displayName}</h1>
+                        {center.clinic_specialty && (
+                            <p className="text-xs text-pink-600 font-semibold mt-0.5">{center.clinic_specialty}</p>
                         )}
                     </div>
 
-                    <h1 className="text-xl font-black mb-1 drop-shadow-md">{displayName}</h1>
-                    {center.clinic_specialty && (
-                        <p className="text-pink-100 text-xs font-medium mb-2">{center.clinic_specialty}</p>
-                    )}
-
-                    {/* Rating */}
-                    {(center.totalReviews ?? 0) > 0 && (
-                        <div className="flex items-center justify-center gap-2 mb-3">
-                            <div className="flex items-center gap-0.5">
-                                {[1, 2, 3, 4, 5].map(s => (
-                                    <Star key={s} className={`w-3 h-3 ${s <= Math.round(center.avgRating || 0) ? 'fill-amber-300 text-amber-300' : 'fill-white/20 text-white/20'}`} />
-                                ))}
+                    {/* Rating + Hours row below logo */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {(center.totalReviews ?? 0) > 0 && (
+                            <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 px-2.5 py-1 rounded-full">
+                                <div className="flex items-center gap-0.5">
+                                    {[1, 2, 3, 4, 5].map(s => (
+                                        <Star key={s} className={`w-3 h-3 ${s <= Math.round(center.avgRating || 0) ? 'fill-amber-400 text-amber-400' : 'fill-slate-200 text-slate-200'}`} />
+                                    ))}
+                                </div>
+                                <span className="text-amber-700 text-xs font-bold">{center.avgRating}</span>
+                                <span className="text-slate-400 text-[10px]">({center.totalReviews})</span>
                             </div>
-                            <span className="text-white text-sm font-bold">{center.avgRating}</span>
-                            <span className="text-pink-200 text-xs">({center.totalReviews} تقييم)</span>
-                        </div>
-                    )}
-
-                    {/* Quick info pills */}
-                    <div className="flex flex-wrap justify-center gap-2">
+                        )}
                         {center.working_hours && (
-                            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold">
+                            <span className="flex items-center gap-1 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-purple-700">
                                 <Clock className="w-3 h-3" />
                                 {formatArabicTime(center.working_hours)}
                             </span>
@@ -233,10 +256,10 @@ export default function PatientBeautyCenterDetail() {
                         {center.clinic_address && (
                             <button
                                 onClick={handleMap}
-                                className="flex items-center gap-1 bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-[10px] font-bold hover:bg-white/30 transition-all"
+                                className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-600 hover:bg-slate-100 transition-all"
                             >
-                                <MapPin className="w-3 h-3" />
-                                <span className="max-w-[140px] truncate">{center.clinic_address}</span>
+                                <MapPin className="w-3 h-3 text-pink-500" />
+                                <span className="max-w-[130px] truncate">{center.clinic_address}</span>
                             </button>
                         )}
                     </div>

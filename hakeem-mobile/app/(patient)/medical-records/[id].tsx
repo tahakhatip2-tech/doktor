@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, ScrollView, ActivityIndicator,
-  StyleSheet, TouchableOpacity, Linking,
+  StyleSheet, TouchableOpacity, Linking, Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as Print from 'expo-print';
+import * as Sharing from 'expo-sharing';
 import { colors } from '../../../src/theme/colors';
 import { AppHeader, useToast, Toast } from '../../../src/components/common';
 import { medicalRecordsApi } from '../../../src/api/modules.api';
 import { MedicalRecord } from '../../../src/types/clinic.types';
 import { getErrorMessage } from '../../../src/api/client';
+import { buildPrescriptionHTML } from '../../../src/utils/print/prescriptionTemplate';
+import { buildSickLeaveHTML } from '../../../src/utils/print/sickLeaveTemplate';
+import { buildReferralHTML } from '../../../src/utils/print/referralTemplate';
 
 const API_BASE = process.env.EXPO_PUBLIC_API_URL?.replace('/api', '') || '';
 
@@ -34,6 +39,7 @@ export default function MedicalRecordDetailScreen() {
   });
   const [isLoading, setIsLoading] = useState(!record);
   const [isLoadingAdvice, setIsLoadingAdvice] = useState(false);
+  const [printingType, setPrintingType] = useState<string | null>(null);
 
   useEffect(() => {
     if (record) return;
@@ -60,12 +66,105 @@ export default function MedicalRecordDetailScreen() {
     try {
       setIsLoadingAdvice(true);
       const res = await medicalRecordsApi.getById(record.id);
-      const advice = res.data?.advice || res.data?.aiAdvice;
+      const advice = (res.data as any)?.advice || res.data?.aiAdvice;
       if (advice) setRecord(prev => prev ? { ...prev, aiAdvice: advice } : null);
     } catch {
       show('تعذّر جلب نصيحة الذكاء الاصطناعي', 'error');
     } finally {
       setIsLoadingAdvice(false);
+    }
+  };
+
+  // ─── دالة الطباعة الموحدة ─────────────────────────────────────────────────
+  const handlePrint = async (type: 'prescription' | 'sickLeave' | 'referral') => {
+    if (!record) return;
+
+    const appt = record.appointment;
+    const user = appt?.user;
+    const clinicName  = user?.clinic_name  || appt?.clinic?.clinic_name  || 'عيادة طبية';
+    const clinicSpecialty = user?.clinic_specialty || appt?.clinic?.clinic_specialty;
+    const clinicPhone = user?.clinic_phone || '';
+    const clinicAddress = user?.clinic_address || '';
+    const clinicLogoUrl = getLogoUri(user?.avatar);
+    const doctorName  = appt?.assignedDoctor?.name || user?.name || '';
+    const visitDate = appt?.appointmentDate
+      ? new Date(appt.appointmentDate).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' })
+      : new Date(record.createdAt).toLocaleDateString('ar-SA', { year: 'numeric', month: 'long', day: 'numeric' });
+    const visitTime = appt?.appointmentDate
+      ? new Date(appt.appointmentDate).toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' })
+      : '';
+    
+    // Fallback patient name (you can map this properly if available in mobile state)
+    const patientName = (appt as any)?.customerName || 'المريض';
+    const visitDateRaw = appt?.appointmentDate || new Date().toISOString();
+
+    const baseData = {
+      recordId: record.id,
+      patientName,
+      clinicName,
+      clinicSpecialty,
+      clinicPhone,
+      clinicAddress,
+      clinicLogoUrl,
+      doctorName,
+      visitDate,
+      visitTime,
+    };
+
+    try {
+      setPrintingType(type);
+
+      let html = '';
+      if (type === 'prescription') {
+        html = buildPrescriptionHTML({
+          ...baseData,
+          diagnosis: record.diagnosis,
+          treatment: record.treatment || '',
+          medications: record.treatment,
+        });
+      } else if (type === 'sickLeave') {
+        html = buildSickLeaveHTML({
+          ...baseData,
+          visitDateRaw,
+          sickLeaveDays: Number(record.sickLeaveDays) || 0,
+          sickLeaveReason: record.sickLeaveReason || '',
+          diagnosis: record.diagnosis || '',
+        });
+      } else if (type === 'referral') {
+        html = buildReferralHTML({
+          ...baseData,
+          referralTo: record.referralTo || '',
+          referralReason: record.sickLeaveReason,
+          diagnosis: record.diagnosis,
+          treatment: record.treatment,
+        });
+      }
+
+      // توليد الـ PDF
+      const { uri } = await Print.printToFileAsync({
+        html,
+        base64: false,
+      });
+
+      // مشاركة أو حفظ
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: type === 'prescription'
+            ? 'مشاركة الوصفة الطبية'
+            : type === 'sickLeave'
+            ? 'مشاركة الإجازة المرضية'
+            : 'مشاركة التحويلة الطبية',
+          UTI: 'com.adobe.pdf',
+        });
+      } else {
+        Alert.alert('تنبيه', 'تم إنشاء الملف: ' + uri);
+      }
+    } catch (err) {
+      show('حدث خطأ أثناء إنشاء الـ PDF', 'error');
+    } finally {
+      setPrintingType(null);
     }
   };
 
@@ -101,6 +200,12 @@ export default function MedicalRecordDetailScreen() {
     consultation: 'استشارة', followup: 'متابعة',
     checkup: 'فحص دوري', emergency: 'طارئ',
   };
+
+  // هل توجد عناصر قابلة للطباعة؟
+  const hasPrescription = !!(record.treatment);
+  const hasSickLeave = !!(record.sickLeaveDays && record.sickLeaveDays > 0);
+  const hasReferral = !!(record.referralTo);
+  const hasPrintable = hasPrescription || hasSickLeave || hasReferral;
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -171,6 +276,45 @@ export default function MedicalRecordDetailScreen() {
           ) : null}
         </View>
 
+        {/* ── شريط أزرار الطباعة (إذا توفرت وثائق قابلة للطباعة) ── */}
+        {hasPrintable && (
+          <View style={styles.printBar}>
+            <View style={styles.printBarHeader}>
+              <Ionicons name="print-outline" size={16} color={colors.primary} />
+              <Text style={styles.printBarTitle}>طباعة النماذج الطبية</Text>
+            </View>
+            <View style={styles.printBtns}>
+              {hasPrescription && (
+                <PrintButton
+                  icon="document-text"
+                  label="وصفة طبية"
+                  color="#10B981"
+                  loading={printingType === 'prescription'}
+                  onPress={() => handlePrint('prescription')}
+                />
+              )}
+              {hasSickLeave && (
+                <PrintButton
+                  icon="bed"
+                  label="إجازة مرضية"
+                  color="#F59E0B"
+                  loading={printingType === 'sickLeave'}
+                  onPress={() => handlePrint('sickLeave')}
+                />
+              )}
+              {hasReferral && (
+                <PrintButton
+                  icon="arrow-redo"
+                  label="تحويلة طبية"
+                  color="#3B82F6"
+                  loading={printingType === 'referral'}
+                  onPress={() => handlePrint('referral')}
+                />
+              )}
+            </View>
+          </View>
+        )}
+
         {/* ── معلومات الطبيب ── */}
         {doctorName ? (
           <InfoCard icon="person-circle-outline" iconColor={colors.accent} title="الطبيب المعالج">
@@ -218,15 +362,32 @@ export default function MedicalRecordDetailScreen() {
         {/* ── إجازة مرضية ── */}
         {record.sickLeaveDays ? (
           <InfoCard icon="bed-outline" iconColor="#f59e0b" title="الإجازة المرضية">
-            <Text style={styles.bodyText}>{record.sickLeaveDays} أيام</Text>
-            {record.sickLeaveReason ? <Text style={[styles.bodyText, { marginTop: 4, color: colors.textSecondary }]}>{record.sickLeaveReason}</Text> : null}
+            <View style={styles.sickLeaveRow}>
+              <View style={styles.sickLeaveDaysBadge}>
+                <Text style={styles.sickLeaveDaysNum}>{record.sickLeaveDays}</Text>
+                <Text style={styles.sickLeaveDaysLabel}>{record.sickLeaveDays === 1 ? 'يوم' : 'أيام'}</Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.bodyText, { fontFamily: 'Cairo-SemiBold' }]}>
+                  مدة الإجازة: {record.sickLeaveDays} {record.sickLeaveDays === 1 ? 'يوم' : 'أيام'}
+                </Text>
+                {record.sickLeaveReason ? (
+                  <Text style={[styles.bodyText, { marginTop: 4, color: colors.textSecondary }]}>
+                    السبب: {record.sickLeaveReason}
+                  </Text>
+                ) : null}
+              </View>
+            </View>
           </InfoCard>
         ) : null}
 
         {/* ── إحالة ── */}
         {record.referralTo ? (
-          <InfoCard icon="arrow-redo-outline" iconColor={colors.info} title="إحالة إلى">
-            <Text style={styles.bodyText}>{record.referralTo}</Text>
+          <InfoCard icon="arrow-redo-outline" iconColor={colors.info} title="تحويل طبي">
+            <View style={styles.referralBox}>
+              <Text style={styles.referralLabel}>الجهة المحوّل إليها:</Text>
+              <Text style={styles.referralValue}>{record.referralTo}</Text>
+            </View>
           </InfoCard>
         ) : null}
 
@@ -279,6 +440,29 @@ export default function MedicalRecordDetailScreen() {
   );
 }
 
+// ─── مكون زر الطباعة ──────────────────────────────────────────────────────────
+function PrintButton({ icon, label, color, loading, onPress }: {
+  icon: any; label: string; color: string; loading: boolean; onPress: () => void;
+}) {
+  return (
+    <TouchableOpacity
+      style={[styles.printBtn, { borderColor: color + '40', backgroundColor: color + '12' }]}
+      onPress={onPress}
+      disabled={loading}
+      activeOpacity={0.75}
+    >
+      {loading ? (
+        <ActivityIndicator size="small" color={color} />
+      ) : (
+        <Ionicons name={icon} size={18} color={color} />
+      )}
+      <Text style={[styles.printBtnText, { color }]}>{loading ? 'جاري الإنشاء...' : label}</Text>
+      {!loading && <Ionicons name="print-outline" size={14} color={color + 'AA'} />}
+    </TouchableOpacity>
+  );
+}
+
+// ─── مكون InfoCard ────────────────────────────────────────────────────────────
 function InfoCard({ icon, iconColor, title, children }: {
   icon: any; iconColor: string; title: string; children: React.ReactNode;
 }) {
@@ -295,6 +479,7 @@ function InfoCard({ icon, iconColor, title, children }: {
   );
 }
 
+// ─── Styles ───────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f4ff' },
   center: { flex: 1, backgroundColor: '#f0f4ff', justifyContent: 'center', alignItems: 'center' },
@@ -302,105 +487,104 @@ const styles = StyleSheet.create({
 
   // Hero
   heroCard: {
-    borderRadius: 24,
-    overflow: 'hidden',
-    alignItems: 'center',
-    paddingVertical: 28,
-    paddingHorizontal: 20,
-    gap: 8,
-    shadowColor: '#0d1b40',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
+    borderRadius: 24, overflow: 'hidden',
+    alignItems: 'center', paddingVertical: 28, paddingHorizontal: 20, gap: 8,
+    shadowColor: '#0d1b40', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3, shadowRadius: 16, elevation: 10,
   },
   heroClinicIcon: {
     width: 64, height: 64, borderRadius: 32,
     backgroundColor: 'rgba(108,99,255,0.2)',
     justifyContent: 'center', alignItems: 'center',
-    borderWidth: 2, borderColor: 'rgba(108,99,255,0.4)',
-    marginBottom: 4,
+    borderWidth: 2, borderColor: 'rgba(108,99,255,0.4)', marginBottom: 4,
   },
-  heroClinicName: {
-    fontFamily: 'Cairo-Bold', fontSize: 20, color: '#fff', textAlign: 'center',
-  },
+  heroClinicName: { fontFamily: 'Cairo-Bold', fontSize: 20, color: '#fff', textAlign: 'center' },
   heroSpecialtyChip: {
     backgroundColor: 'rgba(255,255,255,0.12)',
     borderRadius: 20, paddingHorizontal: 14, paddingVertical: 4,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
-  heroSpecialtyText: {
-    fontFamily: 'Cairo-Regular', fontSize: 12, color: 'rgba(255,255,255,0.8)',
-  },
+  heroSpecialtyText: { fontFamily: 'Cairo-Regular', fontSize: 12, color: 'rgba(255,255,255,0.8)' },
   heroMetaRow: {
     flexDirection: 'row', flexWrap: 'wrap',
     justifyContent: 'center', gap: 10, marginTop: 4,
   },
-  heroMetaItem: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-  },
-  heroMetaText: {
-    fontFamily: 'Cairo-Regular', fontSize: 12, color: 'rgba(255,255,255,0.7)',
-  },
-  heroActions: {
-    flexDirection: 'row', gap: 12, marginTop: 8,
-  },
+  heroMetaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  heroMetaText: { fontFamily: 'Cairo-Regular', fontSize: 12, color: 'rgba(255,255,255,0.7)' },
+  heroActions: { flexDirection: 'row', gap: 12, marginTop: 8 },
   heroActionBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
     backgroundColor: 'rgba(255,255,255,0.15)',
     borderRadius: 12, paddingHorizontal: 18, paddingVertical: 9,
     borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
   },
-  heroActionText: {
-    fontFamily: 'Cairo-SemiBold', fontSize: 13, color: '#fff',
+  heroActionText: { fontFamily: 'Cairo-SemiBold', fontSize: 13, color: '#fff' },
+
+  // ── شريط الطباعة ──
+  printBar: {
+    backgroundColor: '#fff',
+    borderRadius: 16, padding: 14, gap: 12,
+    borderWidth: 1, borderColor: colors.primary + '30',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
   },
+  printBarHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  printBarTitle: { fontFamily: 'Cairo-Bold', fontSize: 14, color: colors.primary },
+  printBtns: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
+  printBtn: {
+    flex: 1, minWidth: 100,
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'center', gap: 6,
+    paddingVertical: 10, paddingHorizontal: 12,
+    borderRadius: 10, borderWidth: 1.5,
+  },
+  printBtnText: { fontFamily: 'Cairo-SemiBold', fontSize: 12 },
 
   // Card
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 16, padding: 16, gap: 10,
+    backgroundColor: '#fff', borderRadius: 16, padding: 16, gap: 10,
     borderWidth: 1, borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.04, shadowRadius: 8, elevation: 2,
   },
   cardHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
     paddingBottom: 10, borderBottomWidth: 1, borderBottomColor: '#f1f5f9',
   },
-  iconBox: {
-    width: 36, height: 36, borderRadius: 10,
-    justifyContent: 'center', alignItems: 'center',
-  },
-  cardTitle: {
-    fontFamily: 'Cairo-Bold', fontSize: 15, color: colors.textMain,
-  },
-  bodyText: {
-    fontFamily: 'Cairo-Regular', fontSize: 14,
-    color: colors.textSecondary, lineHeight: 24,
-  },
+  iconBox: { width: 36, height: 36, borderRadius: 10, justifyContent: 'center', alignItems: 'center' },
+  cardTitle: { fontFamily: 'Cairo-Bold', fontSize: 15, color: colors.textMain },
+  bodyText: { fontFamily: 'Cairo-Regular', fontSize: 14, color: colors.textSecondary, lineHeight: 24 },
 
   // Fee
-  feeAmount: {
-    fontFamily: 'Cairo-Bold', fontSize: 26,
-    color: colors.success, textAlign: 'center', paddingVertical: 4,
-  },
+  feeAmount: { fontFamily: 'Cairo-Bold', fontSize: 26, color: colors.success, textAlign: 'center', paddingVertical: 4 },
 
   // Prescription
   prescriptionRow: { gap: 6 },
   prescriptionStatus: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   statusDot: { width: 8, height: 8, borderRadius: 4 },
-  prescriptionStatusText: {
-    fontFamily: 'Cairo-SemiBold', fontSize: 13, color: colors.textMain,
-  },
-  prescriptionMeds: {
-    fontFamily: 'Cairo-Regular', fontSize: 13,
-    color: colors.textSecondary, lineHeight: 20,
-  },
+  prescriptionStatusText: { fontFamily: 'Cairo-SemiBold', fontSize: 13, color: colors.textMain },
+  prescriptionMeds: { fontFamily: 'Cairo-Regular', fontSize: 13, color: colors.textSecondary, lineHeight: 20 },
   prescriptionPharmacy: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  prescriptionPharmacyText: {
-    fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textSecondary,
+  prescriptionPharmacyText: { fontFamily: 'Cairo-Regular', fontSize: 12, color: colors.textSecondary },
+
+  // Sick Leave
+  sickLeaveRow: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+  sickLeaveDaysBadge: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: '#FEF3C7', borderWidth: 2, borderColor: '#FCD34D',
+    alignItems: 'center', justifyContent: 'center',
   },
+  sickLeaveDaysNum: { fontFamily: 'Cairo-Bold', fontSize: 22, color: '#D97706', lineHeight: 26 },
+  sickLeaveDaysLabel: { fontFamily: 'Cairo-Regular', fontSize: 11, color: '#92400E' },
+
+  // Referral
+  referralBox: {
+    backgroundColor: '#EFF6FF', borderRadius: 10, padding: 12,
+    borderWidth: 1, borderColor: '#BFDBFE',
+  },
+  referralLabel: { fontFamily: 'Cairo-SemiBold', fontSize: 12, color: '#64748b', marginBottom: 4 },
+  referralValue: { fontFamily: 'Cairo-Bold', fontSize: 15, color: '#1E40AF' },
 
   // AI
   aiBtn: {
@@ -409,7 +593,5 @@ const styles = StyleSheet.create({
     backgroundColor: `${colors.accent}10`,
     borderRadius: 12, borderWidth: 1, borderColor: `${colors.accent}30`,
   },
-  aiBtnText: {
-    fontFamily: 'Cairo-SemiBold', fontSize: 14, color: colors.accent,
-  },
+  aiBtnText: { fontFamily: 'Cairo-SemiBold', fontSize: 14, color: colors.accent },
 });
