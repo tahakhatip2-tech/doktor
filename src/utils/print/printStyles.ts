@@ -309,13 +309,15 @@ export const BASE_CSS = `
 
   @media print {
     @page { margin: 0; size: A4; }
-    body { background: white; margin: 0; padding: 0; }
+    html, body { height: 100%; margin: 0; padding: 0; background: white; }
     .page { 
       box-shadow: none; 
-      min-height: 100vh;
+      min-height: 100%;
+      height: 100%;
       max-width: 100%;
       margin: 0; 
       page-break-after: avoid;
+      overflow: hidden;
     }
     .action-bar { display: none !important; }
   }
