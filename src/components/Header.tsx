@@ -264,12 +264,12 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                                     <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
                                                     <div className={cn("absolute inset-0 bg-black/10 transition-opacity z-0", activeTab === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-100")} />
                                                     
-                                                    <div className="w-full h-full relative z-10 flex items-center justify-between px-4">
-                                                        <div className="flex-1 text-right ml-2">
-                                                            <p className="text-sm font-black text-white whitespace-nowrap">{item.label}</p>
+                                                    <div className="w-full h-full relative z-10 flex items-center justify-between px-2 sm:px-3">
+                                                        <div className="flex-1 text-right ml-1">
+                                                            <p className="text-[10px] sm:text-[11px] font-black text-white whitespace-nowrap">{item.label}</p>
                                                         </div>
-                                                        <div className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
-                                                            <item.icon className="h-4 w-4 text-white" />
+                                                        <div className="p-1.5 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                                            <item.icon className="h-3.5 w-3.5 text-white" />
                                                         </div>
                                                     </div>
                                                 </DropdownMenuItem>
@@ -325,17 +325,17 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                                 >
                                                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity z-0" />
                                                     
-                                                    <div className={cn("w-full h-full relative z-10 flex items-center px-3", item.iconPos === 'center' ? 'justify-center' : 'justify-between', item.iconPos === 'left' ? 'flex-row-reverse' : '')}>
+                                                    <div className={cn("w-full h-full relative z-10 flex items-center px-2", item.iconPos === 'center' ? 'justify-center' : 'justify-between', item.iconPos === 'left' ? 'flex-row-reverse' : '')}>
                                                         {item.iconPos !== 'center' && (
                                                             <div className="flex-1 text-center">
-                                                                <p className="text-[11px] font-black text-white whitespace-nowrap">{item.label}</p>
+                                                                <p className="text-[10px] sm:text-[11px] font-black text-white whitespace-nowrap">{item.label}</p>
                                                             </div>
                                                         )}
                                                         <div className={cn("p-1.5 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0", item.iconPos === 'center' ? 'mr-1' : '')}>
                                                             <item.icon className="h-3.5 w-3.5 text-white" />
                                                         </div>
                                                         {item.iconPos === 'center' && (
-                                                            <p className="text-[11px] font-black text-white whitespace-nowrap mr-1">{item.label}</p>
+                                                            <p className="text-[10px] sm:text-[11px] font-black text-white whitespace-nowrap mr-1">{item.label}</p>
                                                         )}
                                                     </div>
                                                 </DropdownMenuItem>
