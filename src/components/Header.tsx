@@ -306,11 +306,11 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                             { id: 'profile', label: 'حسابي', icon: User, action: () => onNavigate ? onNavigate('/profile') : navigate('/profile'), color: 'from-cyan-500 to-blue-500', shape: 'rounded-full', iconPos: 'right', isRed: false },
                                             ...(!activeDoctor ? [
                                                 { id: 'doctors', label: 'الأطباء', icon: Stethoscope, action: () => navigate('/clinic-doctors'), color: 'from-amber-400 to-orange-500', shape: 'rounded-l-full rounded-r-xl', iconPos: 'left', isRed: false },
-                                                { id: 'admin', label: 'الأدمن', icon: LayoutDashboard, action: () => onNavigate ? onNavigate('/admin') : navigate('/admin'), color: 'from-indigo-500 to-purple-500', shape: 'rounded-r-full rounded-l-xl', iconPos: 'right', isRed: false },
+                                                ...(!isPharmacy ? [{ id: 'admin', label: 'الأدمن', icon: LayoutDashboard, action: () => onNavigate ? onNavigate('/admin') : navigate('/admin'), color: 'from-indigo-500 to-purple-500', shape: 'rounded-r-full rounded-l-xl', iconPos: 'right', isRed: false }] : []),
                                                 { id: 'settings', label: 'الإعدادات', icon: Settings, action: () => onTabChange && onTabChange('clinic-settings'), color: 'from-slate-600 to-slate-500', shape: 'rounded-tl-full rounded-br-full rounded-tr-xl rounded-bl-xl', iconPos: 'left', isRed: false },
                                             ] : []),
                                             { id: 'staff', label: 'الطاقم', icon: Users, action: () => setTimeout(openLoginModal, 100), color: 'from-emerald-500 to-teal-500', shape: 'rounded-[2rem]', iconPos: 'right', isRed: false },
-                                            { id: 'logout', label: 'خروج', icon: LogOut, action: () => activeDoctor ? logout() : signOut(), color: 'from-red-500 to-rose-600', shape: 'rounded-full', iconPos: 'center', isRed: true },
+                                            { id: 'logout', label: 'خروج', icon: LogOut, action: () => activeDoctor ? logout() : signOut(), color: 'from-red-500 to-rose-600', shape: cn('rounded-full', isPharmacy && !activeDoctor ? 'col-span-2' : ''), iconPos: 'center', isRed: true },
                                         ];
 
                                         if (isPharmacy) {
