@@ -237,23 +237,62 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                 )}
 
                                 {/* Navigation Items */}
-                                <div className="grid grid-cols-2 gap-2 mb-3">
-                                    {filteredNavItems.map((item) => (
-                                        <DropdownMenuItem
-                                            key={item.id}
-                                            onSelect={() => onTabChange && onTabChange(item.id)}
-                                            className={cn(
-                                                "flex flex-col items-center justify-center p-3 border transition-all cursor-pointer group/item text-center gap-1.5",
-                                                isPharmacy ? "rounded-full" : "rounded-2xl",
-                                                activeTab === item.id
-                                                    ? (isPharmacy ? "bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/25" : "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25")
-                                                    : (isPharmacy ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-100 dark:hover:bg-emerald-800/30 font-black" : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800 text-blue-900 dark:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-800/30 font-black")
-                                            )}
-                                        >
-                                            <item.icon className="h-5 w-5" />
-                                            <span className="text-[10px]">{item.label}</span>
-                                        </DropdownMenuItem>
-                                    ))}
+                                <div className={cn("grid gap-2 mb-3", isPharmacy ? "grid-cols-1" : "grid-cols-2")}>
+                                    {filteredNavItems.map((item, idx) => {
+                                        // Colors for pharmacy capsule style
+                                        const capsuleColors = [
+                                            'bg-gradient-to-l from-emerald-500 from-50% to-emerald-400 to-50%',
+                                            'bg-gradient-to-l from-orange-500 from-50% to-orange-400 to-50%',
+                                            'bg-gradient-to-l from-blue-500 from-50% to-blue-400 to-50%',
+                                            'bg-gradient-to-l from-purple-600 from-50% to-purple-500 to-50%',
+                                            'bg-gradient-to-l from-teal-500 from-50% to-teal-400 to-50%'
+                                        ];
+                                        const bgClass = capsuleColors[idx % capsuleColors.length];
+
+                                        if (isPharmacy) {
+                                            return (
+                                                <DropdownMenuItem
+                                                    key={item.id}
+                                                    onSelect={() => onTabChange && onTabChange(item.id)}
+                                                    className={cn(
+                                                        "relative rounded-full border-0 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden group cursor-pointer w-full p-0 h-12",
+                                                        bgClass,
+                                                        "text-white focus:text-white"
+                                                    )}
+                                                >
+                                                    {/* Capsule Middle Shine Divider */}
+                                                    <div className="absolute top-0 right-1/2 w-1.5 h-full bg-white/20 backdrop-blur-sm z-0 transform translate-x-1/2" />
+                                                    <div className={cn("absolute inset-0 bg-black/10 transition-opacity z-0", activeTab === item.id ? "opacity-100" : "opacity-0 group-hover:opacity-100")} />
+                                                    
+                                                    <div className="w-full h-full relative z-10 flex items-center justify-between px-4">
+                                                        <div className="flex-1 text-right ml-2">
+                                                            <p className="text-sm font-black text-white whitespace-nowrap">{item.label}</p>
+                                                        </div>
+                                                        <div className="p-2 rounded-full bg-white/20 backdrop-blur-md shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                                            <item.icon className="h-4 w-4 text-white" />
+                                                        </div>
+                                                    </div>
+                                                </DropdownMenuItem>
+                                            );
+                                        }
+
+                                        // Standard styling for non-pharmacy roles
+                                        return (
+                                            <DropdownMenuItem
+                                                key={item.id}
+                                                onSelect={() => onTabChange && onTabChange(item.id)}
+                                                className={cn(
+                                                    "flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer group/item text-center gap-1.5",
+                                                    activeTab === item.id
+                                                        ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25"
+                                                        : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800 text-blue-900 dark:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-800/30 font-black"
+                                                )}
+                                            >
+                                                <item.icon className="h-5 w-5" />
+                                                <span className="text-[10px]">{item.label}</span>
+                                            </DropdownMenuItem>
+                                        );
+                                    })}
                                 </div>
 
                                 <DropdownMenuSeparator className="bg-blue-100/50 dark:bg-blue-900/50 my-2" />
