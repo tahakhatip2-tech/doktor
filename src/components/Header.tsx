@@ -94,6 +94,8 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
     const clinicName = settings?.clinic_name || "نظام العيادة";
     const clinicDesc = settings?.clinic_description || "إدارة ذظƒظٹة";
 
+    const isPharmacy = user?.role === 'PHARMACY';
+
     const getAvatarSrc = (avatar?: string) => {
         if (!avatar) return '';
         if (avatar.startsWith('http') || avatar.startsWith('data:image/')) {
@@ -103,10 +105,13 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
     };
 
     const baseNavItems = [
-        { id: 'dashboard', label: 'الرئيسية', icon: LayoutDashboard },
+        { id: 'dashboard', label: 'الرئيسية', icon: isPharmacy ? Stethoscope : LayoutDashboard },
         { id: 'whatsapp-bot', label: 'المحادثات', icon: MessageCircle },
+        { id: 'internal-chat', label: 'الرسائل', icon: MessageCircle }, // Note: Sidebar uses MessagesSquare, but MessageCircle is imported
         { id: 'contacts', label: 'المرضى', icon: Users },
         { id: 'appointments', label: 'المواعيد', icon: Calendar },
+        ...(isPharmacy ? [{ id: 'inventory', label: 'إدارة المنتجات', icon: Stethoscope }] : []), // Using Stethoscope as a placeholder for Package
+        { id: 'finance', label: 'المحاسبة', icon: LineChart }, // Using LineChart as placeholder for Wallet
         { id: 'offers', label: 'آخر الأخبار', icon: Tag },
         { id: 'patient-inquiry', label: 'بوابة المرضى', icon: FileText },
         { id: 'bot-stats', label: 'الإحصائيات', icon: LineChart },
@@ -119,15 +124,20 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
             items.splice(1, 0, { id: 'beauty-services', label: 'إدارة الخدمات', icon: Sparkles as any });
         }
         return items;
-    }, [settings?.clinic_category]);
+    }, [settings?.clinic_category, isPharmacy]);
 
     const filteredNavItems = navItems.filter(item => {
-        if (!activeDoctor) return true;
-        const role = activeDoctor.role || 'doctor';
+        if (!activeDoctor && user?.role !== 'PHARMACY') return true;
+
+        if (user?.role === 'PHARMACY') {
+            return ['dashboard', 'inventory', 'finance', 'internal-chat', 'offers'].includes(item.id);
+        }
+
+        const role = activeDoctor?.role || 'doctor';
         if (role === 'doctor') {
-            return ['contacts', 'appointments'].includes(item.id);
+            return ['contacts', 'appointments', 'internal-chat'].includes(item.id);
         } else if (role === 'secretary' || role === 'nurse') {
-            return ['appointments'].includes(item.id);
+            return ['appointments', 'internal-chat'].includes(item.id);
         }
         return false;
     });
@@ -164,10 +174,10 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                             )}
                                         </div>
                                         {/* Hamburger/Menu Badge */}
-                                        <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-white dark:bg-blue-950 rounded-full flex flex-col items-center justify-center gap-0.5 border-2 border-blue-50 dark:border-blue-950 shadow-lg group-hover:scale-110 transition-transform">
-                                            <div className="w-2.5 h-[1.5px] bg-blue-600 dark:bg-blue-400 rounded-full"></div>
-                                            <div className="w-1.5 h-[1.5px] bg-blue-600 dark:bg-blue-400 rounded-full"></div>
-                                            <div className="w-2.5 h-[1.5px] bg-blue-600 dark:bg-blue-400 rounded-full"></div>
+                                        <div className={cn("absolute -bottom-1 -right-1 h-6 w-6 rounded-full flex flex-col items-center justify-center gap-0.5 border-2 shadow-lg group-hover:scale-110 transition-transform", isPharmacy ? "bg-white dark:bg-emerald-950 border-emerald-50 dark:border-emerald-950" : "bg-white dark:bg-blue-950 border-blue-50 dark:border-blue-950")}>
+                                            <div className={cn("w-2.5 h-[1.5px] rounded-full", isPharmacy ? "bg-emerald-600 dark:bg-emerald-400" : "bg-blue-600 dark:bg-blue-400")}></div>
+                                            <div className={cn("w-1.5 h-[1.5px] rounded-full", isPharmacy ? "bg-emerald-600 dark:bg-emerald-400" : "bg-blue-600 dark:bg-blue-400")}></div>
+                                            <div className={cn("w-2.5 h-[1.5px] rounded-full", isPharmacy ? "bg-emerald-600 dark:bg-emerald-400" : "bg-blue-600 dark:bg-blue-400")}></div>
 
                                             {/* Green Status Dot (Glow) */}
                                             <div className="absolute -top-0.5 -left-0.5 h-2 w-2">
@@ -181,13 +191,13 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
 
                             <DropdownMenuContent
                                 align="end"
-                                className="w-[calc(100vw-2rem)] sm:w-80 mt-4 p-2.5 rounded-[2rem] border-blue-200/50 dark:border-blue-800/50 bg-white/80 dark:bg-gray-950/80 backdrop-blur-2xl shadow-[0_20px_60px_rgba(37,99,235,0.2)] animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto scrollbar-hide"
+                                className={cn("w-[calc(100vw-2rem)] sm:w-80 mt-4 p-2.5 rounded-[2rem] bg-white/80 dark:bg-gray-950/80 backdrop-blur-2xl animate-in fade-in zoom-in-95 max-h-[85vh] overflow-y-auto scrollbar-hide", isPharmacy ? "border-emerald-200/50 dark:border-emerald-800/50 shadow-[0_20px_60px_rgba(16,185,129,0.2)]" : "border-blue-200/50 dark:border-blue-800/50 shadow-[0_20px_60px_rgba(37,99,235,0.2)]")}
                                 sideOffset={8}
                             >
                                 {/* Doctor Jo Branding Section */}
-                                <div className="flex flex-col items-center p-6 bg-gradient-to-b from-blue-50/50 to-transparent dark:from-blue-900/20 mb-2 rounded-t-[2rem] border-b border-blue-100/20">
+                                <div className={cn("flex flex-col items-center p-6 mb-2 rounded-t-[2rem] border-b", isPharmacy ? "bg-gradient-to-b from-emerald-50/50 to-transparent dark:from-emerald-900/20 border-emerald-100/20" : "bg-gradient-to-b from-blue-50/50 to-transparent dark:from-blue-900/20 border-blue-100/20")}>
                                     <div className="relative group mb-3">
-                                        <div className="absolute -inset-2 bg-gradient-to-r from-blue-600 to-orange-500 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                                        <div className={cn("absolute -inset-2 rounded-2xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity", isPharmacy ? "bg-gradient-to-r from-emerald-600 to-green-500" : "bg-gradient-to-r from-blue-600 to-orange-500")}></div>
                                         <img
                                             src="/hakeem-logo.png"
                                             alt="Doctor Jo"
@@ -197,32 +207,34 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                             }}
                                         />
                                     </div>
-                                    <h2 className="text-xl font-black tracking-tighter bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500 bg-clip-text text-transparent">
+                                    <h2 className={cn("text-xl font-black tracking-tighter bg-clip-text text-transparent", isPharmacy ? "bg-gradient-to-r from-emerald-600 via-emerald-700 to-green-500" : "bg-gradient-to-r from-blue-600 via-blue-700 to-orange-500")}>
                                         DOCTOR JO
                                     </h2>
-                                    <p className="text-[9px] font-bold uppercase tracking-[0.2em] bg-gradient-to-r from-orange-500 to-blue-600 bg-clip-text text-transparent opacity-80 mt-1">
-                                        Clinic Management System
+                                    <p className={cn("text-[9px] font-bold uppercase tracking-[0.2em] bg-clip-text text-transparent opacity-80 mt-1", isPharmacy ? "bg-gradient-to-r from-green-500 to-emerald-600" : "bg-gradient-to-r from-orange-500 to-blue-600")}>
+                                        {isPharmacy ? "Pharmacy Management" : "Clinic Management System"}
                                     </p>
                                 </div>
 
                                 {/* Counters Section */}
-                                <div className="grid grid-cols-3 gap-2 mb-4 px-1">
-                                    <div className="bg-blue-600 dark:bg-blue-600 rounded-2xl p-2.5 shadow-lg shadow-blue-600/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
-                                        <Users className="h-4 w-4 text-white" />
-                                        <p className="text-[14px] font-black text-white">{stats?.today_total || 0}</p>
-                                        <p className="text-[8px] font-bold text-white/70">مظˆاعظٹد اليوم</p>
+                                {!isPharmacy && (
+                                    <div className="grid grid-cols-3 gap-2 mb-4 px-1">
+                                        <div className="bg-blue-600 dark:bg-blue-600 rounded-2xl p-2.5 shadow-lg shadow-blue-600/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
+                                            <Users className="h-4 w-4 text-white" />
+                                            <p className="text-[14px] font-black text-white">{stats?.today_total || 0}</p>
+                                            <p className="text-[8px] font-bold text-white/70">مظˆاعظٹد اليوم</p>
+                                        </div>
+                                        <div className="bg-orange-500 dark:bg-orange-600 rounded-2xl p-2.5 shadow-lg shadow-orange-500/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
+                                            <Clock className="h-4 w-4 text-white" />
+                                            <p className="text-[14px] font-black text-white">{stats?.today_waiting || 0}</p>
+                                            <p className="text-[8px] font-bold text-white/70">في الانتظار</p>
+                                        </div>
+                                        <div className="bg-green-600 dark:bg-green-600 rounded-2xl p-2.5 shadow-lg shadow-green-600/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
+                                            <CheckCircle2 className="h-4 w-4 text-white" />
+                                            <p className="text-[14px] font-black text-white">{stats?.today_completed || 0}</p>
+                                            <p className="text-[8px] font-bold text-white/70">تم الظپحص</p>
+                                        </div>
                                     </div>
-                                    <div className="bg-orange-500 dark:bg-orange-600 rounded-2xl p-2.5 shadow-lg shadow-orange-500/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
-                                        <Clock className="h-4 w-4 text-white" />
-                                        <p className="text-[14px] font-black text-white">{stats?.today_waiting || 0}</p>
-                                        <p className="text-[8px] font-bold text-white/70">في الانتظار</p>
-                                    </div>
-                                    <div className="bg-green-600 dark:bg-green-600 rounded-2xl p-2.5 shadow-lg shadow-green-600/20 text-center flex flex-col items-center justify-center gap-0.5 transform transition-transform active:scale-95">
-                                        <CheckCircle2 className="h-4 w-4 text-white" />
-                                        <p className="text-[14px] font-black text-white">{stats?.today_completed || 0}</p>
-                                        <p className="text-[8px] font-bold text-white/70">تم الظپحص</p>
-                                    </div>
-                                </div>
+                                )}
 
                                 {/* Navigation Items */}
                                 <div className="grid grid-cols-2 gap-2 mb-3">
@@ -231,10 +243,11 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                             key={item.id}
                                             onSelect={() => onTabChange && onTabChange(item.id)}
                                             className={cn(
-                                                "flex flex-col items-center justify-center p-3 rounded-2xl border transition-all cursor-pointer group/item text-center gap-1.5",
+                                                "flex flex-col items-center justify-center p-3 border transition-all cursor-pointer group/item text-center gap-1.5",
+                                                isPharmacy ? "rounded-full" : "rounded-2xl",
                                                 activeTab === item.id
-                                                    ? "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25"
-                                                    : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800 text-blue-900 dark:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-800/30 font-black"
+                                                    ? (isPharmacy ? "bg-emerald-600 border-emerald-500 text-white shadow-lg shadow-emerald-500/25" : "bg-blue-600 border-blue-500 text-white shadow-lg shadow-blue-500/25")
+                                                    : (isPharmacy ? "bg-emerald-50/50 dark:bg-emerald-900/10 border-emerald-100 dark:border-emerald-800 text-emerald-900 dark:text-emerald-100 hover:bg-emerald-100 dark:hover:bg-emerald-800/30 font-black" : "bg-blue-50/50 dark:bg-blue-900/10 border-blue-100 dark:border-blue-800 text-blue-900 dark:text-blue-100 hover:bg-blue-100 dark:hover:bg-blue-800/30 font-black")
                                             )}
                                         >
                                             <item.icon className="h-5 w-5" />
