@@ -396,35 +396,37 @@ const Header = ({ onNavigate, onTabChange, activeTab, transparent, onNotificatio
                                     })()}
                                 </div>
 
-                                <div className="grid grid-cols-2 gap-2 mt-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="w-full h-10 gap-2 rounded-2xl text-blue-600/60 font-black text-[10px] hover:bg-blue-50/50"
-                                        onClick={toggleTheme}
-                                    >
-                                        <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
-                                            {theme === 'dark' ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
-                                        </div>
-                                        {theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="w-full h-10 gap-2 rounded-2xl text-blue-600/60 font-black text-[10px] hover:bg-blue-50/50"
-                                    >
-                                        <div className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-900/30">
-                                            <Languages className="h-3 w-3" />
-                                        </div>
-                                        تغيير اللغة
-                                    </Button>
-                                </div>
+                                <div className={cn("mt-4 -mx-2.5 -mb-2.5 p-4 rounded-b-[2rem] border-t", isPharmacy ? "bg-gradient-to-r from-emerald-600 to-green-500 border-emerald-500" : "border-blue-100/30 dark:border-blue-900/30")}>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className={cn("w-full h-10 gap-2 rounded-2xl font-black text-[10px]", isPharmacy ? "text-white hover:bg-white/20 hover:text-white" : "text-blue-600/60 hover:bg-blue-50/50")}
+                                            onClick={toggleTheme}
+                                        >
+                                            <div className={cn("p-1.5 rounded-lg", isPharmacy ? "bg-white/20 shadow-sm" : "bg-blue-50 dark:bg-blue-900/30")}>
+                                                {theme === 'dark' ? <Sun className="h-3 w-3" /> : <Moon className="h-3 w-3" />}
+                                            </div>
+                                            {theme === 'dark' ? 'الوضع النهاري' : 'الوضع الليلي'}
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            className={cn("w-full h-10 gap-2 rounded-2xl font-black text-[10px]", isPharmacy ? "text-white hover:bg-white/20 hover:text-white" : "text-blue-600/60 hover:bg-blue-50/50")}
+                                        >
+                                            <div className={cn("p-1.5 rounded-lg", isPharmacy ? "bg-white/20 shadow-sm" : "bg-blue-50 dark:bg-blue-900/30")}>
+                                                <Languages className="h-3 w-3" />
+                                            </div>
+                                            تغيير اللغة
+                                        </Button>
+                                    </div>
 
-                                {/* Signature */}
-                                <div className="mt-4 pt-4 border-t border-blue-100/30 dark:border-blue-900/30 text-center">
-                                    <p className="text-[8px] font-bold text-blue-600/30 dark:text-blue-400/20 uppercase tracking-[0.3em]">
-                                        Powered by Al-Khatib
-                                    </p>
+                                    {/* Signature */}
+                                    <div className={cn("mt-4 pt-4 border-t text-center", isPharmacy ? "border-white/20" : "border-blue-100/30 dark:border-blue-900/30")}>
+                                        <p className={cn("text-[8px] font-bold uppercase tracking-[0.3em]", isPharmacy ? "text-white/60" : "text-blue-600/30 dark:text-blue-400/20")}>
+                                            Powered by Al-Khatib
+                                        </p>
+                                    </div>
                                 </div>
                             </DropdownMenuContent>
                         </DropdownMenu>
