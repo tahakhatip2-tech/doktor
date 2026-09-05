@@ -66,6 +66,8 @@ interface MedicalRecord {
         frequency: string;
         duration: string;
     }>;
+    templateData?: Record<string, any>;
+    treatingDoctor?: { specialty?: string };
 }
 
 export default function PatientMedicalRecords() {
