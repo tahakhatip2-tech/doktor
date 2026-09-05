@@ -249,18 +249,18 @@ export default function PharmacyAIAssistant() {
             role: 'assistant',
             content: `${greeting} د. ${doctorName}! 👋
 
-أنا **سكرتيرك الذكي المتكامل** لعيادة **${clinicName}**.
+أنا **مساعدك الذكي المتكامل** لصيدلية **${clinicName}**.
 
-يمكنني **تنفيذ** كل ما يخص إدارة عيادتك:
+يمكنني **تنفيذ** كل ما يخص إدارة صيدليتك:
 
-📅 **المواعيد** — تأكيد، إلغاء، إنشاء، عرض جدول
-📊 **التحليلات** — تقارير، إحصائيات، أوقات ذروة
-💡 **النصائح** — إدارة الموظفين، رضا المرضى، تطوير الخدمات
-👥 **المرضى** — البحث، التواصل، المتابعة
-⚙️ **الصيدلية** — إعدادات، بروتوكولات، تطوير
+📦 **المخزون** — متابعة النواقص وتواريخ الانتهاء
+💰 **المبيعات** — المبيعات اليومية والتحليلات المالية
+💡 **النصائح** — تقليل الهدر وزيادة المبيعات
+👥 **العملاء** — التواصل وبناء الولاء
+⚙️ **الإعدادات** — الطابعات والباركود
 
 اختر قسماً من الأسفل أو اكتب طلبك مباشرة!`,
-            quickReplies: ['مواعيد اليوم', 'المواعيد المعلقة', 'تقرير سريع', 'نصائح للأداء'],
+            quickReplies: ['النواقص', 'المبيعات', 'تقرير سريع', 'نصائح للأداء'],
         });
     }, [doctorName, clinicName]);
 
@@ -650,7 +650,7 @@ export default function PharmacyAIAssistant() {
                                         <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-emerald-400 border-2 border-emerald-600 shadow-sm" />
                                     </div>
                                     <div className="flex flex-col justify-center">
-                                        <p className="text-white font-black text-sm tracking-wide">السكرتير الذكي <span className="opacity-70 text-[10px] font-normal tracking-normal">(Doctor Jo)</span></p>
+                                        <p className="text-white font-black text-sm tracking-wide">مساعد الصيدلية الذكي <span className="opacity-70 text-[10px] font-normal tracking-normal">(Doctor Jo)</span></p>
                                         <div className="flex items-center gap-1.5 mt-0.5">
                                             {isDataLoading
                                                 ? <><Loader2 className="h-3 w-3 text-white/80 animate-spin" /><span className="text-white/80 text-[11px] font-medium">يحدث البيانات...</span></>
@@ -673,23 +673,6 @@ export default function PharmacyAIAssistant() {
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Live stats strip */}
-                            {!isMinimized && clinicData?.stats && (
-                                <div className="flex items-center gap-3 mt-3 pt-3 border-t border-white/15">
-                                    {[
-                                        { label: 'اليوم', value: clinicData.stats.today_total ?? 0, icon: <Calendar className="h-3 w-3" /> },
-                                        { label: 'المعلقة', value: (clinicData.appointments || []).filter(a => a.status === 'pending').length, icon: <Clock className="h-3 w-3" /> },
-                                        { label: 'المكتملة', value: clinicData.stats.today_completed ?? 0, icon: <CheckCircle2 className="h-3 w-3" /> },
-                                    ].map((item, i) => (
-                                        <div key={i} className="flex items-center gap-1 bg-white/10 rounded-lg px-2 py-1">
-                                            <span className="text-white/60">{item.icon}</span>
-                                            <span className="text-white font-black text-xs">{item.value}</span>
-                                            <span className="text-white/60 text-[9px]">{item.label}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
                         </div>
 
                         {/* ══ Body ════════════════════════════════════════════ */}
@@ -844,7 +827,7 @@ export default function PharmacyAIAssistant() {
                                             value={input}
                                             onChange={e => setInput(e.target.value)}
                                             onKeyDown={handleKeyDown}
-                                            placeholder="اطلب أي شيء للعيادة..."
+                                            placeholder="اطلب أي شيء للصيدلية..."
                                             rows={1}
                                             disabled={isLoading}
                                             className="flex-1 bg-transparent text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 resize-none outline-none leading-relaxed max-h-28 py-1.5 disabled:opacity-50"
