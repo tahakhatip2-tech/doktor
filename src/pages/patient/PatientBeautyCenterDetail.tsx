@@ -254,61 +254,35 @@ export default function PatientBeautyCenterDetail() {
                             </span>
                         )}
                         {center.clinic_address && (
-                            <button
-                                onClick={handleMap}
-                                className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-600 hover:bg-slate-100 transition-all"
-                            >
-                                <MapPin className="w-3 h-3 text-pink-500" />
-                                <span className="max-w-[130px] truncate">{center.clinic_address}</span>
-                            </button>
+                            <span className="flex items-center gap-1 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full text-[11px] font-semibold text-slate-600 truncate max-w-[160px]">
+                                <MapPin className="w-3 h-3 text-pink-400 shrink-0" />
+                                {center.clinic_address}
+                            </span>
                         )}
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="flex items-center gap-2 mt-4 w-full">
+                        <Button size="sm" variant="outline"
+                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs border-pink-200 text-pink-600 hover:bg-pink-50"
+                            onClick={handleMap}>
+                            <MapPin className="h-3.5 w-3.5 shrink-0" />الموقع
+                        </Button>
+                        <Button size="sm"
+                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs bg-[#25D366] hover:bg-green-600 text-white border-0"
+                            onClick={handleWhatsApp}>
+                            <MessageCircle className="h-3.5 w-3.5 shrink-0" />واتساب
+                        </Button>
+                        <Button size="sm"
+                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs bg-pink-500 hover:bg-pink-600 text-white border-0"
+                            onClick={handleCall}>
+                            <Phone className="h-3.5 w-3.5 shrink-0" />اتصال
+                        </Button>
                     </div>
                 </div>
             </div>
 
-            <div className="px-4 space-y-4 pt-4">
-                {/* ── Book Button (Moved to top of content for quick access) ── */}
-                <div className="mt-2 mb-4">
-                    <Button
-                        onClick={() => {
-                            if (!selectedService && services.length > 0) {
-                                toast({ title: 'اختر الخدمة أولاً', description: 'يرجى اختيار نوع الخدمة قبل الحجز', variant: 'default' });
-                                return;
-                            }
-                            navigate(`/clinic/${id}/${encodeURIComponent(displayName.replace(/\s+/g, '-'))}${selectedService ? `?service=${encodeURIComponent(selectedService.name)}` : ''}`);
-                        }}
-                        className="w-full h-14 text-base font-black rounded-2xl bg-gradient-to-r from-pink-500 via-purple-500 to-rose-500 text-white shadow-lg shadow-pink-300/40 hover:shadow-pink-400/50 hover:scale-[1.01] active:scale-95 transition-all"
-                    >
-                        <Sparkles className="w-5 h-5 ml-2" />
-                        {selectedService ? `احجز جلسة ${selectedService.name}` : 'احجز موعدك الآن'}
-                        <ChevronRight className="w-5 h-5 mr-auto" />
-                    </Button>
-                </div>
-
-                {/* ── Action buttons ── */}
-                <div className="grid grid-cols-3 gap-3">
-                    <button
-                        onClick={handleCall}
-                        className="flex flex-col items-center gap-1.5 py-3 bg-green-500 text-white rounded-2xl font-bold text-xs shadow-md hover:bg-green-600 active:scale-95 transition-all shadow-green-200"
-                    >
-                        <Phone className="w-5 h-5" />
-                        اتصل بنا
-                    </button>
-                    <button
-                        onClick={handleWhatsApp}
-                        className="flex flex-col items-center gap-1.5 py-3 bg-[#25D366] text-white rounded-2xl font-bold text-xs shadow-md hover:bg-green-600 active:scale-95 transition-all shadow-green-200"
-                    >
-                        <MessageCircle className="w-5 h-5" />
-                        واتساب
-                    </button>
-                    <button
-                        onClick={handleMap}
-                        className="flex flex-col items-center gap-1.5 py-3 bg-blue-500 text-white rounded-2xl font-bold text-xs shadow-md hover:bg-blue-600 active:scale-95 transition-all shadow-blue-200"
-                    >
-                        <MapPin className="w-5 h-5" />
-                        الموقع
-                    </button>
-                </div>
+            <div className="max-w-5xl mx-auto px-4 md:px-8 space-y-6 pt-4 pb-28">
 
                 {/* ── Description ── */}
                 {center.clinic_description && (
@@ -324,7 +298,7 @@ export default function PatientBeautyCenterDetail() {
                 )}
 
                 {/* ── Services List ── */}
-                <div className="pb-8">
+                <div id="services-section" className="pb-8">
                     <h2 className="text-lg font-black text-slate-800 mb-4 flex items-center gap-2">
                         <Star className="w-5 h-5 text-pink-500" />
                         خدمات التجميل والعناية
@@ -370,6 +344,31 @@ export default function PatientBeautyCenterDetail() {
                             })}
                         </div>
                     )}
+                </div>
+            </div>
+
+            {/* ── Floating Book Button ── */}
+            <div className="fixed bottom-[65px] left-0 right-0 p-4 bg-white/85 backdrop-blur-md border-t border-pink-100 shadow-[0_-10px_20px_-10px_rgba(236,72,153,0.15)] z-50 animate-fade-in-up">
+                <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+                    <Button
+                        onClick={() => {
+                            if (!selectedService && services.length > 0) {
+                                toast({ title: 'اختر الخدمة أولاً', description: 'يرجى اختيار نوع الخدمة قبل الحجز', variant: 'default' });
+                                document.getElementById('services-section')?.scrollIntoView({ behavior: 'smooth' });
+                                return;
+                            }
+                            navigate(`/clinic/${id}/${encodeURIComponent(displayName.replace(/\s+/g, '-'))}${selectedService ? `?service=${encodeURIComponent(selectedService.name)}` : ''}`);
+                        }}
+                        className={`w-full h-14 text-base font-black rounded-2xl text-white transition-all duration-300 shadow-lg ${
+                            selectedService 
+                            ? 'bg-gradient-to-r from-pink-500 via-purple-500 to-rose-500 shadow-pink-300/40 hover:shadow-pink-400/50 hover:scale-[1.02] active:scale-95' 
+                            : 'bg-slate-800 hover:bg-slate-700 active:scale-95'
+                        }`}
+                    >
+                        <Sparkles className={`w-5 h-5 ml-2 ${selectedService ? 'animate-pulse text-yellow-300' : 'text-pink-300'}`} />
+                        {selectedService ? `احجز جلسة ${selectedService.name}` : 'احجز موعدك الآن'}
+                        <ChevronRight className="w-5 h-5 mr-auto" />
+                    </Button>
                 </div>
             </div>
         </div>

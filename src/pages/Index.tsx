@@ -36,6 +36,7 @@ import PharmacyDashboard from "./pharmacy/PharmacyDashboard";
 import { DashboardSkeleton } from "@/components/skeletons/DashboardSkeleton";
 import { PatientCardSkeleton } from "@/components/skeletons/PatientCardSkeleton";
 import HeroSection from "@/components/HeroSection";
+import LaboratoryDashboard from "@/components/laboratory/LaboratoryDashboard";
 import DoctorAISecretary from "@/components/DoctorAISecretary";
 import PharmacyAIAssistant from "@/components/PharmacyAIAssistant";
 import { appointmentsApi, whatsappApi, dataApi } from "@/lib/api";
@@ -317,7 +318,11 @@ const Index = () => {
                                 <PharmacyDashboard />
                             )}
 
-                            {activeTab === 'dashboard' && !isPharmacy && (
+                            {activeTab === 'dashboard' && aiSettings?.clinic_category === 'lab' && (
+                                <LaboratoryDashboard />
+                            )}
+
+                            {activeTab === 'dashboard' && !isPharmacy && aiSettings?.clinic_category !== 'lab' && (
                                 <motion.div
                                     initial="hidden"
                                     animate="visible"

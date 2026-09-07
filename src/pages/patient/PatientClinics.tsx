@@ -59,13 +59,15 @@ export default function PatientClinics() {
     const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
     const [locating, setLocating] = useState(false);
     const [mapClinic, setMapClinic] = useState<Clinic | null>(null);
-    const [activeTab, setActiveTab] = useState<'clinics' | 'pharmacies' | 'beauty' | 'home'>(
-        (location.state as { activeTab?: string })?.activeTab as 'clinics' | 'pharmacies' | 'beauty' | 'home' || 'clinics'
+    const [activeTab, setActiveTab] = useState<'clinics' | 'pharmacies' | 'beauty' | 'home' | 'labs'>(
+        (location.state as { activeTab?: string })?.activeTab as 'clinics' | 'pharmacies' | 'beauty' | 'home' | 'labs' || 'clinics'
     );
     const [beautyCenters, setBeautyCenters] = useState<Clinic[]>();
     const [homeProviders, setHomeProviders] = useState<Clinic[]>([]);
+    const [laboratories, setLaboratories] = useState<Clinic[]>([]);
     const [homeLoading, setHomeLoading] = useState(false);
     const [homeSearchTerm, setHomeSearchTerm] = useState('');
+    const [labSearchTerm, setLabSearchTerm] = useState('');
 
     // Unique specialties list
     const [specialties, setSpecialties] = useState<string[]>([]);
@@ -75,11 +77,12 @@ export default function PatientClinics() {
         fetchPharmacies();
         fetchBeautyCenters();
         fetchHomeProviders();
+        fetchLaboratories();
     }, []);
 
     // ── Build filtered list whenever deps change ──
     useEffect(() => {
-        if (activeTab === 'home') { setFiltered([]); return; }
+        if (activeTab === 'home' || activeTab === 'labs') { setFiltered([]); return; }
         const sourceData = activeTab === 'clinics' ? clinics : activeTab === 'pharmacies' ? pharmacies : (beautyCenters || []);
         let result = [...sourceData];
 
@@ -197,6 +200,23 @@ export default function PatientClinics() {
         }
     };
 
+    const fetchLaboratories = async () => {
+        try {
+            const token = localStorage.getItem('patient_token');
+            const res = await axios.get(`${API_URL}/patient/laboratories`, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'ngrok-skip-browser-warning': 'true',
+                    'bypass-tunnel-reminder': 'true',
+                },
+            });
+            const data: Clinic[] = Array.isArray(res.data) ? res.data : (res.data?.data ?? []);
+            setLaboratories(data);
+        } catch {
+            // silent
+        }
+    };
+
     // ── Nearest clinic via Geolocation ──
     const handleNearestClinic = useCallback(() => {
         if (!navigator.geolocation) {
@@ -266,10 +286,10 @@ export default function PatientClinics() {
             {/* Hero */}
             <PatientHero
                 showBackButton={true}
-                title={activeTab === 'clinics' ? "المراكز الطبية المتاحة" : activeTab === 'pharmacies' ? "الصيدليات المتاحة" : activeTab === 'home' ? "الرعاية والتمريض المنزلي" : "مراكز التجميل"}
-                subtitle={activeTab === 'clinics' ? "اكتشف أفضل الأطباء" : activeTab === 'pharmacies' ? "اكتشف أقرب الصيدليات" : activeTab === 'home' ? "صحتك في بيتك" : "عناية بالبشرة والتجميل"}
-                description={activeTab === 'clinics' ? "اختر المركز الطبي المناسب واحجز موعدك من المواعيد المتاحة." : activeTab === 'pharmacies' ? "تواصل مع الصيدليات وأرسل وصفاتك الطبية بكل سهولة." : activeTab === 'home' ? "نقدم لك أفضل خدمات الرعاية الطبية والتمريض المنزلي براحة وأمان." : "ليزر، بوتوكس، فيلر، وعناية كاملة بالبشرة بأيدي خبراء."}
-                badgeText={activeTab === 'clinics' ? "صحتك أولاً" : activeTab === 'pharmacies' ? "دوائك عندنا" : activeTab === 'home' ? "رعاية منزلية" : "جمالك يهمنا"}
+                title={activeTab === 'clinics' ? "المراكز الطبية المتاحة" : activeTab === 'pharmacies' ? "الصيدليات المتاحة" : activeTab === 'home' ? "الرعاية والتمريض المنزلي" : activeTab === 'labs' ? "المختبرات الطبية" : "مراكز التجميل"}
+                subtitle={activeTab === 'clinics' ? "اكتشف أفضل الأطباء" : activeTab === 'pharmacies' ? "اكتشف أقرب الصيدليات" : activeTab === 'home' ? "صحتك في بيتك" : activeTab === 'labs' ? "دقة وسرعة في الفحوصات" : "عناية بالبشرة والتجميل"}
+                description={activeTab === 'clinics' ? "اختر المركز الطبي المناسب واحجز موعدك من المواعيد المتاحة." : activeTab === 'pharmacies' ? "تواصل مع الصيدليات وأرسل وصفاتك الطبية بكل سهولة." : activeTab === 'home' ? "نقدم لك أفضل خدمات الرعاية الطبية والتمريض المنزلي براحة وأمان." : activeTab === 'labs' ? "اختر المختبر المناسب واحجز فحوصاتك الطبية بسهولة للحصول على نتائجك بسرعة." : "ليزر، بوتوكس، فيلر، وعناية كاملة بالبشرة بأيدي خبراء."}
+                badgeText={activeTab === 'clinics' ? "صحتك أولاً" : activeTab === 'pharmacies' ? "دوائك عندنا" : activeTab === 'home' ? "رعاية منزلية" : activeTab === 'labs' ? "نتائج دقيقة" : "جمالك يهمنا"}
             />
 
             <div className="px-4 sm:px-0 space-y-4 pt-6">
@@ -280,19 +300,16 @@ export default function PatientClinics() {
                         { id: 'pharmacies', label: 'الصيدليات', icon: Building2, color: 'from-green-500 to-green-700', ring: 'ring-green-400', active: activeTab === 'pharmacies' },
                         { id: 'beauty', label: 'التجميل', icon: Sparkles, color: 'from-pink-500 to-pink-700', ring: 'ring-pink-400', active: activeTab === 'beauty' },
                         { id: 'home', label: 'رعاية منزلية', icon: Heart, color: 'from-purple-500 to-purple-700', ring: 'ring-purple-400', active: activeTab === 'home' },
-                        { id: 'labs', label: 'مختبرات طبية', icon: FlaskConical, color: 'from-orange-500 to-orange-700', ring: 'ring-orange-400', comingSoon: true },
+                        { id: 'labs', label: 'مختبرات طبية', icon: FlaskConical, color: 'from-red-600 to-red-800', ring: 'ring-red-500', active: activeTab === 'labs' },
                     ].map((tab, idx) => (
                         <button
                             key={tab.id}
                             onClick={() => {
-                                if (tab.comingSoon) {
-                                    toast({ title: tab.label, description: "قيد التطوير سنطورها لاحقا" });
-                                } else {
-                                    setActiveTab(tab.id as 'clinics' | 'pharmacies' | 'beauty' | 'home');
-                                    setActiveSpec('الكل');
-                                    setSearchTerm('');
-                                    setHomeSearchTerm('');
-                                }
+                                setActiveTab(tab.id as 'clinics' | 'pharmacies' | 'beauty' | 'home' | 'labs');
+                                setActiveSpec('الكل');
+                                setSearchTerm('');
+                                setHomeSearchTerm('');
+                                setLabSearchTerm('');
                             }}
                             className={`relative group flex items-center justify-between w-full h-11 sm:h-12 rounded-full border border-white/60 shadow-[0_4px_12px_rgba(0,0,0,0.05)] overflow-hidden transition-all duration-300 hover:scale-[1.03] active:scale-95 ${idx < 3 ? 'col-span-2' : 'col-span-3'} ${tab.active ? `ring-2 ring-offset-2 ring-offset-slate-50 ${tab.ring} shadow-[0_0_20px_rgba(0,0,0,0.15)]` : ''}`}
                         >
@@ -517,12 +534,104 @@ export default function PatientClinics() {
                     </div>
                 )}
 
+                {/* ── Labs Tab ── */}
+                {activeTab === 'labs' && (
+                    <div>
+                        <div className="flex gap-2 mb-4">
+                            <div className="relative flex-1">
+                                <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="ابحث عن مختبر طبي..."
+                                    value={labSearchTerm}
+                                    onChange={(e) => setLabSearchTerm(e.target.value)}
+                                    className="pr-10"
+                                />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {homeLoading ? (
+                                Array.from({ length: 6 }).map((_, i) => (
+                                    <Skeleton key={i} className="h-40 w-full rounded-2xl" />
+                                ))
+                            ) : laboratories.filter(lab => {
+                                if (!labSearchTerm) return true;
+                                const q = labSearchTerm.toLowerCase();
+                                return (lab.clinic_name || lab.name || '').toLowerCase().includes(q) ||
+                                    (lab.clinic_address || '').toLowerCase().includes(q);
+                            }).length === 0 ? (
+                                <div className="col-span-full py-16 flex flex-col items-center justify-center text-center bg-white rounded-3xl border border-dashed border-red-200">
+                                    <FlaskConical className="h-16 w-16 text-red-200 mb-4" />
+                                    <h3 className="text-xl font-bold text-slate-700">لا يوجد مختبرات</h3>
+                                    <p className="text-slate-500 mt-2 max-w-sm">لم نتمكن من العثور على مختبرات طبية حالياً.</p>
+                                </div>
+                            ) : (
+                                laboratories
+                                    .filter(lab => {
+                                        if (!labSearchTerm) return true;
+                                        const q = labSearchTerm.toLowerCase();
+                                        return (lab.clinic_name || lab.name || '').toLowerCase().includes(q) ||
+                                            (lab.clinic_address || '').toLowerCase().includes(q);
+                                    })
+                                    .map(clinic => {
+                                        const logo = (clinic.clinic_logo || clinic.avatar);
+                                        const logoUrl = logo ? (logo.startsWith('http') ? logo : `${BASE_URL}${logo.startsWith('/') ? '' : '/'}${logo}`) : null;
+                                        const name = clinic.clinic_name || clinic.name || 'مختبر طبي';
+                                        return (
+                                            <Card
+                                                key={clinic.id}
+                                                className="overflow-hidden cursor-pointer transition-all duration-300 hover:shadow-xl hover:-translate-y-1 border-red-100 group relative bg-white"
+                                                onClick={() => navigate(`/patient/laboratories/${clinic.id}`)}
+                                            >
+                                                <div className="h-1.5 w-full bg-gradient-to-r from-red-500 via-rose-500 to-orange-500" />
+                                                <CardContent className="p-4">
+                                                    <div className="flex items-start gap-3 mb-3">
+                                                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-50 to-rose-50 border border-red-100 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
+                                                            {logoUrl ? (
+                                                                <img src={logoUrl} alt={name} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                                                            ) : (
+                                                                <FlaskConical className="w-7 h-7 text-red-400" />
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <h3 className="font-bold text-base text-slate-800 truncate group-hover:text-red-700 transition-colors leading-tight">{name}</h3>
+                                                            <span className="inline-block text-[10px] font-bold text-red-600 bg-red-50 border border-red-100 px-2 py-0.5 rounded-full mt-0.5">
+                                                                🧪 مختبر طبي
+                                                            </span>
+                                                            <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                                                {clinic.clinic_address && (
+                                                                    <span className="flex items-center text-[10px] text-slate-500">
+                                                                        <MapPin className="w-2.5 h-2.5 ml-0.5 text-slate-400" />
+                                                                        <span className="truncate max-w-[90px]">{clinic.clinic_address}</span>
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                                                        <button
+                                                            onClick={(e) => { e.stopPropagation(); navigate(`/patient/laboratories/${clinic.id}`); }}
+                                                            className="flex-1 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white transition-all h-9 rounded-xl flex items-center justify-center gap-1.5 font-bold text-xs shadow-sm active:scale-95"
+                                                        >
+                                                            <Eye className="w-3.5 h-3.5" />
+                                                            عرض المختبر
+                                                        </button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        );
+                                    })
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* ── Clinics/Pharmacies/Beauty Grid ── */}
-                {activeTab !== 'home' && loading ? (
+                {activeTab !== 'home' && activeTab !== 'labs' && loading ? (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
                         {[1, 2, 3, 4, 5, 6].map((i) => <Skeleton key={i} className="h-64 w-full rounded-2xl" />)}
                     </div>
-                ) : activeTab !== 'home' && filtered.length === 0 ? (
+                ) : activeTab !== 'home' && activeTab !== 'labs' && filtered.length === 0 ? (
                     <Card className="shadow-sm rounded-2xl">
                         <CardContent className="py-16 text-center">
                             <Building2 className="h-16 w-16 mx-auto mb-4 text-muted-foreground opacity-30" />
@@ -532,7 +641,7 @@ export default function PatientClinics() {
                             </p>
                         </CardContent>
                     </Card>
-                ) : activeTab !== 'home' ? (
+                ) : activeTab !== 'home' && activeTab !== 'labs' ? (
                     <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5">
                         {filtered.map((clinic, cardIdx) => {
                             const logo = logoSrc(clinic);

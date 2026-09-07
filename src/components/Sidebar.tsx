@@ -24,6 +24,7 @@ import {
     Package,
     Pill,
     HeartPulse,
+    FlaskConical,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -87,6 +88,8 @@ const Sidebar = ({ activeTab, setActiveTab, clinicCategory }: SidebarProps) => {
         allNavItems.splice(1, 0, { id: 'beauty-services', label: 'إدارة الخدمات', icon: Sparkles });
     } else if (clinicCategory === 'home_care') {
         allNavItems.splice(1, 0, { id: 'homecare-services', label: 'خدمات الرعاية', icon: HeartPulse });
+    } else if (clinicCategory === 'lab') {
+        allNavItems.splice(1, 0, { id: 'lab-tests', label: 'إدارة الفحوصات', icon: FlaskConical });
     }
 
     const mainNavItems = allNavItems.filter(item => {

@@ -165,4 +165,28 @@ export class PatientController {
         const slots = await this.appointmentsService.getAvailableSlots(providerId, date);
         return { date, providerId, slots };
     }
+
+    // ─── المختبرات الطبية ────────────────────────────────────────────────────────
+
+    @Get('laboratories')
+    @UseGuards(PatientAuthGuard)
+    async getLaboratories() {
+        return this.patientService.getLaboratories();
+    }
+
+    @Get('laboratories/:id')
+    @UseGuards(PatientAuthGuard)
+    async getLaboratoryById(@Param('id', ParseIntPipe) id: number) {
+        return this.patientService.getLaboratoryById(id);
+    }
+
+    @Get('laboratories/:id/available-slots')
+    @UseGuards(PatientAuthGuard)
+    async getLaboratoryAvailableSlots(
+        @Param('id', ParseIntPipe) providerId: number,
+        @Query('date') date: string,
+    ) {
+        const slots = await this.appointmentsService.getAvailableSlots(providerId, date);
+        return { date, providerId, slots };
+    }
 }

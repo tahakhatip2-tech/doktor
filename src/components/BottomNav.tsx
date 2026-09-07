@@ -8,6 +8,7 @@ import {
     Tag,
     FileText,
     Package,
+    FlaskConical
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Sparkles, HeartPulse } from "lucide-react";
@@ -28,6 +29,7 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
     const isPharmacy = user?.role === 'PHARMACY';
     const isBeauty = settings?.clinic_category === 'beauty_center';
     const isHomeCare = settings?.clinic_category === 'home_care';
+    const isLab = settings?.clinic_category === 'lab';
     
     const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
     const [isAddProductOpen, setIsAddProductOpen] = useState(false);
@@ -62,22 +64,32 @@ export function BottomNav({ activeTab, setActiveTab, onSearchClick }: BottomNavP
             { id: 'homecare-services', label: 'الخدمات', icon: HeartPulse },
             { id: 'clinic-settings', label: 'الإعدادات', icon: Settings },
         ];
+    } else if (isLab) {
+        navItems = [
+            { id: 'dashboard', label: 'الرئيسية', icon: Home },
+            { id: 'contacts', label: 'المرضى', icon: Users },
+            { id: 'add-patient', label: 'إضافة', icon: Plus, isSpecial: true },
+            { id: 'lab-tests', label: 'الفحوصات', icon: FlaskConical },
+            { id: 'clinic-settings', label: 'الإعدادات', icon: Settings },
+        ];
     }
 
     // Dynamic color theme based on role
-    const borderColor   = isPharmacy ? 'border-emerald-500'  : isBeauty ? 'border-fuchsia-500' : isHomeCare ? 'border-indigo-500' : 'border-orange-500';
+    const borderColor   = isPharmacy ? 'border-emerald-500'  : isBeauty ? 'border-fuchsia-500' : isHomeCare ? 'border-indigo-500' : isLab ? 'border-red-500' : 'border-orange-500';
     const mainBtnClass  = isPharmacy
         ? 'bg-gradient-to-tr from-emerald-600 via-emerald-500 to-teal-400 shadow-[0_8px_25px_rgba(16,185,129,0.4)]'
         : isBeauty
         ? 'bg-gradient-to-tr from-fuchsia-600 via-purple-500 to-fuchsia-400 shadow-[0_8px_25px_rgba(217,70,239,0.4)]'
         : isHomeCare
         ? 'bg-gradient-to-tr from-indigo-600 via-violet-500 to-indigo-400 shadow-[0_8px_25px_rgba(79,70,229,0.4)]'
+        : isLab
+        ? 'bg-gradient-to-tr from-red-600 via-red-500 to-red-400 shadow-[0_8px_25px_rgba(220,38,38,0.4)]'
         : 'bg-gradient-to-tr from-orange-600 via-orange-500 to-orange-400 shadow-[0_8px_25px_rgba(249,115,22,0.4)]';
-    const pingColor     = isPharmacy ? 'bg-emerald-400' : isBeauty ? 'bg-fuchsia-400' : isHomeCare ? 'bg-indigo-400' : 'bg-orange-400';
-    const activeBg      = isPharmacy ? 'bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500/50' : isBeauty ? 'bg-fuchsia-50 dark:bg-fuchsia-500/10 border-2 border-fuchsia-500/50' : isHomeCare ? 'bg-indigo-50 dark:bg-indigo-500/10 border-2 border-indigo-500/50' : 'bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50';
-    const activeIcon    = isPharmacy ? 'text-emerald-600' : isBeauty ? 'text-fuchsia-600' : isHomeCare ? 'text-indigo-600' : 'text-orange-600';
-    const activeDot     = isPharmacy ? 'bg-emerald-600' : isBeauty ? 'bg-fuchsia-600' : isHomeCare ? 'bg-indigo-600' : 'bg-orange-600';
-    const mainLabelCls  = isPharmacy ? 'text-emerald-600 bg-emerald-50' : isBeauty ? 'text-fuchsia-600 bg-fuchsia-50' : isHomeCare ? 'text-indigo-600 bg-indigo-50' : 'text-orange-600 bg-orange-50';
+    const pingColor     = isPharmacy ? 'bg-emerald-400' : isBeauty ? 'bg-fuchsia-400' : isHomeCare ? 'bg-indigo-400' : isLab ? 'bg-red-400' : 'bg-orange-400';
+    const activeBg      = isPharmacy ? 'bg-emerald-50 dark:bg-emerald-500/10 border-2 border-emerald-500/50' : isBeauty ? 'bg-fuchsia-50 dark:bg-fuchsia-500/10 border-2 border-fuchsia-500/50' : isHomeCare ? 'bg-indigo-50 dark:bg-indigo-500/10 border-2 border-indigo-500/50' : isLab ? 'bg-red-50 dark:bg-red-500/10 border-2 border-red-500/50' : 'bg-orange-50 dark:bg-orange-500/10 border-2 border-orange-500/50';
+    const activeIcon    = isPharmacy ? 'text-emerald-600' : isBeauty ? 'text-fuchsia-600' : isHomeCare ? 'text-indigo-600' : isLab ? 'text-red-600' : 'text-orange-600';
+    const activeDot     = isPharmacy ? 'bg-emerald-600' : isBeauty ? 'bg-fuchsia-600' : isHomeCare ? 'bg-indigo-600' : isLab ? 'bg-red-600' : 'bg-orange-600';
+    const mainLabelCls  = isPharmacy ? 'text-emerald-600 bg-emerald-50' : isBeauty ? 'text-fuchsia-600 bg-fuchsia-50' : isHomeCare ? 'text-indigo-600 bg-indigo-50' : isLab ? 'text-red-600 bg-red-50' : 'text-orange-600 bg-orange-50';
 
     return (
         <>

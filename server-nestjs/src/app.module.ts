@@ -24,6 +24,7 @@ import { AdminModule } from './admin/admin.module';
 import { BeautyServicesModule } from './beauty-services/beauty-services.module';
 import { HomeCareServicesModule } from './home-care-services/home-care-services.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { LaboratoryModule } from './laboratory/laboratory.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { InventoryModule } from './inventory/inventory.module';
     BeautyServicesModule,
     HomeCareServicesModule,
     InventoryModule,
+    LaboratoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

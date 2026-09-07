@@ -236,6 +236,7 @@ export default function ClinicSettings() {
                                 <option value="hospital">🏦 مستشفى</option>
                                 <option value="beauty_center">✨ مركز تجميل وعناية</option>
                                 <option value="home_care">💜 رعاية منزلية</option>
+                                <option value="lab">🔬 مختبر طبي</option>
                             </select>
                             <p className="text-xs text-slate-400 text-right">
                                 يحدد التصنيف طريقة ظهور منشأتك للمرضى وميزات لوحة التحكم المتاحة لك.

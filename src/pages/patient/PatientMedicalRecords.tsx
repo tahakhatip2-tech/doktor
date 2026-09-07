@@ -25,7 +25,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const recordTypeMap: Record<string, { label: string; icon: any; color: string; bgClass: string }> = {
     prescription: { label: 'وصفة طبية', icon: ClipboardList, color: 'bg-blue-100 text-blue-700', bgClass: 'bg-gradient-to-l from-blue-600 from-50% to-blue-500 to-50%' },
-    lab_report: { label: 'تقرير مختبر', icon: FlaskConical, color: 'bg-purple-100 text-purple-700', bgClass: 'bg-gradient-to-l from-purple-600 from-50% to-purple-500 to-50%' },
+    lab_result: { label: 'نتائج الفحوصات', icon: FlaskConical, color: 'bg-purple-100 text-purple-700', bgClass: 'bg-gradient-to-l from-purple-600 from-50% to-purple-500 to-50%' },
     sick_leave: { label: 'إجازة مرضية', icon: Bed, color: 'bg-yellow-100 text-yellow-700', bgClass: 'bg-gradient-to-l from-orange-500 from-50% to-orange-400 to-50%' },
     referral: { label: 'تحويل طبي', icon: ArrowRightLeft, color: 'bg-green-100 text-green-700', bgClass: 'bg-gradient-to-l from-emerald-500 from-50% to-emerald-400 to-50%' },
 };
@@ -503,7 +503,58 @@ export default function PatientMedicalRecords() {
                                             )}
 
                                             {/* Specialized Medical Template Data */}
-                                            {record.templateData && Object.keys(record.templateData).length > 0 && (
+                                            {(() => {
+                                                if (record.recordType !== 'lab_result' || !record.templateData) return null;
+                                                const labData = Array.isArray(record.templateData) ? record.templateData : record.templateData.results;
+                                                const labNotes = !Array.isArray(record.templateData) ? record.templateData.notes : null;
+
+                                                if (!Array.isArray(labData) || labData.length === 0) return null;
+
+                                                return (
+                                                    <div className="mt-4 pt-4 border-t border-border/50">
+                                                        <p className="text-xs font-bold text-purple-600 uppercase tracking-wide mb-3 flex items-center gap-1"><FlaskConical className="h-4 w-4" /> نتائج الفحوصات</p>
+                                                        <div className="overflow-x-auto rounded-lg border border-purple-100 shadow-sm mb-4">
+                                                            <table className="w-full text-sm text-right">
+                                                                <thead className="bg-purple-50 text-purple-800 border-b border-purple-100">
+                                                                    <tr>
+                                                                        <th className="px-4 py-3 font-bold whitespace-nowrap">اسم الفحص</th>
+                                                                        <th className="px-4 py-3 font-bold whitespace-nowrap">النتيجة</th>
+                                                                        <th className="px-4 py-3 font-bold whitespace-nowrap">المعدل الطبيعي</th>
+                                                                        <th className="px-4 py-3 font-bold whitespace-nowrap">الوحدة</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody className="divide-y divide-purple-50">
+                                                                    {labData.map((test, idx) => (
+                                                                        <tr key={idx} className={`hover:bg-purple-50/50 transition-colors ${test.flag && test.flag !== 'N' ? 'bg-red-50/30' : ''}`}>
+                                                                            <td className="px-4 py-3 font-medium text-slate-800">{test.testName}</td>
+                                                                            <td className="px-4 py-3">
+                                                                                <span className={`font-bold ${test.flag === 'H' ? 'text-red-600' : test.flag === 'L' ? 'text-orange-500' : 'text-slate-700'}`}>
+                                                                                    {test.result}
+                                                                                    {test.flag && test.flag !== 'N' && (
+                                                                                        <span className="ml-1 text-[10px] bg-white border px-1 rounded-sm">
+                                                                                            {test.flag}
+                                                                                        </span>
+                                                                                    )}
+                                                                                </span>
+                                                                            </td>
+                                                                            <td className="px-4 py-3 text-slate-500 font-mono text-xs" dir="ltr">{test.normalRange || '-'}</td>
+                                                                            <td className="px-4 py-3 text-slate-500">{test.unit || '-'}</td>
+                                                                        </tr>
+                                                                    ))}
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                        {labNotes && (
+                                                            <div>
+                                                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1">ملاحظات المختبر</p>
+                                                                <p className="text-sm bg-purple-50/50 text-purple-900 rounded-lg p-3 leading-relaxed whitespace-pre-wrap">{labNotes}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+
+                                            {record.recordType !== 'lab_result' && record.templateData && Object.keys(record.templateData).length > 0 && (
                                                 <div className="mt-4 pt-4 border-t border-border/50">
                                                     <TemplateViewer 
                                                         templateData={record.templateData} 
