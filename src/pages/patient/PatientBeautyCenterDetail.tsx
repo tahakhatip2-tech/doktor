@@ -345,11 +345,9 @@ export default function PatientBeautyCenterDetail() {
                         </div>
                     )}
                 </div>
-            </div>
 
-            {/* ── Floating Book Button ── */}
-            <div className="fixed bottom-[65px] left-0 right-0 p-4 bg-white/85 backdrop-blur-md border-t border-pink-100 shadow-[0_-10px_20px_-10px_rgba(236,72,153,0.15)] z-50 animate-fade-in-up">
-                <div className="max-w-5xl mx-auto flex items-center justify-between gap-4">
+                {/* ── Book Button (Bottom of page) ── */}
+                <div className="mt-6 mb-8">
                     <Button
                         onClick={() => {
                             if (!selectedService && services.length > 0) {
