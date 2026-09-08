@@ -780,6 +780,7 @@ const Index = () => {
 
                             {activeTab === 'beauty-services' && <BeautyCenterDashboard />}
                             {activeTab === 'homecare-services' && <HomeCareDashboard />}
+                            {activeTab === 'lab-tests' && <LaboratoryDashboard initialTab="tests" />}
 
                             {activeTab === 'clinic-settings' && <ClinicSettings />}
 

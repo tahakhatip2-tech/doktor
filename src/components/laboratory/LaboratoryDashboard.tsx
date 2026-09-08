@@ -7,7 +7,11 @@ import LabOrders from './LabOrders';
 import LabTestsManager from './LabTestsManager';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export default function LaboratoryDashboard() {
+interface LaboratoryDashboardProps {
+    initialTab?: "orders" | "tests";
+}
+
+export default function LaboratoryDashboard({ initialTab = "orders" }: LaboratoryDashboardProps = {}) {
     const [stats, setStats] = useState({
         totalTests: 0,
         pendingOrders: 0,
@@ -84,7 +88,7 @@ export default function LaboratoryDashboard() {
                 </Card>
             </div>
 
-            <Tabs defaultValue="orders" className="w-full">
+            <Tabs defaultValue={initialTab} className="w-full">
                 <TabsList className="w-full max-w-md grid grid-cols-2 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
                     <TabsTrigger value="orders" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-red-600 data-[state=active]:shadow-sm">طلبات الفحوصات</TabsTrigger>
                     <TabsTrigger value="tests" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:text-red-600 data-[state=active]:shadow-sm">إدارة قائمة الفحوصات</TabsTrigger>
