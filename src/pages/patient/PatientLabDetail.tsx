@@ -385,13 +385,13 @@ export default function PatientLabDetail() {
                             onClick={handleMap}>
                             <MapPin className="h-3.5 w-3.5 shrink-0" />الموقع
                         </Button>
-                        <Button size="sm"
-                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs bg-green-500 hover:bg-green-600 text-white border-0"
+                        <Button size="sm" variant="outline"
+                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                             onClick={handleCall}>
                             <Phone className="h-3.5 w-3.5 shrink-0" />اتصال
                         </Button>
-                        <Button size="sm"
-                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs bg-indigo-600 hover:bg-indigo-700 text-white border-0"
+                        <Button size="sm" variant="outline"
+                            className="flex-1 gap-1.5 rounded-xl h-9 text-xs border-indigo-200 text-indigo-600 hover:bg-indigo-50"
                             onClick={() => navigate(`/patient/chat/${lab.id}`)}>
                             <MessageCircle className="h-3.5 w-3.5 shrink-0" />مراسلة
                         </Button>
