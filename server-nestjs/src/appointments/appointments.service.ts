@@ -21,9 +21,13 @@ export class AppointmentsService {
   ) { }
 
   async findAll(userId: number, queryParams: any) {
-    const { date, status, doctor_id, date_from, date_to } = queryParams;
+    const { date, status, doctor_id, date_from, date_to, type } = queryParams;
 
     const where: any = { userId };
+
+    if (type) {
+      where.type = type;
+    }
 
     if (date) {
       where.appointmentDate = {

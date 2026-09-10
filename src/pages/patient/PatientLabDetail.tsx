@@ -19,7 +19,7 @@ import {
     MessageCircle, Share2, ChevronRight, CheckCircle2,
     Calendar, ChevronLeft, Loader2,
     Stethoscope, Bandage, Syringe, Dumbbell, Pill, ClipboardList,
-    Microscope, Activity, Cookie, Footprints, Salad, Sofa, Home,
+    Microscope, Activity, Cookie, Footprints, Salad, Sofa, Home, LocateFixed,
     type LucideIcon
 } from 'lucide-react';
 import axios from 'axios';
@@ -114,9 +114,21 @@ export default function PatientLabDetail() {
     
     const [bookingOpen, setBookingOpen] = useState(false);
     const [bookingLoading, setBookingLoading] = useState(false);
-    const [customerName, setCustomerName] = useState('');
+    const [customerName, setCustomerName] = useState(() => {
+        try {
+            const userStr = localStorage.getItem('patient_user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                return user.fullName || user.name || '';
+            }
+        } catch (e) {
+            console.error(e);
+        }
+        return '';
+    });
     const [address, setAddress] = useState('');
     const [notes, setNotes] = useState('');
+    const [visitType, setVisitType] = useState<'lab_visit' | 'home_visit'>('lab_visit');
 
     useEffect(() => {
         if (id) fetchLab(parseInt(id));
@@ -166,7 +178,7 @@ export default function PatientLabDetail() {
     const handleConfirmBooking = async () => {
         if (!selectedDate || !selectedSlot || !lab || !selectedService) return;
 
-        if (!address.trim()) {
+        if (visitType === 'home_visit' && !address.trim()) {
             toast({ variant: 'destructive', title: 'تنبيه', description: 'الرجاء إدخال عنوان الزيارة' });
             return;
         }
@@ -183,7 +195,9 @@ export default function PatientLabDetail() {
             const appointmentDate = new Date(selectedDate);
             appointmentDate.setHours(hours, minutes, 0, 0);
 
-            const combinedNotes = `الخدمة: ${selectedService.name}\nالعنوان: ${address}\nالملاحظات: ${notes}`;
+            const visitTypeStr = visitType === 'home_visit' ? 'فحص منزلي' : 'زيارة مختبر';
+            const addressStr = visitType === 'home_visit' ? `\nالعنوان: ${address}` : '';
+            const combinedNotes = `الخدمة: ${selectedService.name}\nنوع الزيارة: ${visitTypeStr}${addressStr}\nالملاحظات: ${notes}`;
 
             await axios.post(
                 `${API_URL}/patient/appointments`,
@@ -192,14 +206,14 @@ export default function PatientLabDetail() {
                     appointmentDate: appointmentDate.toISOString(),
                     notes: combinedNotes,
                     duration: selectedService.duration || 30,
-                    type: 'home_care',
+                    type: 'lab_test',
                     ...(customerName.trim() ? { customerName: customerName.trim() } : {}),
                 },
                 { headers: { Authorization: `Bearer ${token}` } }
             );
 
             toast({
-                title: '✅ تم حجز الزيارة المنزلية بنجاح!',
+                title: '✅ تم حجز فحص المختبر بنجاح!',
                 description: `موعدك يوم ${format(selectedDate, 'EEEE dd MMMM', { locale: ar })} الساعة ${selectedSlot} — في انتظار التأكيد`,
             });
 
@@ -223,6 +237,24 @@ export default function PatientLabDetail() {
         }
     };
 
+    const handleGetLocation = () => {
+        if (!navigator.geolocation) {
+            toast({ variant: 'destructive', title: 'خطأ', description: 'متصفحك لا يدعم تحديد الموقع' });
+            return;
+        }
+        toast({ title: 'جاري تحديد الموقع...' });
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude } = position.coords;
+                const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                setAddress((prev) => prev ? `${prev}\nالموقع: ${mapsUrl}` : `الموقع: ${mapsUrl}`);
+                toast({ title: '✅ تم إدراج الموقع بنجاح' });
+            },
+            (error) => {
+                toast({ variant: 'destructive', title: 'خطأ', description: 'تعذّر الوصول لموقعك. يرجى التأكد من الصلاحيات.' });
+            }
+        );
+    };
 
     const handleCall = () => {
         const phone = lab?.clinic_phone || lab?.phone;
@@ -630,6 +662,34 @@ export default function PatientLabDetail() {
 
                     <div className="grid gap-4 py-2">
                         <div className="grid gap-2">
+                            <Label className="text-sm font-bold text-slate-700">نوع الزيارة</Label>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                    type="button"
+                                    variant={visitType === 'lab_visit' ? 'default' : 'outline'}
+                                    onClick={() => setVisitType('lab_visit')}
+                                    className={`h-11 rounded-xl font-bold transition-all ${
+                                        visitType === 'lab_visit' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md text-white border-transparent' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <FlaskConical className="w-4 h-4 ml-1.5" />
+                                    زيارة مختبر
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={visitType === 'home_visit' ? 'default' : 'outline'}
+                                    onClick={() => setVisitType('home_visit')}
+                                    className={`h-11 rounded-xl font-bold transition-all ${
+                                        visitType === 'home_visit' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-md text-white border-transparent' : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                                    }`}
+                                >
+                                    <Home className="w-4 h-4 ml-1.5" />
+                                    فحص منزلي
+                                </Button>
+                            </div>
+                        </div>
+
+                        <div className="grid gap-2">
                             <Label htmlFor="name" className="text-sm font-bold text-slate-700">الاسم الكامل</Label>
                             <Input
                                 id="name"
@@ -639,19 +699,35 @@ export default function PatientLabDetail() {
                                 className="h-11 rounded-xl bg-slate-50 border-slate-200 focus-visible:ring-indigo-500"
                             />
                         </div>
-                        <div className="grid gap-2">
-                            <Label htmlFor="address" className="text-sm font-bold text-slate-700 flex items-center gap-1">
-                                <MapPin className="h-3.5 w-3.5 text-indigo-500" />
-                                عنوان الزيارة <span className="text-red-500">*</span>
-                            </Label>
-                            <Textarea
-                                id="address"
-                                placeholder="مثال: عمّان، شارع الملك حسين، بناية رقم 15، الطابق الثاني..."
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                className="rounded-xl min-h-[70px] bg-slate-50 border-slate-200 focus-visible:ring-indigo-500 resize-none"
-                            />
-                        </div>
+
+                        {visitType === 'home_visit' && (
+                            <div className="grid gap-2 animate-in fade-in slide-in-from-top-2 duration-300">
+                                <div className="flex items-center justify-between">
+                                    <Label htmlFor="address" className="text-sm font-bold text-slate-700 flex items-center gap-1">
+                                        <MapPin className="h-3.5 w-3.5 text-indigo-500" />
+                                        عنوان الزيارة <span className="text-red-500">*</span>
+                                    </Label>
+                                    <Button 
+                                        type="button" 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={handleGetLocation}
+                                        className="h-7 px-2 text-[11px] font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                                    >
+                                        <LocateFixed className="w-3.5 h-3.5 ml-1" />
+                                        استخدام موقعي
+                                    </Button>
+                                </div>
+                                <Textarea
+                                    id="address"
+                                    placeholder="مثال: عمّان، شارع الملك حسين، بناية رقم 15، الطابق الثاني..."
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    className="rounded-xl min-h-[70px] bg-slate-50 border-slate-200 focus-visible:ring-indigo-500 resize-none"
+                                />
+                            </div>
+                        )}
+
                         <div className="grid gap-2">
                             <Label htmlFor="notes" className="text-sm font-bold text-slate-700">ملاحظات إضافية للمزود</Label>
                             <Textarea
@@ -674,7 +750,7 @@ export default function PatientLabDetail() {
                         </Button>
                         <Button 
                             onClick={handleConfirmBooking}
-                            disabled={bookingLoading || !address.trim()}
+                            disabled={bookingLoading || (visitType === 'home_visit' && !address.trim())}
                             className="rounded-xl font-bold h-11 bg-indigo-600 hover:bg-indigo-700 text-white w-full sm:w-auto shadow-md"
                         >
                             {bookingLoading ? (

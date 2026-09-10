@@ -15,7 +15,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2, Star, LayoutGrid, CheckCircle2, Home } from 'lucide-react';
+import { Calendar, Clock, MapPin, FileText, X, Loader2, Eye, Building2, Star, LayoutGrid, CheckCircle2, Home, FlaskConical } from 'lucide-react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { ar } from 'date-fns/locale';
@@ -232,6 +232,14 @@ export default function PatientAppointments() {
                                                             <Home className="w-3.5 h-3.5 text-purple-600" />
                                                             <span className="text-[11px] font-black bg-gradient-to-l from-purple-700 to-fuchsia-600 bg-clip-text text-transparent tracking-wide whitespace-nowrap">
                                                                 رعاية منزلية
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                    {appointment.type === 'lab_test' && (
+                                                        <div className="flex items-center gap-1.5 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200/60 shadow-[0_2px_10px_-3px_rgba(99,102,241,0.2)] rounded-lg px-2.5 py-1 transition-all w-fit mt-2">
+                                                            <FlaskConical className="w-3.5 h-3.5 text-indigo-600" />
+                                                            <span className="text-[11px] font-black bg-gradient-to-l from-indigo-700 to-blue-600 bg-clip-text text-transparent tracking-wide whitespace-nowrap">
+                                                                فحص مختبر
                                                             </span>
                                                         </div>
                                                     )}
